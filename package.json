@@ -1,0 +1,69 @@
+{
+  "author": {
+    "name": "qmhc"
+  },
+  "bugs": {
+    "url": "https://github.com/qmhc/vite-plugin-dts/issues"
+  },
+  "dependencies": {
+    "@rollup/pluginutils": "^4.1.0",
+    "ts-morph": "^11.0.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@types/jest": "^26.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "@vue/compiler-sfc": "^3.0.11",
+    "chalk": "^4.1.1",
+    "commitizen": "^4.2.4",
+    "conventional-changelog-cli": "^2.1.1",
+    "cz-customizable": "^6.3.0",
+    "eslint": "^7.27.0",
+    "husky": "^6.0.0",
+    "is-ci": "^3.0.0",
+    "jest": "^27.0.1",
+    "lint-staged": "^11.0.0",
+    "pinst": "^2.1.6",
+    "prettier": "^2.3.0",
+    "pretty-quick": "^3.1.0",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.0.1",
+    "tsup": "^4.11.1",
+    "typescript": "4.2.4",
+    "vite": "^2.3.4"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "ts",
+    "dts",
+    "typescript"
+  ],
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "name": "vite-plugin-dts",
+  "peerDependencies": {
+    "@vue/compiler-sfc": ">=3.0.0",
+    "vite": ">=2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qmhc/vite-plugin-dts"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
+    "dev": "yarn run build -- --watch",
+    "lint": "eslint --fix --ext .js,.ts src/**",
+    "postinstall": "is-ci || husky install",
+    "postpublish": "pinst --enable",
+    "precommit": "lint-staged -c ./.husky/.lintstagedrc",
+    "prepublishOnly": "pinst --disable",
+    "prettier": "pretty-quick --staged"
+  },
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
+}

@@ -1,0 +1,8 @@
+dist/
+node_modules/
+public/
+scripts/
+.husky/
+
+.*rc.js
+*.config.js
