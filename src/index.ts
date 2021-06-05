@@ -16,7 +16,8 @@ export interface PluginOptions {
   exclude?: FilterType,
   root?: string,
   projectOptions?: ProjectOptions | null,
-  cleanVueFileName?: boolean
+  cleanVueFileName?: boolean,
+  staticImport?: boolean
 }
 
 export default (options: PluginOptions = {}): Plugin => {
@@ -25,7 +26,8 @@ export default (options: PluginOptions = {}): Plugin => {
     exclude = 'node_modules/**',
     root = process.cwd(),
     projectOptions = null,
-    cleanVueFileName = false
+    cleanVueFileName = false,
+    staticImport = false
   } = options
 
   const filter = createFilter(include, exclude)
@@ -100,16 +102,19 @@ export default (options: PluginOptions = {}): Plugin => {
         const emitOutput = sourceFile.getEmitOutput()
 
         for (const outputFile of emitOutput.getOutputFiles()) {
-          const filePath = outputFile.getFilePath()
-          const content = outputFile.getText()
-          const targetPath = resolve(
+          let filePath = outputFile.getFilePath() as string
+          const content = staticImport
+            ? transformDynamicImport(outputFile.getText())
+            : outputFile.getText()
+
+          filePath = resolve(
             declarationDir,
             relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
           )
 
-          await fs.mkdir(dirname(targetPath), { recursive: true })
+          await fs.mkdir(dirname(filePath), { recursive: true })
           await fs.writeFile(
-            targetPath,
+            filePath,
             cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
             'utf8'
           )
@@ -117,4 +122,48 @@ export default (options: PluginOptions = {}): Plugin => {
       }
     }
   }
+}
+
+const dynamicImportReg = /import\(['"][a-zA-Z0-9]+['"]\)\.[a-zA-Z0-9]+[<,;\n\s]/g
+
+function transformDynamicImport(content: string) {
+  const importMap = new Map<string, Set<string>>()
+
+  content = content.replace(dynamicImportReg, str => {
+    const match = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
+    const libName = match[1]
+    const importSet =
+      importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
+    const usedType = match[2]
+
+    importSet.add(usedType)
+
+    return usedType + match[3]
+  })
+
+  importMap.forEach((importSet, libName) => {
+    const importReg = new RegExp(
+      `import\\s?(?:type)?\\s?\\{.+\\}\\s?from\\s?['"]${libName}['"]`,
+      'g'
+    )
+    const match = content.match(importReg)
+
+    if (match?.[0]) {
+      const importedTypes = match[0]
+        .match(/import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"]vue['"]/)![1]
+        .trim()
+        .split(',')
+
+      content = content.replace(
+        match[0],
+        `import type { ${Array.from(importSet)
+          .concat(importedTypes)
+          .join(', ')} } from '${libName}'`
+      )
+    } else {
+      content = `import type { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
+    }
+  })
+
+  return content
 }
