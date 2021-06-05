@@ -15,6 +15,7 @@
     "@types/jest": "^26.0.23",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
+    "@vitejs/plugin-vue": "^1.2.3",
     "@vue/compiler-sfc": "^3.0.11",
     "chalk": "^4.1.1",
     "commitizen": "^4.2.4",
@@ -32,7 +33,8 @@
     "ts-jest": "^27.0.1",
     "tsup": "^4.11.1",
     "typescript": "4.2.4",
-    "vite": "^2.3.4"
+    "vite": "^2.3.4",
+    "vue": "^3.0.11"
   },
   "keywords": [
     "vite",
@@ -62,7 +64,8 @@
     "postpublish": "pinst --enable",
     "precommit": "lint-staged -c ./.husky/.lintstagedrc",
     "prepublishOnly": "pinst --disable",
-    "prettier": "pretty-quick --staged"
+    "prettier": "pretty-quick --staged",
+    "test:e2e": "cd example && vite build"
   },
   "types": "dist/index.d.ts",
   "version": "0.1.0"
