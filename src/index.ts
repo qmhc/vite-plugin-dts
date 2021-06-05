@@ -3,7 +3,7 @@ import fs from 'fs/promises'
 import { createFilter } from '@rollup/pluginutils'
 import { normalizePath } from 'vite'
 import { Project } from 'ts-morph'
-import { mergeObjects } from './utils'
+import { isNativeObj, mergeObjects } from './utils'
 
 import type { Plugin } from 'vite'
 // import type { ExternalOption } from 'rollup'
@@ -11,14 +11,23 @@ import type { ProjectOptions, SourceFile } from 'ts-morph'
 
 type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
 
+interface TransformWriteFile {
+  filePath?: string,
+  content?: string
+}
+
 export interface PluginOptions {
   include?: FilterType,
   exclude?: FilterType,
   root?: string,
   projectOptions?: ProjectOptions | null,
   cleanVueFileName?: boolean,
-  staticImport?: boolean
+  staticImport?: boolean,
+  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {}
 
 export default (options: PluginOptions = {}): Plugin => {
   const {
@@ -27,7 +36,8 @@ export default (options: PluginOptions = {}): Plugin => {
     root = process.cwd(),
     projectOptions = null,
     cleanVueFileName = false,
-    staticImport = false
+    staticImport = false,
+    beforeWriteFile = noop
   } = options
 
   const filter = createFilter(include, exclude)
@@ -103,7 +113,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
         for (const outputFile of emitOutput.getOutputFiles()) {
           let filePath = outputFile.getFilePath() as string
-          const content = staticImport
+          let content = staticImport
             ? transformDynamicImport(outputFile.getText())
             : outputFile.getText()
 
@@ -111,6 +121,15 @@ export default (options: PluginOptions = {}): Plugin => {
             declarationDir,
             relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
           )
+
+          if (typeof beforeWriteFile === 'function') {
+            const result = beforeWriteFile(filePath, content)
+
+            if (isNativeObj(result)) {
+              filePath = result.filePath ?? filePath
+              content = result.content ?? content
+            }
+          }
 
           await fs.mkdir(dirname(filePath), { recursive: true })
           await fs.writeFile(
