@@ -1,9 +1,10 @@
 import { resolve, dirname, relative } from 'path'
 import fs from 'fs/promises'
+import chalk from 'chalk'
 import { createFilter } from '@rollup/pluginutils'
 import { normalizePath } from 'vite'
 import { Project } from 'ts-morph'
-import { isNativeObj, mergeObjects } from './utils'
+import { isNativeObj, mergeObjects, ensureAbsolute } from './utils'
 
 import type { Plugin } from 'vite'
 // import type { ExternalOption } from 'rollup'
@@ -20,6 +21,7 @@ export interface PluginOptions {
   include?: FilterType,
   exclude?: FilterType,
   root?: string,
+  outputDir?: string,
   projectOptions?: ProjectOptions | null,
   cleanVueFileName?: boolean,
   staticImport?: boolean,
@@ -33,19 +35,21 @@ export default (options: PluginOptions = {}): Plugin => {
   const {
     include = ['**/*.vue', '**/*.ts', '**/*.tsx'],
     exclude = 'node_modules/**',
-    root = process.cwd(),
+    // root = process.cwd(),
     projectOptions = null,
     cleanVueFileName = false,
     staticImport = false,
     beforeWriteFile = noop
   } = options
 
+  const root = ensureAbsolute(options.root ?? '', process.cwd())
+  const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
   const filter = createFilter(include, exclude)
 
   const sourceFiles: SourceFile[] = []
 
   // let external: ExternalOption | undefined
-  // let entry: string
+  let entry: string
 
   const project = new Project(
     mergeObjects(
@@ -69,18 +73,28 @@ export default (options: PluginOptions = {}): Plugin => {
 
     enforce: 'post',
 
-    // configResolved(resolvedConfig) {
-    //   // external = resolvedConfig?.build?.rollupOptions?.external ?? undefined
-    //   // const lib = resolvedConfig?.build?.lib
+    configResolved(resolvedConfig) {
+      // external = resolvedConfig?.build?.rollupOptions?.external ?? undefined
+      const lib = resolvedConfig?.build?.lib
 
-    //   // if (lib) {
-    //   //   entry = lib.entry
-    //   // } else {
-    //   //   const input = resolvedConfig?.build?.rollupOptions?.input
+      if (lib) {
+        entry = lib.entry
+      } else {
+        const input = resolvedConfig?.build?.rollupOptions?.input
 
-    //   //   entry = typeof input === 'string' ? input : ''
-    //   // }
-    // },
+        if (typeof input !== 'string') {
+          console.log(
+            chalk.yellow(
+              '\n[vite:dts] You may have multiple entries, it will make difficult to calculate relative paths.\n'
+            )
+          )
+        }
+
+        entry = typeof input === 'string' ? input : ''
+      }
+
+      entry = ensureAbsolute(entry && dirname(entry), root)
+    },
 
     transform(code, id) {
       if (!code || !filter(id)) return null
@@ -99,9 +113,20 @@ export default (options: PluginOptions = {}): Plugin => {
     },
 
     async generateBundle(outputOptions) {
-      const declarationDir = (
-        outputOptions.file ? dirname(outputOptions.file) : outputOptions.dir
-      ) as string
+      const declarationDir =
+        outputDir ||
+        ((outputOptions.file ? dirname(outputOptions.file) : outputOptions.dir) as string)
+
+      if (!declarationDir) {
+        console.log(
+          chalk.red(
+            '\n[vite:dts] Can not resolve declaration directory, please check your vite config and plugin options.\n'
+          )
+        )
+
+        return
+      }
+
       const diagnostics = project.getPreEmitDiagnostics()
 
       console.log(project.formatDiagnosticsWithColorAndContext(diagnostics))
@@ -119,7 +144,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
           filePath = resolve(
             declarationDir,
-            relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+            relative(entry, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
           )
 
           if (typeof beforeWriteFile === 'function') {

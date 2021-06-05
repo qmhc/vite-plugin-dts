@@ -1,9 +1,7 @@
-import { resolve, relative } from 'path'
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import dts from '../src'
-
-const distDir = resolve(__dirname, 'dist')
 
 export default defineConfig({
   build: {
@@ -20,12 +18,8 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
-      staticImport: true,
-      beforeWriteFile(filePath) {
-        filePath = resolve(distDir, relative(resolve(distDir, 'src'), filePath))
-
-        return { filePath }
-      }
+      outputDir: 'types',
+      staticImport: true
     })
   ]
 })

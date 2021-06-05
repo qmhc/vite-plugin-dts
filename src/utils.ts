@@ -1,3 +1,5 @@
+import { resolve, isAbsolute } from 'path'
+
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, unknown> ? DeepPartial<T[P]> : T[P]
 }
@@ -51,4 +53,8 @@ export function mergeObjects<T extends Record<string, unknown>>(
   }
 
   return sourceObj
+}
+
+export function ensureAbsolute(path: string, root: string) {
+  return path ? (isAbsolute(path) ? path : resolve(root, path)) : root
 }
