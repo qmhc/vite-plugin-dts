@@ -41,7 +41,7 @@ export default defineComponent({
   props: {
     msg: {
       type: String,
-      required: true
+      validator: (value: string) => value.length > 0
     }
   },
   setup: () => {

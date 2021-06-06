@@ -69,7 +69,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
     apply: 'build',
 
-    enforce: 'post',
+    enforce: 'pre',
 
     config(config) {
       const aliasOptions = config.resolve?.alias ?? []

@@ -19,10 +19,10 @@ export default defineConfig({
     }
   },
   plugins: [
-    vue(),
     dts({
       outputDir: 'types',
       staticImport: true
-    })
+    }),
+    vue()
   ]
 })
