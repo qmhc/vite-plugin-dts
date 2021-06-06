@@ -32,7 +32,7 @@ export default defineConfig({
 ## Options
 
 ```ts
-import type { ProjectOptions } from 'ts-morph'
+import type { ts } from 'ts-morph'
 
 type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
 
@@ -58,11 +58,15 @@ export interface PluginOptions {
   // Defaults base on your vite config output options
   outputDir?: string
 
-  // Project init Options using by ts-morph
+  // Project init compilerOptions using by ts-morph
   // Default: null
-  projectOptions?: ProjectOptions | null
+  compilerOptions?: ts.CompilerOptions | null
 
-  // Whether transform '.vue.d.ts' to '.d.ts'
+  // Project init tsconfig.json file path by ts-morph
+  // Default: 'tsconfig.json'
+  tsConfigFilePath?: string
+
+  // Whether transform file name '.vue.d.ts' to '.d.ts'
   // Default: false
   cleanVueFileName?: boolean
 
@@ -80,7 +84,7 @@ export interface PluginOptions {
 
 ## Example
 
-Run the following script:
+Clone and run the following script:
 
 ```sh
 yarn run test:e2e

@@ -8,7 +8,7 @@ import { isNativeObj, isRegExp, mergeObjects, ensureAbsolute, ensureArray } from
 
 import type { Plugin, Alias } from 'vite'
 // import type { ExternalOption } from 'rollup'
-import type { ProjectOptions, SourceFile } from 'ts-morph'
+import type { ts, SourceFile } from 'ts-morph'
 
 type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
 
@@ -22,7 +22,8 @@ export interface PluginOptions {
   exclude?: FilterType,
   root?: string,
   outputDir?: string,
-  projectOptions?: ProjectOptions | null,
+  compilerOptions?: ts.CompilerOptions | null,
+  tsConfigFilePath?: string,
   cleanVueFileName?: boolean,
   staticImport?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
@@ -35,8 +36,8 @@ export default (options: PluginOptions = {}): Plugin => {
   const {
     include = ['**/*.vue', '**/*.ts', '**/*.tsx'],
     exclude = 'node_modules/**',
-    // root = process.cwd(),
-    projectOptions = null,
+    compilerOptions = null,
+    tsConfigFilePath = 'tsconfig.json',
     cleanVueFileName = false,
     staticImport = false,
     beforeWriteFile = noop
@@ -52,20 +53,16 @@ export default (options: PluginOptions = {}): Plugin => {
   let entry: string
   let aliases: Alias[]
 
-  const project = new Project(
-    mergeObjects(
-      {
-        compilerOptions: {
-          declaration: true,
-          emitDeclarationOnly: true,
-          noEmitOnError: true
-        },
-        tsConfigFilePath: resolve(root, 'tsconfig.json'),
-        skipAddingFilesFromTsConfig: true
-      },
-      projectOptions ?? {}
-    )
-  )
+  const project = new Project({
+    compilerOptions: mergeObjects(compilerOptions ?? {}, {
+      outDir: '.',
+      declaration: true,
+      emitDeclarationOnly: true,
+      noEmitOnError: true
+    }),
+    tsConfigFilePath: ensureAbsolute(tsConfigFilePath, root),
+    skipAddingFilesFromTsConfig: true
+  })
 
   return {
     name: 'vite:dts',
