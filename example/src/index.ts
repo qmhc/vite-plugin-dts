@@ -1,5 +1,9 @@
-// import { createApp } from 'vue'
 import App from './App.vue'
+import type { TestBase } from '@/components/test'
 
-// createApp(App).mount('#app')
+export interface Test extends TestBase {
+  count: number
+}
+
 export { App }
+export { test } from '@/components/test'

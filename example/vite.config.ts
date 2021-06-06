@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 import dts from '../src'
 
 export default defineConfig({
+  resolve: {
+    alias: [{ find: /^@\/(.+)/, replacement: resolve(__dirname, '$1') }]
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

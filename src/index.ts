@@ -1,12 +1,12 @@
-import { resolve, dirname, relative } from 'path'
+import { resolve, dirname, relative, isAbsolute } from 'path'
 import fs from 'fs/promises'
 import chalk from 'chalk'
 import { createFilter } from '@rollup/pluginutils'
 import { normalizePath } from 'vite'
 import { Project } from 'ts-morph'
-import { isNativeObj, mergeObjects, ensureAbsolute } from './utils'
+import { isNativeObj, isRegExp, mergeObjects, ensureAbsolute, ensureArray } from './utils'
 
-import type { Plugin } from 'vite'
+import type { Plugin, Alias } from 'vite'
 // import type { ExternalOption } from 'rollup'
 import type { ProjectOptions, SourceFile } from 'ts-morph'
 
@@ -50,6 +50,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
   // let external: ExternalOption | undefined
   let entry: string
+  let aliases: Alias[]
 
   const project = new Project(
     mergeObjects(
@@ -73,14 +74,26 @@ export default (options: PluginOptions = {}): Plugin => {
 
     enforce: 'post',
 
-    configResolved(resolvedConfig) {
-      // external = resolvedConfig?.build?.rollupOptions?.external ?? undefined
-      const lib = resolvedConfig?.build?.lib
+    config(config) {
+      const aliasOptions = config.resolve?.alias ?? []
+
+      if (isNativeObj(aliasOptions)) {
+        aliases = Object.entries(aliasOptions).map(([key, value]) => {
+          return { find: key, replacement: value }
+        })
+      } else {
+        aliases = ensureArray(aliasOptions)
+      }
+    },
+
+    configResolved(config) {
+      // external = config?.build?.rollupOptions?.external ?? undefined
+      const lib = config?.build?.lib
 
       if (lib) {
         entry = lib.entry
       } else {
-        const input = resolvedConfig?.build?.rollupOptions?.input
+        const input = config?.build?.rollupOptions?.input
 
         if (typeof input !== 'string') {
           console.log(
@@ -134,13 +147,13 @@ export default (options: PluginOptions = {}): Plugin => {
       project.emitToMemory()
 
       for (const sourceFile of sourceFiles) {
-        const emitOutput = sourceFile.getEmitOutput()
+        const emitOutput = sourceFile.getEmitOutput({ emitOnlyDtsFiles: true })
 
         for (const outputFile of emitOutput.getOutputFiles()) {
           let filePath = outputFile.getFilePath() as string
-          let content = staticImport
-            ? transformDynamicImport(outputFile.getText())
-            : outputFile.getText()
+          let content = transformAliasImport(outputFile.getText(), aliases, entry)
+
+          content = staticImport ? transformDynamicImport(content) : content
 
           filePath = resolve(
             declarationDir,
@@ -150,7 +163,7 @@ export default (options: PluginOptions = {}): Plugin => {
           if (typeof beforeWriteFile === 'function') {
             const result = beforeWriteFile(filePath, content)
 
-            if (isNativeObj(result)) {
+            if (result && isNativeObj(result)) {
               filePath = result.filePath ?? filePath
               content = result.content ?? content
             }
@@ -168,21 +181,19 @@ export default (options: PluginOptions = {}): Plugin => {
   }
 }
 
-const dynamicImportReg = /import\(['"][a-zA-Z0-9]+['"]\)\.[a-zA-Z0-9]+[<,;\n\s]/g
-
 function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(dynamicImportReg, str => {
-    const match = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
-    const libName = match[1]
+  content = content.replace(/import\(['"][a-zA-Z0-9]+['"]\)\.[a-zA-Z0-9]+[<,;\n\s]/g, str => {
+    const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
+    const libName = matchResult[1]
     const importSet =
       importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
-    const usedType = match[2]
+    const usedType = matchResult[2]
 
     importSet.add(usedType)
 
-    return usedType + match[3]
+    return usedType + matchResult[3]
   })
 
   importMap.forEach((importSet, libName) => {
@@ -190,16 +201,16 @@ function transformDynamicImport(content: string) {
       `import\\s?(?:type)?\\s?\\{.+\\}\\s?from\\s?['"]${libName}['"]`,
       'g'
     )
-    const match = content.match(importReg)
+    const matchResult = content.match(importReg)
 
-    if (match?.[0]) {
-      const importedTypes = match[0]
-        .match(/import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"]vue['"]/)![1]
+    if (matchResult?.[0]) {
+      const importedTypes = matchResult[0]
+        .match(/import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/)![1]
         .trim()
         .split(',')
 
       content = content.replace(
-        match[0],
+        matchResult[0],
         `import type { ${Array.from(importSet)
           .concat(importedTypes)
           .join(', ')} } from '${libName}'`
@@ -210,4 +221,38 @@ function transformDynamicImport(content: string) {
   })
 
   return content
+}
+
+function isAliasMatch(alias: Alias, importee: string) {
+  if (isRegExp(alias.find)) return alias.find.test(importee)
+  if (importee.length < alias.find.length) return false
+  if (importee === alias.find) return true
+
+  return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
+}
+
+function transformAliasImport(content: string, aliases: Alias[], entry: string) {
+  if (!aliases.length) return content
+
+  return content.replace(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"].+['"]/g, str => {
+    const matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
+
+    if (matchResult?.[1]) {
+      const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult[1]))
+
+      if (matchedAlias) {
+        return str.replace(
+          /((?:import|export).+from\s?)['"](.+)['"]/,
+          `$1'${matchResult[1].replace(
+            matchedAlias.find,
+            isAbsolute(matchedAlias.replacement)
+              ? normalizePath(relative(entry, matchedAlias.replacement))
+              : normalizePath(matchedAlias.replacement)
+          )}'`
+        )
+      }
+    }
+
+    return str
+  })
 }
