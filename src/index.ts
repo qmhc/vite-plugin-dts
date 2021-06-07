@@ -49,6 +49,44 @@ export default (options: PluginOptions = {}): Plugin => {
   let project: Project
 
   const sourceFiles: SourceFile[] = []
+  const typeImports = new Set<string>()
+
+  async function collectTypeImports(code: string, importer: string) {
+    const matchResult = code.match(
+      /(?:import|export)\stype\s?\{[\s\w]+\}\s?from\s?['"][~@\w=:?&-.\\/]+['"]/g
+    )
+
+    if (matchResult?.length) {
+      await Promise.all(
+        matchResult.map(async matched => {
+          let fromPath = matched.match(/from ['"](.+)['"]/)![1]
+
+          const matchedAlias = aliases.find(alias => isAliasMatch(alias, fromPath))
+
+          if (matchedAlias) {
+            fromPath = fromPath.replace(matchedAlias.find, matchedAlias.replacement)
+          }
+
+          if (fromPath.startsWith('.')) {
+            fromPath = normalizePath(
+              isAbsolute(fromPath) ? fromPath : resolve(dirname(importer), fromPath)
+            )
+
+            try {
+              if ((await fs.stat(fromPath)).isDirectory()) {
+                fromPath += 'index.ts'
+              }
+              // eslint-disable-next-line no-empty
+            } catch (e) {}
+
+            typeImports.add(fromPath + (fromPath.endsWith('.ts') ? '' : '.ts'))
+          }
+        })
+      )
+    }
+
+    return []
+  }
 
   return {
     name: 'vite:dts',
@@ -94,7 +132,7 @@ export default (options: PluginOptions = {}): Plugin => {
       })
     },
 
-    transform(code, id) {
+    async transform(code, id) {
       if (!code || !filter(id)) return null
 
       if (/\.vue(\?.*type=script.*)$/.test(id)) {
@@ -106,6 +144,7 @@ export default (options: PluginOptions = {}): Plugin => {
       } else if (/\.tsx?$/.test(id)) {
         const filePath = resolve(root, normalizePath(id))
 
+        await collectTypeImports(code, id)
         sourceFiles.push(project.addSourceFileAtPath(filePath))
       }
     },
@@ -125,6 +164,12 @@ export default (options: PluginOptions = {}): Plugin => {
 
         return
       }
+
+      typeImports.forEach(filePath => {
+        if (!project.getSourceFile(filePath)) {
+          sourceFiles.push(project.addSourceFileAtPath(filePath))
+        }
+      })
 
       const diagnostics = project.getPreEmitDiagnostics()
 
@@ -171,7 +216,7 @@ export default (options: PluginOptions = {}): Plugin => {
 function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(/import\(['"][\w=:?&-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
+  content = content.replace(/import\(['"][~@\w=:?&-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
     const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
     const libName = matchResult[1]
     const importSet =
@@ -221,27 +266,30 @@ function isAliasMatch(alias: Alias, importee: string) {
 function transformAliasImport(filePath: string, content: string, aliases: Alias[]) {
   if (!aliases.length) return content
 
-  return content.replace(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"].+['"]/g, str => {
-    const matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
+  return content.replace(
+    /(?:import|export)\s?(?:type)?\s?\{[\s\w]+\}\s?from\s?['"][~@\w=:?&-.\\/]+['"]/g,
+    str => {
+      const matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
 
-    if (matchResult?.[1]) {
-      const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult[1]))
+      if (matchResult?.[1]) {
+        const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult[1]))
 
-      if (matchedAlias) {
-        return str.replace(
-          /((?:import|export).+from\s?)['"](.+)['"]/,
-          `$1'${matchResult[1].replace(
-            matchedAlias.find,
-            isAbsolute(matchedAlias.replacement)
-              ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
-              : normalizePath(matchedAlias.replacement)
-          )}'`
-        )
+        if (matchedAlias) {
+          return str.replace(
+            /((?:import|export).+from\s?)['"](.+)['"]/,
+            `$1'${matchResult[1].replace(
+              matchedAlias.find,
+              isAbsolute(matchedAlias.replacement)
+                ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
+                : normalizePath(matchedAlias.replacement)
+            )}'`
+          )
+        }
       }
-    }
 
-    return str
-  })
+      return str
+    }
+  )
 }
 
 function removePureImport(content: string) {
