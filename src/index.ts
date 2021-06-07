@@ -7,7 +7,6 @@ import { Project } from 'ts-morph'
 import { isNativeObj, isRegExp, mergeObjects, ensureAbsolute, ensureArray } from './utils'
 
 import type { Plugin, Alias } from 'vite'
-// import type { ExternalOption } from 'rollup'
 import type { ts, SourceFile } from 'ts-morph'
 
 type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
@@ -46,12 +45,7 @@ export default (options: PluginOptions = {}): Plugin => {
   const filter = createFilter(include, exclude)
 
   let root: string
-  // const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
-
-  // let external: ExternalOption | undefined
-  // let entry: string
   let aliases: Alias[]
-
   let project: Project
 
   const sourceFiles: SourceFile[] = []
@@ -76,7 +70,6 @@ export default (options: PluginOptions = {}): Plugin => {
     },
 
     configResolved(config) {
-      // external = config?.build?.rollupOptions?.external ?? undefined
       const lib = config?.build?.lib
 
       if (!lib) {
@@ -86,24 +79,6 @@ export default (options: PluginOptions = {}): Plugin => {
           )
         )
       }
-
-      // if (lib) {
-      //   entry = lib.entry
-      // } else {
-      //   const input = config?.build?.rollupOptions?.input
-
-      //   if (typeof input !== 'string') {
-      //     console.log(
-      //       chalk.yellow(
-      //         '\n[vite:dts] You may have multiple entries, it will make difficult to calculate relative paths.\n'
-      //       )
-      //     )
-      //   }
-
-      //   entry = typeof input === 'string' ? input : ''
-      // }
-
-      // entry = ensureAbsolute(entry && dirname(entry), root)
 
       root = ensureAbsolute(options.root ?? '', config.root)
 
@@ -195,7 +170,7 @@ export default (options: PluginOptions = {}): Plugin => {
 function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(/import\(['"][a-zA-Z0-9]+['"]\)\.[a-zA-Z0-9]+[<,;\n\s]/g, str => {
+  content = content.replace(/import\(['"][\w-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
     const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
     const libName = matchResult[1]
     const importSet =
