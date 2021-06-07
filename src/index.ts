@@ -139,7 +139,7 @@ export default (options: PluginOptions = {}): Plugin => {
           let filePath = outputFile.getFilePath() as string
           let content = removePureImport(outputFile.getText())
 
-          content = transformAliasImport(content, aliases, root)
+          content = transformAliasImport(filePath, content, aliases)
           content = staticImport ? transformDynamicImport(content) : content
 
           filePath = resolve(
@@ -218,7 +218,7 @@ function isAliasMatch(alias: Alias, importee: string) {
   return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
 }
 
-function transformAliasImport(content: string, aliases: Alias[], root: string) {
+function transformAliasImport(filePath: string, content: string, aliases: Alias[]) {
   if (!aliases.length) return content
 
   return content.replace(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"].+['"]/g, str => {
@@ -233,7 +233,7 @@ function transformAliasImport(content: string, aliases: Alias[], root: string) {
           `$1'${matchResult[1].replace(
             matchedAlias.find,
             isAbsolute(matchedAlias.replacement)
-              ? normalizePath(relative(root, matchedAlias.replacement))
+              ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
               : normalizePath(matchedAlias.replacement)
           )}'`
         )
