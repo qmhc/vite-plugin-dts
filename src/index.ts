@@ -137,8 +137,9 @@ export default (options: PluginOptions = {}): Plugin => {
 
         for (const outputFile of emitOutput.getOutputFiles()) {
           let filePath = outputFile.getFilePath() as string
-          let content = transformAliasImport(outputFile.getText(), aliases, root)
+          let content = removePureImport(outputFile.getText())
 
+          content = transformAliasImport(content, aliases, root)
           content = staticImport ? transformDynamicImport(content) : content
 
           filePath = resolve(
@@ -170,7 +171,7 @@ export default (options: PluginOptions = {}): Plugin => {
 function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(/import\(['"][\w-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
+  content = content.replace(/import\(['"][\w=:?&-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
     const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
     const libName = matchResult[1]
     const importSet =
@@ -241,4 +242,8 @@ function transformAliasImport(content: string, aliases: Alias[], root: string) {
 
     return str
   })
+}
+
+function removePureImport(content: string) {
+  return content.replace(/import\s?['"][\w=:?&-.\\/]+?['"];?\n?/g, '')
 }
