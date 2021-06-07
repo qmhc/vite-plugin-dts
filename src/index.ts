@@ -49,7 +49,7 @@ export default (options: PluginOptions = {}): Plugin => {
   // const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
 
   // let external: ExternalOption | undefined
-  let entry: string
+  // let entry: string
   let aliases: Alias[]
 
   let project: Project
@@ -79,23 +79,32 @@ export default (options: PluginOptions = {}): Plugin => {
       // external = config?.build?.rollupOptions?.external ?? undefined
       const lib = config?.build?.lib
 
-      if (lib) {
-        entry = lib.entry
-      } else {
-        const input = config?.build?.rollupOptions?.input
-
-        if (typeof input !== 'string') {
-          console.log(
-            chalk.yellow(
-              '\n[vite:dts] You may have multiple entries, it will make difficult to calculate relative paths.\n'
-            )
+      if (!lib) {
+        console.log(
+          chalk.yellow(
+            '\n[vite:dts] You building not a library, it may not need to generate declaration files.\n'
           )
-        }
-
-        entry = typeof input === 'string' ? input : ''
+        )
       }
 
-      entry = ensureAbsolute(entry && dirname(entry), root)
+      // if (lib) {
+      //   entry = lib.entry
+      // } else {
+      //   const input = config?.build?.rollupOptions?.input
+
+      //   if (typeof input !== 'string') {
+      //     console.log(
+      //       chalk.yellow(
+      //         '\n[vite:dts] You may have multiple entries, it will make difficult to calculate relative paths.\n'
+      //       )
+      //     )
+      //   }
+
+      //   entry = typeof input === 'string' ? input : ''
+      // }
+
+      // entry = ensureAbsolute(entry && dirname(entry), root)
+
       root = ensureAbsolute(options.root ?? '', config.root)
 
       project = new Project({
@@ -153,13 +162,13 @@ export default (options: PluginOptions = {}): Plugin => {
 
         for (const outputFile of emitOutput.getOutputFiles()) {
           let filePath = outputFile.getFilePath() as string
-          let content = transformAliasImport(outputFile.getText(), aliases, entry)
+          let content = transformAliasImport(outputFile.getText(), aliases, root)
 
           content = staticImport ? transformDynamicImport(content) : content
 
           filePath = resolve(
             declarationDir,
-            relative(entry, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+            relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
           )
 
           if (typeof beforeWriteFile === 'function') {
@@ -233,7 +242,7 @@ function isAliasMatch(alias: Alias, importee: string) {
   return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
 }
 
-function transformAliasImport(content: string, aliases: Alias[], entry: string) {
+function transformAliasImport(content: string, aliases: Alias[], root: string) {
   if (!aliases.length) return content
 
   return content.replace(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"].+['"]/g, str => {
@@ -248,7 +257,7 @@ function transformAliasImport(content: string, aliases: Alias[], entry: string) 
           `$1'${matchResult[1].replace(
             matchedAlias.find,
             isAbsolute(matchedAlias.replacement)
-              ? normalizePath(relative(entry, matchedAlias.replacement))
+              ? normalizePath(relative(root, matchedAlias.replacement))
               : normalizePath(matchedAlias.replacement)
           )}'`
         )
