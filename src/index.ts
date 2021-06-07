@@ -43,26 +43,18 @@ export default (options: PluginOptions = {}): Plugin => {
     beforeWriteFile = noop
   } = options
 
-  const root = ensureAbsolute(options.root ?? '', process.cwd())
-  const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
   const filter = createFilter(include, exclude)
 
-  const sourceFiles: SourceFile[] = []
+  let root: string
+  // const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
 
   // let external: ExternalOption | undefined
   let entry: string
   let aliases: Alias[]
 
-  const project = new Project({
-    compilerOptions: mergeObjects(compilerOptions ?? {}, {
-      outDir: '.',
-      declaration: true,
-      emitDeclarationOnly: true,
-      noEmitOnError: true
-    }),
-    tsConfigFilePath: ensureAbsolute(tsConfigFilePath, root),
-    skipAddingFilesFromTsConfig: true
-  })
+  let project: Project
+
+  const sourceFiles: SourceFile[] = []
 
   return {
     name: 'vite:dts',
@@ -104,6 +96,18 @@ export default (options: PluginOptions = {}): Plugin => {
       }
 
       entry = ensureAbsolute(entry && dirname(entry), root)
+      root = ensureAbsolute(options.root ?? '', config.root)
+
+      project = new Project({
+        compilerOptions: mergeObjects(compilerOptions ?? {}, {
+          outDir: '.',
+          declaration: true,
+          emitDeclarationOnly: true,
+          noEmitOnError: true
+        }),
+        tsConfigFilePath: ensureAbsolute(tsConfigFilePath, root),
+        skipAddingFilesFromTsConfig: true
+      })
     },
 
     transform(code, id) {
@@ -123,6 +127,7 @@ export default (options: PluginOptions = {}): Plugin => {
     },
 
     async generateBundle(outputOptions) {
+      const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
       const declarationDir =
         outputDir ||
         ((outputOptions.file ? dirname(outputOptions.file) : outputOptions.dir) as string)

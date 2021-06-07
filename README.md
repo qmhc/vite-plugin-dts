@@ -51,7 +51,7 @@ export interface PluginOptions {
   exclude?: FilterType
 
   // Depends on the root directory
-  // Default: process.cwd()
+  // Defaults base on your vite config root options
   root?: string
 
   // Declaration files output directory
