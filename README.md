@@ -1,6 +1,6 @@
 # vite-plugin-dts
 
-**English** | [中文](./README.zh_CN.md)
+**English** | [中文](./README.zh-CN.md)
 
 A vite plugin that generate `.d.ts` file from containing `.vue` files base on `ts-morph`.
 
