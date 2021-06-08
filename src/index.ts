@@ -45,6 +45,7 @@ export default (options: PluginOptions = {}): Plugin => {
   let aliases: Alias[]
   let project: Project
   let tsConfigPath: string
+  let isBundle = false
 
   const sourceFiles: SourceFile[] = []
 
@@ -94,6 +95,10 @@ export default (options: PluginOptions = {}): Plugin => {
     },
 
     async generateBundle(outputOptions) {
+      if (isBundle) return
+
+      isBundle = true
+
       const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
       const declarationDir =
         outputDir ||
