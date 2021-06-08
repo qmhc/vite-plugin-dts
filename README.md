@@ -1,6 +1,8 @@
 # vite-plugin-dts
 
-A vite plugin that generate `d.ts` file from containing `.vue` files base on `ts-morph`.
+**English** | [中文](./README.zh_CN.md)
+
+A vite plugin that generate `.d.ts` file from containing `.vue` files base on `ts-morph`.
 
 ## Install
 
@@ -34,22 +36,12 @@ export default defineConfig({
 ```ts
 import type { ts } from 'ts-morph'
 
-type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
-
 interface TransformWriteFile {
   filePath?: string
   content?: string
 }
 
 export interface PluginOptions {
-  // Code directory and file format to be converted
-  // Default: ['**/*.vue', '**/*.ts', '**/*.tsx']
-  include?: FilterType
-
-  // Excluded files/folders
-  // Default: 'node_modules/**'
-  exclude?: FilterType
-
   // Depends on the root directory
   // Defaults base on your vite config root options
   root?: string
@@ -63,6 +55,7 @@ export interface PluginOptions {
   compilerOptions?: ts.CompilerOptions | null
 
   // Project init tsconfig.json file path by ts-morph
+  // Plugin also resolve incldue and exclude files from tsconfig.json
   // Default: 'tsconfig.json'
   tsConfigFilePath?: string
 
