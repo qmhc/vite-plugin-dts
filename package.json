@@ -6,7 +6,7 @@
     "url": "https://github.com/qmhc/vite-plugin-dts/issues"
   },
   "dependencies": {
-    "@rollup/pluginutils": "^4.1.0",
+    "fast-glob": "^3.2.5",
     "ts-morph": "^11.0.0"
   },
   "devDependencies": {

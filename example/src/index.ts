@@ -8,3 +8,4 @@ export { default as App } from './App.vue'
 export { test } from '@/components/test'
 
 export type { User } from './types'
+export type { Component } from '@/components'

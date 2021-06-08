@@ -912,18 +912,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/pluginutils@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "@rollup/pluginutils@npm:4.1.0"
-  dependencies:
-    estree-walker: ^2.0.1
-    picomatch: ^2.2.2
-  peerDependencies:
-    rollup: ^1.20.0||^2.0.0
-  checksum: 566b8d2bcc0d52877f8c9f364026be40fa921c8d5860b5f2a5f476658dfebf462536632f079aa3f52fafe64d8aea6741c20bb198e67b33eaba8f9fe69b38ae3f
-  languageName: node
-  linkType: hard
-
 "@sinonjs/commons@npm:^1.7.0":
   version: 1.8.3
   resolution: "@sinonjs/commons@npm:1.8.3"
@@ -1249,6 +1237,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vue/compiler-core@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@vue/compiler-core@npm:3.1.1"
+  dependencies:
+    "@babel/parser": ^7.12.0
+    "@babel/types": ^7.12.0
+    "@vue/shared": 3.1.1
+    estree-walker: ^2.0.1
+    source-map: ^0.6.1
+  checksum: 31228c4473ca00c48012c6117be2edc98beda6baa83e8f690eef864f4b07a2dba026d38a6782c62c6ef93508b3a911261f1edfac570499b482437f6cf3689032
+  languageName: node
+  linkType: hard
+
 "@vue/compiler-dom@npm:3.0.11":
   version: 3.0.11
   resolution: "@vue/compiler-dom@npm:3.0.11"
@@ -1259,16 +1260,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vue/compiler-dom@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@vue/compiler-dom@npm:3.1.1"
+  dependencies:
+    "@vue/compiler-core": 3.1.1
+    "@vue/shared": 3.1.1
+  checksum: 6811db6fe77b1b071357b4aadba85e89ef18cc7db40fdcb039f08eab4d9fe0cf981f98479351072fcb25e83e467018b7cdcd21a1ec2c41c8257c3195d3b2e96b
+  languageName: node
+  linkType: hard
+
 "@vue/compiler-sfc@npm:^3.0.11":
-  version: 3.0.11
-  resolution: "@vue/compiler-sfc@npm:3.0.11"
+  version: 3.1.1
+  resolution: "@vue/compiler-sfc@npm:3.1.1"
   dependencies:
     "@babel/parser": ^7.13.9
     "@babel/types": ^7.13.0
-    "@vue/compiler-core": 3.0.11
-    "@vue/compiler-dom": 3.0.11
-    "@vue/compiler-ssr": 3.0.11
-    "@vue/shared": 3.0.11
+    "@vue/compiler-core": 3.1.1
+    "@vue/compiler-dom": 3.1.1
+    "@vue/compiler-ssr": 3.1.1
+    "@vue/shared": 3.1.1
     consolidate: ^0.16.0
     estree-walker: ^2.0.1
     hash-sum: ^2.0.0
@@ -1280,18 +1291,18 @@ __metadata:
     postcss-selector-parser: ^6.0.4
     source-map: ^0.6.1
   peerDependencies:
-    vue: 3.0.11
-  checksum: f008846ef15b7ab4a0ed9e3ec95a606324cd87a989d5c2c2ddadf89602a25c8f2455218aa8685baf06f2a76e36587eb8bea0493da85ab07bf71006db895887a7
+    vue: 3.1.1
+  checksum: cd57971ab388add9c61891c469155d769de87432f9891246788d100921cb1b3abc00b08a06496eaf45cd3aa52e2f83ef20b7009e8064bb388b006a112e286dcd
   languageName: node
   linkType: hard
 
-"@vue/compiler-ssr@npm:3.0.11":
-  version: 3.0.11
-  resolution: "@vue/compiler-ssr@npm:3.0.11"
+"@vue/compiler-ssr@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@vue/compiler-ssr@npm:3.1.1"
   dependencies:
-    "@vue/compiler-dom": 3.0.11
-    "@vue/shared": 3.0.11
-  checksum: dab53119047f634fa0543f400490fe03000c278fdeb762afeeb1d93c7d40824824aa0ed442bcd13e407b9d8039a712d9636df095d5c9eae07bec52a0ff504f26
+    "@vue/compiler-dom": 3.1.1
+    "@vue/shared": 3.1.1
+  checksum: 9a55a0c8a6e413f5cd673f2e67aa5bd0df80450587803e6ce664f6eed1cc8ef475054c6f63bc0760b2c49f0c4210ef06d50dcbe1de1fc57ba20a66a2ecdc0477
   languageName: node
   linkType: hard
 
@@ -1329,6 +1340,13 @@ __metadata:
   version: 3.0.11
   resolution: "@vue/shared@npm:3.0.11"
   checksum: 2256b025c7b832f3fdcea55db2371bd8230d99777ecffcd6e83a01b22f30088b43eb849402b50e58460c9eea65d3d7e351f6c7464c4d55554d38307ba98166fd
+  languageName: node
+  linkType: hard
+
+"@vue/shared@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@vue/shared@npm:3.1.1"
+  checksum: 827ad5d79748595f9745c5144ddbd58682c4febb50cac0ea993c569ee42d5b79c8a95ea21a07036a548abcf37c89f42813e30ead8986d909892e3908ce9a4197
   languageName: node
   linkType: hard
 
@@ -5941,7 +5959,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.2, picomatch@npm:^2.2.3":
+"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.3":
   version: 2.3.0
   resolution: "picomatch@npm:2.3.0"
   checksum: 80113a0fb70cfa62730d5aa3fd3d45b76bf3985f8494080ab2de1cc1fa3ba96d77990c7553a81401e16c51c0eb19c27cf5bc94f2196155090f26c8a167968001
@@ -7639,7 +7657,6 @@ typescript@4.2.4:
   dependencies:
     "@commitlint/cli": ^12.1.4
     "@commitlint/config-conventional": ^12.1.4
-    "@rollup/pluginutils": ^4.1.0
     "@types/jest": ^26.0.23
     "@typescript-eslint/eslint-plugin": ^4.25.0
     "@typescript-eslint/parser": ^4.25.0
@@ -7650,6 +7667,7 @@ typescript@4.2.4:
     conventional-changelog-cli: ^2.1.1
     cz-customizable: ^6.3.0
     eslint: ^7.27.0
+    fast-glob: ^3.2.5
     husky: ^6.0.0
     is-ci: ^3.0.0
     jest: ^27.0.1

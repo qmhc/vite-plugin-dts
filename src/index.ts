@@ -1,15 +1,18 @@
-import { resolve, dirname, relative, isAbsolute } from 'path'
+import { resolve, dirname, relative } from 'path'
 import fs from 'fs/promises'
 import chalk from 'chalk'
-import { createFilter } from '@rollup/pluginutils'
-import { normalizePath } from 'vite'
+import glob from 'fast-glob'
 import { Project } from 'ts-morph'
-import { isNativeObj, isRegExp, mergeObjects, ensureAbsolute, ensureArray } from './utils'
+import {
+  normalizeGlob,
+  transformDynamicImport,
+  transformAliasImport,
+  removePureImport
+} from './transform'
+import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray } from './utils'
 
 import type { Plugin, Alias } from 'vite'
 import type { ts, SourceFile } from 'ts-morph'
-
-type FilterType = string | RegExp | (string | RegExp)[] | null | undefined
 
 interface TransformWriteFile {
   filePath?: string,
@@ -17,8 +20,6 @@ interface TransformWriteFile {
 }
 
 export interface PluginOptions {
-  include?: FilterType,
-  exclude?: FilterType,
   root?: string,
   outputDir?: string,
   compilerOptions?: ts.CompilerOptions | null,
@@ -33,8 +34,6 @@ const noop = () => {}
 
 export default (options: PluginOptions = {}): Plugin => {
   const {
-    include = ['**/*.vue', '**/*.ts', '**/*.tsx'],
-    exclude = 'node_modules/**',
     compilerOptions = null,
     tsConfigFilePath = 'tsconfig.json',
     cleanVueFileName = false,
@@ -42,51 +41,12 @@ export default (options: PluginOptions = {}): Plugin => {
     beforeWriteFile = noop
   } = options
 
-  const filter = createFilter(include, exclude)
-
   let root: string
   let aliases: Alias[]
   let project: Project
+  let tsConfigPath: string
 
   const sourceFiles: SourceFile[] = []
-  const typeImports = new Set<string>()
-
-  async function collectTypeImports(code: string, importer: string) {
-    const matchResult = code.match(
-      /(?:import|export)\stype\s?\{[\s\w]+\}\s?from\s?['"][~@\w=:?&-.\\/]+['"]/g
-    )
-
-    if (matchResult?.length) {
-      await Promise.all(
-        matchResult.map(async matched => {
-          let fromPath = matched.match(/from ['"](.+)['"]/)![1]
-
-          const matchedAlias = aliases.find(alias => isAliasMatch(alias, fromPath))
-
-          if (matchedAlias) {
-            fromPath = fromPath.replace(matchedAlias.find, matchedAlias.replacement)
-          }
-
-          if (fromPath.startsWith('.')) {
-            fromPath = normalizePath(
-              isAbsolute(fromPath) ? fromPath : resolve(dirname(importer), fromPath)
-            )
-
-            try {
-              if ((await fs.stat(fromPath)).isDirectory()) {
-                fromPath += 'index.ts'
-              }
-              // eslint-disable-next-line no-empty
-            } catch (e) {}
-
-            typeImports.add(fromPath + (fromPath.endsWith('.ts') ? '' : '.ts'))
-          }
-        })
-      )
-    }
-
-    return []
-  }
 
   return {
     name: 'vite:dts',
@@ -119,6 +79,7 @@ export default (options: PluginOptions = {}): Plugin => {
       }
 
       root = ensureAbsolute(options.root ?? '', config.root)
+      tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
 
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions ?? {}, {
@@ -127,26 +88,9 @@ export default (options: PluginOptions = {}): Plugin => {
           emitDeclarationOnly: true,
           noEmitOnError: true
         }),
-        tsConfigFilePath: ensureAbsolute(tsConfigFilePath, root),
+        tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true
       })
-    },
-
-    async transform(code, id) {
-      if (!code || !filter(id)) return null
-
-      if (/\.vue(\?.*type=script.*)$/.test(id)) {
-        const filePath = resolve(root, normalizePath(id.split('?')[0]))
-
-        sourceFiles.push(
-          project.createSourceFile(filePath + (/lang.ts/.test(id) ? '.ts' : '.js'), code)
-        )
-      } else if (/\.tsx?$/.test(id)) {
-        const filePath = resolve(root, normalizePath(id))
-
-        await collectTypeImports(code, id)
-        sourceFiles.push(project.addSourceFileAtPath(filePath))
-      }
     },
 
     async generateBundle(outputOptions) {
@@ -165,11 +109,68 @@ export default (options: PluginOptions = {}): Plugin => {
         return
       }
 
-      typeImports.forEach(filePath => {
-        if (!project.getSourceFile(filePath)) {
-          sourceFiles.push(project.addSourceFileAtPath(filePath))
+      const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
+        include?: string[],
+        exclude?: string[]
+      }
+
+      if (tsConfig.include?.length) {
+        const files = await glob(tsConfig.include.map(normalizeGlob), {
+          cwd: root,
+          absolute: true,
+          ignore: (tsConfig.exclude ?? ['node_modules/**']).map(normalizeGlob)
+        })
+
+        let index = 1
+        let compiler: typeof import('@vue/compiler-sfc')
+
+        const requireCompiler = () => {
+          if (!compiler) {
+            try {
+              compiler = require(resolve('node_modules/@vue/compiler-sfc'))
+            } catch (e) {
+              throw new Error('\n@vue/compiler-sfc is not present in the dependency tree.\n')
+            }
+          }
+
+          return compiler
         }
-      })
+
+        await Promise.all(
+          files.map(async file => {
+            if (/\.vue$/.test(file)) {
+              const { parse, compileScript } = requireCompiler()
+              const sfc = parse(await fs.readFile(file, 'utf-8'))
+              const { script, scriptSetup } = sfc.descriptor
+
+              if (script || scriptSetup) {
+                let content = ''
+                let isTs = false
+
+                if (script && script.content) {
+                  content += script.content
+
+                  if (script.lang === 'ts') isTs = true
+                }
+
+                if (scriptSetup) {
+                  const compiled = compileScript(sfc.descriptor, {
+                    id: `${index++}`
+                  })
+
+                  content += compiled.content
+
+                  if (scriptSetup.lang === 'ts') isTs = true
+                }
+
+                sourceFiles.push(project.createSourceFile(file + (isTs ? '.ts' : '.js'), content))
+              }
+            } else if (/\.tsx?/.test(file)) {
+              sourceFiles.push(project.addSourceFileAtPath(file))
+            }
+          })
+        )
+      }
 
       const diagnostics = project.getPreEmitDiagnostics()
 
@@ -211,87 +212,4 @@ export default (options: PluginOptions = {}): Plugin => {
       }
     }
   }
-}
-
-function transformDynamicImport(content: string) {
-  const importMap = new Map<string, Set<string>>()
-
-  content = content.replace(/import\(['"][~@\w=:?&-.\\/]+?['"]\)\.\w+[<,;\n\s]/g, str => {
-    const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
-    const libName = matchResult[1]
-    const importSet =
-      importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
-    const usedType = matchResult[2]
-
-    importSet.add(usedType)
-
-    return usedType + matchResult[3]
-  })
-
-  importMap.forEach((importSet, libName) => {
-    const importReg = new RegExp(
-      `import\\s?(?:type)?\\s?\\{.+\\}\\s?from\\s?['"]${libName}['"]`,
-      'g'
-    )
-    const matchResult = content.match(importReg)
-
-    if (matchResult?.[0]) {
-      const importedTypes = matchResult[0]
-        .match(/import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/)![1]
-        .trim()
-        .split(',')
-
-      content = content.replace(
-        matchResult[0],
-        `import type { ${Array.from(importSet)
-          .concat(importedTypes)
-          .join(', ')} } from '${libName}'`
-      )
-    } else {
-      content = `import type { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
-    }
-  })
-
-  return content
-}
-
-function isAliasMatch(alias: Alias, importee: string) {
-  if (isRegExp(alias.find)) return alias.find.test(importee)
-  if (importee.length < alias.find.length) return false
-  if (importee === alias.find) return true
-
-  return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
-}
-
-function transformAliasImport(filePath: string, content: string, aliases: Alias[]) {
-  if (!aliases.length) return content
-
-  return content.replace(
-    /(?:import|export)\s?(?:type)?\s?\{[\s\w]+\}\s?from\s?['"][~@\w=:?&-.\\/]+['"]/g,
-    str => {
-      const matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
-
-      if (matchResult?.[1]) {
-        const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult[1]))
-
-        if (matchedAlias) {
-          return str.replace(
-            /((?:import|export).+from\s?)['"](.+)['"]/,
-            `$1'${matchResult[1].replace(
-              matchedAlias.find,
-              isAbsolute(matchedAlias.replacement)
-                ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
-                : normalizePath(matchedAlias.replacement)
-            )}'`
-          )
-        }
-      }
-
-      return str
-    }
-  )
-}
-
-function removePureImport(content: string) {
-  return content.replace(/import\s?['"][\w=:?&-.\\/]+?['"];?\n?/g, '')
 }
