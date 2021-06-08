@@ -36,6 +36,12 @@
     "vite": "^2.3.4",
     "vue": "^3.0.11"
   },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "vite",
     "vite-plugin",
@@ -68,5 +74,5 @@
     "test:e2e": "cd example && vite build"
   },
   "types": "dist/index.d.ts",
-  "version": "0.3.5"
+  "version": "0.4.0"
 }

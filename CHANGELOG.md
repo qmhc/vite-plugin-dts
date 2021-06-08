@@ -1,3 +1,17 @@
+# [0.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.3.5...v0.4.0) (2021-06-08)
+
+### Bug Fixes
+
+- bundle only once for multiple formats ([be37fbf](https://github.com/qmhc/vite-plugin-dts/commit/be37fbfcbd03dd23c73908a2d7f2d019437e003a))
+
+### Features
+
+- bundle all from tsconfig include ([252554a](https://github.com/qmhc/vite-plugin-dts/commit/252554af1fa403af1ee00dba16a1c7938e7374c6))
+
+### BREAKING CHANGES
+
+- Deprecated include and exclude options, it will be resolved through tsconfig.json now.
+
 ## [0.3.5](https://github.com/qmhc/vite-plugin-dts/compare/v0.3.4...v0.3.5) (2021-06-07)
 
 ### Bug Fixes
