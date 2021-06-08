@@ -7,7 +7,7 @@
     "prettier --write--parser json"
   ],
   "package.json": [
-    "prettier --write"
+    "prettier --write --no-error-on-unmatched-pattern"
   ],
   "*.md": [
     "prettier --write"

@@ -7,7 +7,7 @@ import type { Alias } from 'vite'
 export function normalizeGlob(path: string) {
   if (/[\\/]$/.test(path)) {
     return path + '**'
-  } else if (!/[\\/].+\..+$/.test(path)) {
+  } else if (!/[\\/](?:.*\..+)|(?:\*+)$/.test(path)) {
     return path + '/**'
   }
 
@@ -17,8 +17,8 @@ export function normalizeGlob(path: string) {
 export function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(/import\(['"][^;\n]+?['"]\)\.[^;\n]+?[<,;\n\s]/g, str => {
-    const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([<,;\n\s])/)!
+  content = content.replace(/import\(['"][^;\n]+?['"]\)\.\w+[.()[\]<>,;\n\s]/g, str => {
+    const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([.()[\]<>,;\n\s])/)!
     const libName = matchResult[1]
     const importSet =
       importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!

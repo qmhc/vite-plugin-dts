@@ -134,7 +134,7 @@ export default (options: PluginOptions = {}): Plugin => {
             try {
               compiler = require(resolve('node_modules/@vue/compiler-sfc'))
             } catch (e) {
-              throw new Error('\n@vue/compiler-sfc is not present in the dependency tree.\n')
+              throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
             }
           }
 

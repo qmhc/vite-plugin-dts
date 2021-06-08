@@ -1,3 +1,4 @@
 types/
 dist/
 components/*.d.ts
+!/node_modules/

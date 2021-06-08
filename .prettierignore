@@ -1,6 +1,7 @@
 dist/
 types/
 node_modules/
+!example/node_modules/
 public/
 scripts/
 .husky/
