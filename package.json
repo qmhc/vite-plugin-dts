@@ -71,6 +71,7 @@
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged",
     "release": "npm publish --registry=https://registry.npmjs.org/",
+    "test": "jest --runInBand",
     "test:e2e": "cd example && vite build"
   },
   "types": "dist/index.d.ts",
