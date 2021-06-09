@@ -68,6 +68,14 @@ export interface PluginOptions {
   // Default: false
   staticImport?: boolean
 
+  // Manual set include glob
+  // Defaults base on your tsconfig.json include option
+  include?: string | string[]
+
+  // Manual set exclude glob
+  // Defaults base on your tsconfig.json exclude option, be 'node_module/**' when empty
+  exclude?: string | string[]
+
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
   // Default: () => {}

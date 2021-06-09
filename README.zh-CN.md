@@ -68,6 +68,14 @@ export interface PluginOptions {
   // 默认值: false
   staticImport?: boolean
 
+  // 手动设置包含路径的 glob
+  // 默认基于 tsconfig.json 的 include 选项
+  include?: string | string[]
+
+  // 手动设置排除路径的 glob
+  // 默认基于 tsconfig.json 的 exclude 选线，未设置时为 'node_module/**'
+  exclude?: string | string[]
+
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
   // 默认值: () => {}
