@@ -68,9 +68,11 @@ export function transformAliasImport(filePath: string, content: string, aliases:
   if (!aliases.length) return content
 
   return content.replace(
-    /(?:import|export)\s?(?:type)?\s?\{[^;\n]+\}\s?from\s?['"][^;\n]+['"]/g,
+    /(?:(?:import|export)\s?(?:type)?\s?\{[^;\n]+\}\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g,
     str => {
-      const matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
+      const matchResult =
+        str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/) ||
+        str.match(/import\(['"]([^;\n]+?)['"]\)/)
 
       if (matchResult?.[1]) {
         const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult[1]))
