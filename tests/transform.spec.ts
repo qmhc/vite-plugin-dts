@@ -56,6 +56,10 @@ describe('transform tests', () => {
         aliases
       )
     ).toBe("import type { TestBase } from '../components/test';\n")
+
+    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toBe(
+      "import('../components/test').Test;\n"
+    )
   })
 
   it('test: removePureImport', () => {
