@@ -7,7 +7,7 @@ import type { Alias } from 'vite'
 export function normalizeGlob(path: string) {
   if (/[\\/]$/.test(path)) {
     return path + '**'
-  } else if (!/[\\/](?:.*\..+)|(?:\*+)$/.test(path)) {
+  } else if (!/^((?:.*\.[^.]+)|(?:\*+))$/.test(path.split(/[\\/]/).pop()!)) {
     return path + '/**'
   }
 
