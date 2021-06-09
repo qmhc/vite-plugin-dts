@@ -34,12 +34,13 @@ const noop = () => {}
 
 export default (options: PluginOptions = {}): Plugin => {
   const {
-    compilerOptions = null,
     tsConfigFilePath = 'tsconfig.json',
     cleanVueFileName = false,
     staticImport = false,
     beforeWriteFile = noop
   } = options
+
+  const compilerOptions = options.compilerOptions ?? {}
 
   let root: string
   let aliases: Alias[]
@@ -81,6 +82,8 @@ export default (options: PluginOptions = {}): Plugin => {
 
       root = ensureAbsolute(options.root ?? '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
+
+      compilerOptions.rootDir = compilerOptions.rootDir ?? root
 
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions ?? {}, {
