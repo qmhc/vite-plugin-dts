@@ -96,7 +96,7 @@ export function transformAliasImport(filePath: string, content: string, aliases:
 }
 
 export function removePureImport(content: string) {
-  return content.replace(/import\s?['"][\w=:?&-.\\/]+?['"];?\n?/g, '')
+  return content.replace(/import\s?['"][^;\n]+?['"];?\n?/g, '')
 }
 
 // export async function collectTypeImports(code: string, importer: string, aliases: Alias[]) {
