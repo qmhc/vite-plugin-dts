@@ -1,9 +1,5 @@
 import { resolve, isAbsolute } from 'path'
 
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends Record<string, unknown> ? DeepPartial<T[P]> : T[P]
-}
-
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
 ): value is T {
@@ -14,9 +10,9 @@ export function isRegExp(value: unknown): value is RegExp {
   return Object.prototype.toString.call(value) === '[object RegExp]'
 }
 
-export function mergeObjects<T extends Record<string, unknown>>(
+export function mergeObjects<T extends Record<string, unknown>, U extends Record<string, unknown>>(
   sourceObj: T,
-  targetObj: DeepPartial<T>
+  targetObj: U
 ) {
   const loop: Array<{
     source: Record<string, any>,
@@ -58,7 +54,7 @@ export function mergeObjects<T extends Record<string, unknown>>(
     })
   }
 
-  return sourceObj
+  return sourceObj as T & U
 }
 
 export function ensureAbsolute(path: string, root: string) {
