@@ -20,6 +20,8 @@ interface TransformWriteFile {
 }
 
 export interface PluginOptions {
+  include?: string | string[],
+  exclude?: string | string[],
   root?: string,
   outputDir?: string,
   compilerOptions?: ts.CompilerOptions | null,
@@ -122,11 +124,14 @@ export default (options: PluginOptions = {}): Plugin => {
         exclude?: string[]
       }
 
-      if (tsConfig.include?.length) {
-        const files = await glob(tsConfig.include.map(normalizeGlob), {
+      const include = options.include ?? tsConfig.include
+      const exclude = options.exclude ?? tsConfig.exclude
+
+      if (include?.length) {
+        const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
           absolute: true,
-          ignore: (tsConfig.exclude ?? ['node_modules/**']).map(normalizeGlob)
+          ignore: ensureArray(exclude ?? ['node_modules/**']).map(normalizeGlob)
         })
 
         let index = 1
