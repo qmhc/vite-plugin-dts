@@ -1,5 +1,6 @@
 import { resolve, dirname, relative } from 'path'
 import fs from 'fs-extra'
+import os from 'os'
 import chalk from 'chalk'
 import glob from 'fast-glob'
 import { Project } from 'ts-morph'
@@ -9,7 +10,7 @@ import {
   transformAliasImport,
   removePureImport
 } from './transform'
-import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray } from './utils'
+import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
 
 import type { Plugin, Alias } from 'vite'
 import type { ts, SourceFile } from 'ts-morph'
@@ -48,6 +49,7 @@ export default (options: PluginOptions = {}): Plugin => {
   let aliases: Alias[]
   let project: Project
   let tsConfigPath: string
+  let outputDir: string
   let isBundle = false
 
   const sourceFiles: SourceFile[] = []
@@ -60,6 +62,8 @@ export default (options: PluginOptions = {}): Plugin => {
     enforce: 'pre',
 
     config(config) {
+      if (isBundle) return
+
       const aliasOptions = config.resolve?.alias ?? []
 
       if (isNativeObj(aliasOptions)) {
@@ -72,7 +76,9 @@ export default (options: PluginOptions = {}): Plugin => {
     },
 
     configResolved(config) {
-      const lib = config?.build?.lib
+      if (isBundle) return
+
+      const lib = config.build.lib
 
       if (!lib) {
         console.log(
@@ -84,6 +90,20 @@ export default (options: PluginOptions = {}): Plugin => {
 
       root = ensureAbsolute(options.root ?? '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
+
+      outputDir = options.outputDir
+        ? ensureAbsolute(options.outputDir, root)
+        : ensureAbsolute(config.build.outDir, root)
+
+      if (!outputDir) {
+        console.log(
+          chalk.red(
+            '\n[vite:dts] Can not resolve declaration directory, please check your vite config and plugin options.\n'
+          )
+        )
+
+        return
+      }
 
       compilerOptions.rootDir = compilerOptions.rootDir ?? root
 
@@ -99,25 +119,10 @@ export default (options: PluginOptions = {}): Plugin => {
       })
     },
 
-    async generateBundle(outputOptions) {
-      if (isBundle) return
+    async closeBundle() {
+      if (!outputDir || !project || isBundle) return
 
       isBundle = true
-
-      const outputDir = options.outputDir ? ensureAbsolute(options.outputDir, root) : ''
-      const declarationDir =
-        outputDir ||
-        ((outputOptions.file ? dirname(outputOptions.file) : outputOptions.dir) as string)
-
-      if (!declarationDir) {
-        console.log(
-          chalk.red(
-            '\n[vite:dts] Can not resolve declaration directory, please check your vite config and plugin options.\n'
-          )
-        )
-
-        return
-      }
 
       const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
         include?: string[],
@@ -189,40 +194,34 @@ export default (options: PluginOptions = {}): Plugin => {
 
       console.log(project.formatDiagnosticsWithColorAndContext(diagnostics))
 
-      project.emitToMemory()
+      await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
+        let filePath = outputFile.filePath as string
+        let content = removePureImport(outputFile.text)
 
-      for (const sourceFile of sourceFiles) {
-        const emitOutput = sourceFile.getEmitOutput({ emitOnlyDtsFiles: true })
+        content = transformAliasImport(filePath, content, aliases)
+        content = staticImport ? transformDynamicImport(content) : content
 
-        for (const outputFile of emitOutput.getOutputFiles()) {
-          let filePath = outputFile.getFilePath() as string
-          let content = removePureImport(outputFile.getText())
+        filePath = resolve(
+          outputDir,
+          relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+        )
 
-          content = transformAliasImport(filePath, content, aliases)
-          content = staticImport ? transformDynamicImport(content) : content
+        if (typeof beforeWriteFile === 'function') {
+          const result = beforeWriteFile(filePath, content)
 
-          filePath = resolve(
-            declarationDir,
-            relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
-          )
-
-          if (typeof beforeWriteFile === 'function') {
-            const result = beforeWriteFile(filePath, content)
-
-            if (result && isNativeObj(result)) {
-              filePath = result.filePath ?? filePath
-              content = result.content ?? content
-            }
+          if (result && isNativeObj(result)) {
+            filePath = result.filePath ?? filePath
+            content = result.content ?? content
           }
-
-          await fs.mkdir(dirname(filePath), { recursive: true })
-          await fs.writeFile(
-            filePath,
-            cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
-            'utf8'
-          )
         }
-      }
+
+        await fs.mkdir(dirname(filePath), { recursive: true })
+        await fs.writeFile(
+          filePath,
+          cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
+          'utf8'
+        )
+      })
     }
   }
 }
