@@ -43,7 +43,7 @@ export default (options: PluginOptions = {}): Plugin => {
     beforeWriteFile = noop
   } = options
 
-  const compilerOptions = options.compilerOptions ?? {}
+  const compilerOptions = options.compilerOptions || {}
 
   let root: string
   let aliases: Alias[]
@@ -64,7 +64,7 @@ export default (options: PluginOptions = {}): Plugin => {
     config(config) {
       if (isBundle) return
 
-      const aliasOptions = config.resolve?.alias ?? []
+      const aliasOptions = (config.resolve && config.resolve.alias) || []
 
       if (isNativeObj(aliasOptions)) {
         aliases = Object.entries(aliasOptions).map(([key, value]) => {
@@ -88,7 +88,7 @@ export default (options: PluginOptions = {}): Plugin => {
         )
       }
 
-      root = ensureAbsolute(options.root ?? '', config.root)
+      root = ensureAbsolute(options.root || '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
 
       outputDir = options.outputDir
@@ -105,10 +105,10 @@ export default (options: PluginOptions = {}): Plugin => {
         return
       }
 
-      compilerOptions.rootDir = compilerOptions.rootDir ?? root
+      compilerOptions.rootDir = compilerOptions.rootDir || root
 
       project = new Project({
-        compilerOptions: mergeObjects(compilerOptions ?? {}, {
+        compilerOptions: mergeObjects(compilerOptions || {}, {
           outDir: '.',
           declaration: true,
           emitDeclarationOnly: true,
@@ -129,14 +129,14 @@ export default (options: PluginOptions = {}): Plugin => {
         exclude?: string[]
       }
 
-      const include = options.include ?? tsConfig.include
-      const exclude = options.exclude ?? tsConfig.exclude
+      const include = options.include || tsConfig.include
+      const exclude = options.exclude || tsConfig.exclude
 
-      if (include?.length) {
+      if (include && include.length) {
         const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
           absolute: true,
-          ignore: ensureArray(exclude ?? ['node_modules/**']).map(normalizeGlob)
+          ignore: ensureArray(exclude || ['node_modules/**']).map(normalizeGlob)
         })
 
         let index = 1
@@ -210,8 +210,8 @@ export default (options: PluginOptions = {}): Plugin => {
           const result = beforeWriteFile(filePath, content)
 
           if (result && isNativeObj(result)) {
-            filePath = result.filePath ?? filePath
-            content = result.content ?? content
+            filePath = result.filePath || filePath
+            content = result.content || content
           }
         }
 
