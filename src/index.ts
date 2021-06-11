@@ -1,5 +1,5 @@
 import { resolve, dirname, relative } from 'path'
-import fs from 'fs/promises'
+import fs from 'fs-extra'
 import chalk from 'chalk'
 import glob from 'fast-glob'
 import { Project } from 'ts-morph'
