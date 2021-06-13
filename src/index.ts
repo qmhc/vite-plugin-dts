@@ -12,7 +12,7 @@ import {
 } from './transform'
 import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
 
-import type { Plugin, Alias } from 'vite'
+import type { Plugin, Alias, Logger } from 'vite'
 import type { ts, SourceFile } from 'ts-morph'
 
 interface TransformWriteFile {
@@ -47,6 +47,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
   let root: string
   let aliases: Alias[]
+  let logger: Logger
   let project: Project
   let tsConfigPath: string
   let outputDir: string
@@ -78,12 +79,12 @@ export default (options: PluginOptions = {}): Plugin => {
     configResolved(config) {
       if (isBundle) return
 
-      const lib = config.build.lib
+      logger = config.logger
 
-      if (!lib) {
-        console.log(
+      if (!config.build.lib) {
+        logger.warn(
           chalk.yellow(
-            '\n[vite:dts] You building not a library, it may not need to generate declaration files.\n'
+            '\n[vite:dts] You building not a library that may not need to generate declaration files.\n'
           )
         )
       }
@@ -96,7 +97,7 @@ export default (options: PluginOptions = {}): Plugin => {
         : ensureAbsolute(config.build.outDir, root)
 
       if (!outputDir) {
-        console.log(
+        logger.error(
           chalk.red(
             '\n[vite:dts] Can not resolve declaration directory, please check your vite config and plugin options.\n'
           )
@@ -192,7 +193,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
       const diagnostics = project.getPreEmitDiagnostics()
 
-      console.log(project.formatDiagnosticsWithColorAndContext(diagnostics))
+      logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
 
       await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
         let filePath = outputFile.filePath as string
