@@ -15,7 +15,6 @@ yarn add vite-plugin-dts -D
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
@@ -27,7 +26,7 @@ export default defineConfig({
       fileName: 'my-lib'
     }
   },
-  plugins: [vue(), dts()]
+  plugins: [dts()]
 })
 ```
 

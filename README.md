@@ -2,7 +2,7 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-A vite plugin that generate `.d.ts` file from source files (including `.vue` files) base on `ts-morph`.
+A vite plugin that generate `.d.ts` files from `.ts` or `.vue` source files for lib.
 
 ## Install
 
@@ -15,7 +15,6 @@ yarn add vite-plugin-dts -D
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
@@ -27,7 +26,7 @@ export default defineConfig({
       fileName: 'my-lib'
     }
   },
-  plugins: [vue(), dts()]
+  plugins: [dts()]
 })
 ```
 
