@@ -21,6 +21,7 @@ export default defineConfig({
   plugins: [
     dts({
       outputDir: 'types',
+      exclude: ['src/ignore'],
       staticImport: true
     }),
     vue()

@@ -32,6 +32,7 @@ export interface PluginOptions {
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
+const noneExport = 'export {};\n'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
@@ -197,8 +198,11 @@ export default (options: PluginOptions = {}): Plugin => {
 
       await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
         let filePath = outputFile.filePath as string
-        let content = removePureImport(outputFile.text)
+        let content = outputFile.text
 
+        if (content === noneExport) return
+
+        content = removePureImport(content)
         content = transformAliasImport(filePath, content, aliases)
         content = staticImport ? transformDynamicImport(content) : content
 

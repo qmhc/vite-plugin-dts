@@ -1,3 +1,5 @@
+import './ignore'
+
 import type { TestBase } from '@/components/test'
 
 export interface Test extends TestBase {
