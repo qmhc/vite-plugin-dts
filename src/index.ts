@@ -4,6 +4,7 @@ import os from 'os'
 import chalk from 'chalk'
 import glob from 'fast-glob'
 import { Project } from 'ts-morph'
+import { normalizePath } from 'vite'
 import {
   normalizeGlob,
   transformDynamicImport,
@@ -30,6 +31,7 @@ export interface PluginOptions {
   cleanVueFileName?: boolean,
   staticImport?: boolean,
   clearPureImport?: boolean,
+  insertIndexEntry?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -43,6 +45,7 @@ export default (options: PluginOptions = {}): Plugin => {
     cleanVueFileName = false,
     staticImport = false,
     clearPureImport = true,
+    insertIndexEntry = false,
     beforeWriteFile = noop
   } = options
 
@@ -50,6 +53,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
   let root: string
   let aliases: Alias[]
+  let entries: string[]
   let logger: Logger
   let project: Project
   let tsConfigPath: string
@@ -121,6 +125,12 @@ export default (options: PluginOptions = {}): Plugin => {
         tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true
       })
+    },
+
+    buildStart(inputOptions) {
+      entries = Array.isArray(inputOptions.input)
+        ? inputOptions.input
+        : Object.values(inputOptions.input)
     },
 
     async closeBundle() {
@@ -231,6 +241,22 @@ export default (options: PluginOptions = {}): Plugin => {
           'utf8'
         )
       })
+
+      if (insertIndexEntry && !fs.existsSync(resolve(outputDir, 'index.d.ts'))) {
+        const content =
+          entries
+            .map(entry => {
+              let filePath = normalizePath(relative(root, entry))
+
+              filePath = filePath.endsWith('.ts') ? filePath.slice(0, -3) : filePath
+              filePath = filePath.startsWith('./') ? filePath : `./${filePath}`
+
+              return `export * from '${filePath}'`
+            })
+            .join('\n') + '\n'
+
+        await fs.writeFile(resolve(outputDir, 'index.d.ts'), content, 'utf-8')
+      }
     }
   }
 }

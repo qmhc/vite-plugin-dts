@@ -22,7 +22,8 @@ export default defineConfig({
     dts({
       outputDir: 'types',
       exclude: ['src/ignore'],
-      staticImport: true
+      staticImport: true,
+      insertIndexEntry: true
     }),
     vue()
   ]
