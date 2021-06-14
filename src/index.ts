@@ -29,6 +29,7 @@ export interface PluginOptions {
   tsConfigFilePath?: string,
   cleanVueFileName?: boolean,
   staticImport?: boolean,
+  clearPureImport?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -41,6 +42,7 @@ export default (options: PluginOptions = {}): Plugin => {
     tsConfigFilePath = 'tsconfig.json',
     cleanVueFileName = false,
     staticImport = false,
+    clearPureImport = true,
     beforeWriteFile = noop
   } = options
 
@@ -200,11 +202,13 @@ export default (options: PluginOptions = {}): Plugin => {
         let filePath = outputFile.filePath as string
         let content = outputFile.text
 
-        if (content === noneExport) return
+        if (clearPureImport && content === noneExport) return
 
-        content = removePureImport(content)
-        content = transformAliasImport(filePath, content, aliases)
-        content = staticImport ? transformDynamicImport(content) : content
+        if (content !== noneExport) {
+          content = clearPureImport ? removePureImport(content) : content
+          content = transformAliasImport(filePath, content, aliases)
+          content = staticImport ? transformDynamicImport(content) : content
+        }
 
         filePath = resolve(
           outputDir,
