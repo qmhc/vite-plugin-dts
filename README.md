@@ -75,6 +75,11 @@ export interface PluginOptions {
   // Defaults base on your tsconfig.json exclude option, be 'node_module/**' when empty
   exclude?: string | string[]
 
+  // Whether generate types entry file
+  // When true will from package.json types field if exists or `${outputDir}/index.d.ts`
+  // Default: false
+  insertTypesEntry?: boolean
+
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
   // Default: () => {}
