@@ -77,5 +77,5 @@
     "test:e2e": "cd example && vite build"
   },
   "types": "dist/index.d.ts",
-  "version": "0.4.3"
+  "version": "0.5.0"
 }
