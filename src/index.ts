@@ -242,20 +242,28 @@ export default (options: PluginOptions = {}): Plugin => {
         )
       })
 
-      if (insertIndexEntry && !fs.existsSync(resolve(outputDir, 'index.d.ts'))) {
-        const content =
-          entries
-            .map(entry => {
-              let filePath = normalizePath(relative(root, entry))
+      if (insertIndexEntry) {
+        const pkgPath = resolve(root, 'package.json')
+        const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
+        const typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, 'index.d.ts')
 
-              filePath = filePath.endsWith('.ts') ? filePath.slice(0, -3) : filePath
-              filePath = filePath.startsWith('./') ? filePath : `./${filePath}`
+        if (!fs.existsSync(typesPath)) {
+          const content =
+            entries
+              .map(entry => {
+                let filePath = normalizePath(
+                  relative(dirname(typesPath), resolve(outputDir, relative(root, entry)))
+                )
 
-              return `export * from '${filePath}'`
-            })
-            .join('\n') + '\n'
+                filePath = filePath.endsWith('.ts') ? filePath.slice(0, -3) : filePath
+                filePath = /^\.\.?\//.test(filePath) ? filePath : `./${filePath}`
 
-        await fs.writeFile(resolve(outputDir, 'index.d.ts'), content, 'utf-8')
+                return `export * from '${filePath}'`
+              })
+              .join('\n') + '\n'
+
+          await fs.writeFile(typesPath, content, 'utf-8')
+        }
       }
     }
   }
