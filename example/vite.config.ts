@@ -23,7 +23,7 @@ export default defineConfig({
       outputDir: 'types',
       exclude: ['src/ignore'],
       staticImport: true,
-      insertIndexEntry: true
+      insertTypesEntry: true
     }),
     vue()
   ]

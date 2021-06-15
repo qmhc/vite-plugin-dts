@@ -31,7 +31,7 @@ export interface PluginOptions {
   cleanVueFileName?: boolean,
   staticImport?: boolean,
   clearPureImport?: boolean,
-  insertIndexEntry?: boolean,
+  insertTypesEntry?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -45,7 +45,7 @@ export default (options: PluginOptions = {}): Plugin => {
     cleanVueFileName = false,
     staticImport = false,
     clearPureImport = true,
-    insertIndexEntry = false,
+    insertTypesEntry = false,
     beforeWriteFile = noop
   } = options
 
@@ -242,7 +242,7 @@ export default (options: PluginOptions = {}): Plugin => {
         )
       })
 
-      if (insertIndexEntry) {
+      if (insertTypesEntry) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
         const typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, 'index.d.ts')
