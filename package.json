@@ -23,7 +23,7 @@
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.1.1",
     "cz-customizable": "^6.3.0",
-    "eslint": "^7.27.0",
+    "eslint": "^7.28.0",
     "husky": "^6.0.0",
     "is-ci": "^3.0.0",
     "jest": "^27.0.1",
