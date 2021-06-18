@@ -255,7 +255,7 @@ export default (options: PluginOptions = {}): Plugin => {
                   relative(dirname(typesPath), resolve(outputDir, relative(root, entry)))
                 )
 
-                filePath = filePath.endsWith('.ts') ? filePath.slice(0, -3) : filePath
+                filePath = filePath.replace(/\.tsx?$/, '')
                 filePath = /^\.\.?\//.test(filePath) ? filePath : `./${filePath}`
 
                 return `export * from '${filePath}'`
