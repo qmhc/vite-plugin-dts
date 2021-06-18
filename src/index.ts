@@ -256,6 +256,7 @@ export default (options: PluginOptions = {}): Plugin => {
                 )
 
                 filePath = filePath.endsWith('.ts') ? filePath.slice(0, -3) : filePath
+                filePath = filePath.endsWith('.tsx') ? filePath.slice(0, -4) : filePath
                 filePath = /^\.\.?\//.test(filePath) ? filePath : `./${filePath}`
 
                 return `export * from '${filePath}'`
