@@ -63,7 +63,7 @@
     "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
   },
   "scripts": {
-    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "build": "tsup src/index.ts --dts --format cjs,esm --external @vue/compiler-sfc",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "yarn run build -- --watch",
     "lint": "eslint --fix --ext .js,.ts src/**",
