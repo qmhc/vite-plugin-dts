@@ -168,6 +168,8 @@ export default (options: PluginOptions = {}): Plugin => {
           return compiler
         }
 
+        let hasJs = false
+
         await Promise.all(
           files.map(async file => {
             if (/\.vue$/.test(file)) {
@@ -182,7 +184,11 @@ export default (options: PluginOptions = {}): Plugin => {
                 if (script && script.content) {
                   content += script.content
 
-                  if (script.lang === 'ts') isTs = true
+                  if (script.lang === 'ts') {
+                    isTs = true
+                  } else if (!script.lang || script.lang === 'js') {
+                    hasJs = true
+                  }
                 }
 
                 if (scriptSetup) {
@@ -192,7 +198,11 @@ export default (options: PluginOptions = {}): Plugin => {
 
                   content += compiled.content
 
-                  if (scriptSetup.lang === 'ts') isTs = true
+                  if (scriptSetup.lang === 'ts') {
+                    isTs = true
+                  } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
+                    hasJs = true
+                  }
                 }
 
                 sourceFiles.push(project.createSourceFile(file + (isTs ? '.ts' : '.js'), content))
@@ -202,6 +212,18 @@ export default (options: PluginOptions = {}): Plugin => {
             }
           })
         )
+
+        if (hasJs) {
+          if (!project.getCompilerOptions().allowJs) {
+            logger.warn(
+              chalk.yellow(
+                "\n[vite:dts] Some js files are referenced, but you may not enable the 'allowJs' option.\n"
+              )
+            )
+          }
+
+          project.compilerOptions.set({ allowJs: true })
+        }
       }
 
       const diagnostics = project.getPreEmitDiagnostics()
