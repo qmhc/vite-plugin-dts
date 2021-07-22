@@ -138,6 +138,8 @@ export default (options: PluginOptions = {}): Plugin => {
 
       isBundle = true
 
+      const allowJs = project.getCompilerOptions().allowJs
+
       const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
         include?: string[],
         exclude?: string[]
@@ -207,14 +209,14 @@ export default (options: PluginOptions = {}): Plugin => {
 
                 sourceFiles.push(project.createSourceFile(file + (isTs ? '.ts' : '.js'), content))
               }
-            } else if (/\.tsx?/.test(file)) {
+            } else if (/\.tsx?$/.test(file) || (allowJs && /\.jsx?$/.test(file))) {
               sourceFiles.push(project.addSourceFileAtPath(file))
             }
           })
         )
 
         if (hasJs) {
-          if (!project.getCompilerOptions().allowJs) {
+          if (!allowJs) {
             logger.warn(
               chalk.yellow(
                 "\n[vite:dts] Some js files are referenced, but you may not enable the 'allowJs' option.\n"
