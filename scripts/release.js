@@ -92,13 +92,13 @@ async function main() {
   logStep('Updating version...')
 
   package.version = version
-  await fs.writeFile(path.resolve(__dirname, '../package.json'), JSON.stringify(package, null, 2))
+  await fs.writeFile(path.resolve(__dirname, '../package.json'), JSON.stringify(package, null, 2) + '\n')
 
   // 构建库
   logStep(`Building package...`)
 
   if (!skipBuild && !isDryRun) {
-    await run('yarn', ['build', '-a', '-t', '-r'])
+    await run('yarn', ['build'])
   } else {
     logSkipped()
   }
