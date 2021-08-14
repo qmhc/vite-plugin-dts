@@ -32,6 +32,7 @@ export interface PluginOptions {
   staticImport?: boolean,
   clearPureImport?: boolean,
   insertTypesEntry?: boolean,
+  copyDtsFiles?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -61,6 +62,7 @@ export default (options: PluginOptions = {}): Plugin => {
   let isBundle = false
 
   const sourceFiles: SourceFile[] = []
+  const sourceDtsFiles: string[] = []
 
   return {
     name: 'vite:dts',
@@ -137,9 +139,10 @@ export default (options: PluginOptions = {}): Plugin => {
       if (!outputDir || !project || isBundle) return
 
       isBundle = true
+      sourceFiles.length = 0
+      sourceDtsFiles.length = 0
 
       const allowJs = project.getCompilerOptions().allowJs
-
       const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
         include?: string[],
         exclude?: string[]
@@ -211,6 +214,10 @@ export default (options: PluginOptions = {}): Plugin => {
               }
             } else if (/\.tsx?$/.test(file) || (allowJs && /\.jsx?$/.test(file))) {
               sourceFiles.push(project.addSourceFileAtPath(file))
+
+              if (/\.d.tsx?$/.test(file)) {
+                sourceDtsFiles.push(file)
+              }
             }
           })
         )
@@ -238,7 +245,7 @@ export default (options: PluginOptions = {}): Plugin => {
 
         if (clearPureImport && content === noneExport) return
 
-        if (content !== noneExport) {
+        if (!filePath.endsWith('.map') && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
           content = transformAliasImport(filePath, content, aliases)
           content = staticImport ? transformDynamicImport(content) : content
@@ -265,6 +272,15 @@ export default (options: PluginOptions = {}): Plugin => {
           'utf8'
         )
       })
+
+      await Promise.all(
+        sourceDtsFiles.map(async filePath => {
+          const targetPath = resolve(outputDir, relative(root, filePath))
+
+          await fs.mkdir(dirname(targetPath), { recursive: true })
+          await fs.copyFile(filePath, targetPath)
+        })
+      )
 
       if (insertTypesEntry) {
         const pkgPath = resolve(root, 'package.json')

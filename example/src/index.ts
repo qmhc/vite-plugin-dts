@@ -12,6 +12,7 @@ export { default as Setup } from '@/components/Setup.vue'
 export { test } from '@/components/test'
 
 export type { User } from './types'
+export type { DtsType } from './dts-types'
 export type { Component } from '@/components'
 
 export default DefaultImport
