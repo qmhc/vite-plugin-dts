@@ -80,6 +80,10 @@ export interface PluginOptions {
   // Default: false
   insertTypesEntry?: boolean
 
+  // Whether copy .d.ts source files into outputDir
+  // Default: true
+  copyDtsFiles?: boolean
+
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
   // Default: () => {}

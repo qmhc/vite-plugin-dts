@@ -75,10 +75,14 @@ export interface PluginOptions {
   // 默认基于 tsconfig.json 的 exclude 选线，未设置时为 'node_module/**'
   exclude?: string | string[]
 
-  // 生否生成类型声明入口
+  // 是否生成类型声明入口
   // 当为 true 时会基于 package.json 的 tpyes 字段生成，或者 `${outputDir}/index.d.ts`
   // 默认值: false
   insertTypesEntry?: boolean
+
+  // 是否将源码里的 .d.ts 文件复制到 outputDir
+  // 默认值: true
+  copyDtsFiles?: boolean
 
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
