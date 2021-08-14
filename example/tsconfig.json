@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@components/*": ["./components/*"]
     },
     "lib": ["esnext", "dom"]
   },

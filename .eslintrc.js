@@ -4,11 +4,7 @@ module.exports = {
     node: true
   },
   parser: '@typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking'
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   parserOptions: {
     ecmaVersion: 2020
   },

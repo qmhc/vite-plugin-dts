@@ -24,4 +24,6 @@ const inc = () => {
   currentCount.value++
   emit('on-add', currentCount.value)
 }
+
+defineExpose({})
 </script>

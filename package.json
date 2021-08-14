@@ -11,25 +11,25 @@
     "ts-morph": "^11.0.3"
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.1.4",
-    "@commitlint/config-conventional": "^12.1.4",
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
     "@types/fs-extra": "^9.0.12",
-    "@types/jest": "^26.0.24",
-    "@typescript-eslint/eslint-plugin": "^4.28.4",
-    "@typescript-eslint/parser": "^4.28.4",
-    "@vitejs/plugin-vue": "^1.2.5",
-    "@vue/compiler-sfc": "^3.1.5",
-    "chalk": "^4.1.1",
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.1",
+    "@typescript-eslint/parser": "^4.29.1",
+    "@vitejs/plugin-vue": "^1.4.0",
+    "@vue/compiler-sfc": "^3.2.2",
+    "chalk": "^4.1.2",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.1.1",
     "cz-customizable": "^6.3.0",
     "enquirer": "^2.3.6",
-    "eslint": "^7.31.0",
+    "eslint": "^7.32.0",
     "execa": "^5.1.1",
     "husky": "^7.0.1",
     "is-ci": "^3.0.0",
     "jest": "^27.0.6",
-    "lint-staged": "^11.0.1",
+    "lint-staged": "^11.1.2",
     "minimist": "^1.2.5",
     "pinst": "^2.1.6",
     "prettier": "^2.3.2",
@@ -37,7 +37,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "ts-jest": "^27.0.4",
-    "tsup": "^4.12.5",
+    "tsup": "^4.13.1",
     "typescript": "4.3.5",
     "vite": "^2.4.3",
     "vue": "^3.1.1"
@@ -60,7 +60,7 @@
   "module": "dist/index.mjs",
   "name": "vite-plugin-dts",
   "peerDependencies": {
-    "vite": ">=2.3.7"
+    "vite": ">=2.4.4"
   },
   "repository": {
     "type": "git",

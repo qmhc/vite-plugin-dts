@@ -8,7 +8,11 @@ emptyDir(resolve(__dirname, 'types'))
 
 export default defineConfig({
   resolve: {
-    alias: [{ find: /^@\/(.+)/, replacement: resolve(__dirname, '$1') }]
+    // alias: [{ find: /^@\/(.+)/, replacement: resolve(__dirname, '$1') }]
+    alias: {
+      '@': resolve(__dirname),
+      '@components': resolve(__dirname, 'src/components')
+    }
   },
   build: {
     lib: {

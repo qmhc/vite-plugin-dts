@@ -1,5 +1,6 @@
 import './ignore'
 
+import DefaultImport from '@components/DefaultImport.vue'
 import type { TestBase } from '@/components/test'
 
 export interface Test extends TestBase {
@@ -12,3 +13,5 @@ export { test } from '@/components/test'
 
 export type { User } from './types'
 export type { Component } from '@/components'
+
+export default DefaultImport

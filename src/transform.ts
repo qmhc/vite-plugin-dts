@@ -68,9 +68,9 @@ export function transformAliasImport(filePath: string, content: string, aliases:
   if (!aliases.length) return content
 
   return content.replace(
-    /(?:(?:import|export)\s?(?:type)?\s?\{[^;\n]+\}\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g,
+    /(?:(?:import|export)\s?(?:type)?\s?(?:(?:\{[^;\n]+\})|(?:[^;\n]+))\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g,
     str => {
-      let matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{.+\}\s?from\s?['"](.+)['"]/)
+      let matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{?.+\}?\s?from\s?['"](.+)['"]/)
       let isDynamic = false
 
       if (!matchResult) {
@@ -82,13 +82,15 @@ export function transformAliasImport(filePath: string, content: string, aliases:
         const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult![1]))
 
         if (matchedAlias) {
+          const truthPath = isAbsolute(matchedAlias.replacement)
+            ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
+            : normalizePath(matchedAlias.replacement)
+
           return str.replace(
             isDynamic ? /(import\()['"](.+)['"]\)/ : /((?:import|export).+from\s?)['"](.+)['"]/,
             `$1'${matchResult[1].replace(
               matchedAlias.find,
-              isAbsolute(matchedAlias.replacement)
-                ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
-                : normalizePath(matchedAlias.replacement)
+              truthPath.startsWith('.') ? truthPath : `./${truthPath}`
             )}'${isDynamic ? ')' : ''}`
           )
         }
