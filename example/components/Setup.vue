@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmit, ref } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
 import HelloWorld from './HelloWorld.vue'
 
 const props = defineProps({
@@ -16,7 +16,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmit(['on-add'])
+const emit = defineEmits(['on-add'])
 
 const currentCount = ref(props.count)
 

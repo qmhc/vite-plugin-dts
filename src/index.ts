@@ -39,6 +39,7 @@ export interface PluginOptions {
 const noneExport = 'export {};\n'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
+const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
 export default (options: PluginOptions = {}): Plugin => {
   const {
@@ -178,34 +179,51 @@ export default (options: PluginOptions = {}): Plugin => {
         await Promise.all(
           files.map(async file => {
             if (/\.vue$/.test(file)) {
-              const { parse, compileScript } = requireCompiler()
-              const sfc = parse(await fs.readFile(file, 'utf-8'))
-              const { script, scriptSetup } = sfc.descriptor
+              const { parse, compileScript, rewriteDefault } = requireCompiler()
+              const { descriptor } = parse(await fs.readFile(file, 'utf-8'))
+              const { script, scriptSetup } = descriptor
 
               if (script || scriptSetup) {
                 let content = ''
                 let isTs = false
 
-                if (script && script.content) {
+                if (scriptSetup) {
+                  const compiled = compileScript(descriptor, {
+                    id: `${index++}`
+                  })
+
+                  const classMatch = compiled.content.match(exportDefaultClassRE)
+
+                  if (classMatch) {
+                    content =
+                      compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
+                      `\nconst _sfc_main = ${classMatch[1]}`
+
+                    if (/export\s+default/.test(content)) {
+                      content = rewriteDefault(compiled.content, `_sfc_main`)
+                    }
+                  } else {
+                    content = rewriteDefault(compiled.content, `_sfc_main`)
+                  }
+
+                  // 不断言会影响 setup 的类型推断
+                  content = content.replace(
+                    '...__default__',
+                    '...(__default__ as Record<string, unknown>)'
+                  )
+                  content += '\nexport default _sfc_main\n'
+
+                  if (scriptSetup.lang === 'ts') {
+                    isTs = true
+                  } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
+                    hasJs = true
+                  }
+                } else if (script && script.content) {
                   content += script.content
 
                   if (script.lang === 'ts') {
                     isTs = true
                   } else if (!script.lang || script.lang === 'js') {
-                    hasJs = true
-                  }
-                }
-
-                if (scriptSetup) {
-                  const compiled = compileScript(sfc.descriptor, {
-                    id: `${index++}`
-                  })
-
-                  content += compiled.content
-
-                  if (scriptSetup.lang === 'ts') {
-                    isTs = true
-                  } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
                     hasJs = true
                   }
                 }

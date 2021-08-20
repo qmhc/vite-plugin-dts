@@ -1,5 +1,5 @@
 <template>
-  <h1>{{ msg }}</h1>
+  <h1>{{ labelMsg }}</h1>
 
   <p>
     Recommended IDE setup:
@@ -35,7 +35,8 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { ref, computed, defineComponent } from 'vue'
+
 export default defineComponent({
   name: 'HelloWorld',
   props: {
@@ -44,9 +45,11 @@ export default defineComponent({
       validator: (value: string) => value.length > 0
     }
   },
-  setup: () => {
+  setup(props) {
     const count = ref(0)
-    return { count }
+    const labelMsg = computed(() => `message: ${props.msg}`)
+
+    return { count, labelMsg }
   }
 })
 </script>
