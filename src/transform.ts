@@ -4,21 +4,27 @@ import { isRegExp } from './utils'
 
 import type { Alias } from 'vite'
 
+const globSuffixRE = /^((?:.*\.[^.]+)|(?:\*+))$/
+
 export function normalizeGlob(path: string) {
   if (/[\\/]$/.test(path)) {
     return path + '**'
-  } else if (!/^((?:.*\.[^.]+)|(?:\*+))$/.test(path.split(/[\\/]/).pop()!)) {
+  } else if (!globSuffixRE.test(path.split(/[\\/]/).pop()!)) {
     return path + '/**'
   }
 
   return path
 }
 
+const globalDynamicTypeRE = /import\(['"][^;\n]+?['"]\)\.\w+[.()[\]<>,;\n\s]/g
+const dynamicTypeRE = /import\(['"](.+)['"]\)\.(.+)([.()[\]<>,;\n\s])/
+const importTypesRE = /import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/
+
 export function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
 
-  content = content.replace(/import\(['"][^;\n]+?['"]\)\.\w+[.()[\]<>,;\n\s]/g, str => {
-    const matchResult = str.match(/import\(['"](.+)['"]\)\.(.+)([.()[\]<>,;\n\s])/)!
+  content = content.replace(globalDynamicTypeRE, str => {
+    const matchResult = str.match(dynamicTypeRE)!
     const libName = matchResult[1]
     const importSet =
       importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
@@ -37,10 +43,7 @@ export function transformDynamicImport(content: string) {
     const matchResult = content.match(importReg)
 
     if (matchResult?.[0]) {
-      const importedTypes = matchResult[0]
-        .match(/import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/)![1]
-        .trim()
-        .split(',')
+      const importedTypes = matchResult[0].match(importTypesRE)![1].trim().split(',')
 
       content = content.replace(
         matchResult[0],
@@ -64,79 +67,49 @@ function isAliasMatch(alias: Alias, importee: string) {
   return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
 }
 
+const globalImportRE =
+  /(?:(?:import|export)\s?(?:type)?\s?(?:(?:\{[^;\n]+\})|(?:[^;\n]+))\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g
+const staticImportRE = /(?:import|export)\s?(?:type)?\s?\{?.+\}?\s?from\s?['"](.+)['"]/
+const dynamicImportRE = /import\(['"]([^;\n]+?)['"]\)/
+const simpleStaticImportRE = /((?:import|export).+from\s?)['"](.+)['"]/
+const simpleDynamicImportRE = /(import\()['"](.+)['"]\)/
+
 export function transformAliasImport(filePath: string, content: string, aliases: Alias[]) {
   if (!aliases.length) return content
 
-  return content.replace(
-    /(?:(?:import|export)\s?(?:type)?\s?(?:(?:\{[^;\n]+\})|(?:[^;\n]+))\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g,
-    str => {
-      let matchResult = str.match(/(?:import|export)\s?(?:type)?\s?\{?.+\}?\s?from\s?['"](.+)['"]/)
-      let isDynamic = false
+  return content.replace(globalImportRE, str => {
+    let matchResult = str.match(staticImportRE)
+    let isDynamic = false
 
-      if (!matchResult) {
-        matchResult = str.match(/import\(['"]([^;\n]+?)['"]\)/)
-        isDynamic = true
-      }
-
-      if (matchResult?.[1]) {
-        const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult![1]))
-
-        if (matchedAlias) {
-          const truthPath = isAbsolute(matchedAlias.replacement)
-            ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
-            : normalizePath(matchedAlias.replacement)
-
-          return str.replace(
-            isDynamic ? /(import\()['"](.+)['"]\)/ : /((?:import|export).+from\s?)['"](.+)['"]/,
-            `$1'${matchResult[1].replace(
-              matchedAlias.find,
-              truthPath.startsWith('.') ? truthPath : `./${truthPath}`
-            )}'${isDynamic ? ')' : ''}`
-          )
-        }
-      }
-
-      return str
+    if (!matchResult) {
+      matchResult = str.match(dynamicImportRE)
+      isDynamic = true
     }
-  )
+
+    if (matchResult?.[1]) {
+      const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult![1]))
+
+      if (matchedAlias) {
+        const truthPath = isAbsolute(matchedAlias.replacement)
+          ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
+          : normalizePath(matchedAlias.replacement)
+
+        return str.replace(
+          isDynamic ? simpleDynamicImportRE : simpleStaticImportRE,
+          `$1'${matchResult[1].replace(
+            matchedAlias.find,
+            truthPath.startsWith('.') ? truthPath : `./${truthPath}`
+          )}'${isDynamic ? ')' : ''}`
+        )
+      }
+    }
+
+    return str
+  })
 }
+
+const pureImportRE = /import\s?['"][^;\n]+?['"];?\n?/g
 
 export function removePureImport(content: string) {
-  return content.replace(/import\s?['"][^;\n]+?['"];?\n?/g, '')
+  return content.replace(pureImportRE, '')
 }
-
-// export async function collectTypeImports(code: string, importer: string, aliases: Alias[]) {
-//   const matchResult = code.match(
-//     /(?:import|export)\stype\s?\{[^;\n]+\}\s?from\s?['"][^;\n]+['"]/g
-//   )
-//   const typeImports: string[] = []
-
-//   if (matchResult?.length) {
-//     await Promise.all(
-//       matchResult.map(async matched => {
-//         let fromPath = matched.match(/from ['"](.+)['"]/)![1]
-
-//         const matchedAlias = aliases.find(alias => isAliasMatch(alias, fromPath))
-
-//         if (matchedAlias) {
-//           fromPath = fromPath.replace(matchedAlias.find, matchedAlias.replacement)
-//         }
-
-//         if (fromPath.startsWith('.') || isAbsolute(fromPath)) {
-//           fromPath = isAbsolute(fromPath) ? fromPath : resolve(dirname(importer), fromPath)
-
-//           try {
-//             if ((await fs.stat(fromPath)).isDirectory()) {
-//               fromPath = resolve(fromPath, 'index.ts')
-//             }
-//             // eslint-disable-next-line no-empty
-//           } catch (e) {}
-
-//           typeImports.push(normalizePath(fromPath + (fromPath.endsWith('.ts') ? '' : '.ts')))
-//         }
-//       })
-//     )
-//   }
-
-//   return typeImports
-// }
