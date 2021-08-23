@@ -84,6 +84,14 @@ export interface PluginOptions {
   // Default: true
   copyDtsFiles?: boolean
 
+  // Whether emit nothing when has any diagnostic
+  // Default: false
+  noEmitOnError?: boolean
+
+  // Whether log diagnostic informations
+  // Default: false
+  logDiagnostics?: boolean
+
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
   // Default: () => {}

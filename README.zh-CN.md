@@ -84,6 +84,14 @@ export interface PluginOptions {
   // 默认值: true
   copyDtsFiles?: boolean
 
+  // 出现类型诊断信息时不生成类型文件
+  // 默认值: false
+  noEmitOnError?: boolean
+
+  // 是否打印类型诊断信息
+  // 默认值: false
+  logDiagnostics?: boolean
+
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
   // 默认值: () => {}
