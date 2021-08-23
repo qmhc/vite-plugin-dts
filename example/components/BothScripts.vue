@@ -4,15 +4,6 @@
 	</component>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-	name: 'BothScripts',
-	customOptions: {}
-})
-</script>
-
 <script lang="ts" setup>
 import { defineProps } from 'vue'
 
@@ -21,5 +12,14 @@ const props = defineProps({
 		type: String,
 		default: 'div'
 	}
+})
+</script>
+
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+	name: 'BothScripts',
+	customOptions: {}
 })
 </script>

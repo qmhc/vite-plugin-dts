@@ -33,6 +33,8 @@ export interface PluginOptions {
   clearPureImport?: boolean,
   insertTypesEntry?: boolean,
   copyDtsFiles?: boolean,
+  noEmitOnError?: boolean,
+  logDiagnostics?: boolean,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -48,6 +50,8 @@ export default (options: PluginOptions = {}): Plugin => {
     staticImport = false,
     clearPureImport = true,
     insertTypesEntry = false,
+    noEmitOnError = false,
+    logDiagnostics = false,
     beforeWriteFile = noop
   } = options
 
@@ -120,10 +124,10 @@ export default (options: PluginOptions = {}): Plugin => {
 
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions || {}, {
+          noEmitOnError,
           outDir: '.',
           declaration: true,
-          emitDeclarationOnly: true,
-          noEmitOnError: true
+          emitDeclarationOnly: true
         }),
         tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true
@@ -255,7 +259,9 @@ export default (options: PluginOptions = {}): Plugin => {
 
       const diagnostics = project.getPreEmitDiagnostics()
 
-      logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+      if (diagnostics?.length && logDiagnostics) {
+        logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+      }
 
       await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
         let filePath = outputFile.filePath as string
