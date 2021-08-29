@@ -15,7 +15,7 @@ import {
 import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
-import type { ts, SourceFile } from 'ts-morph'
+import type { ts, SourceFile, Diagnostic } from 'ts-morph'
 
 interface TransformWriteFile {
   filePath?: string,
@@ -36,6 +36,7 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
   noEmitOnError?: boolean,
   logDiagnostics?: boolean,
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 }
 
@@ -53,6 +54,7 @@ export default (options: PluginOptions = {}): Plugin => {
     insertTypesEntry = false,
     noEmitOnError = false,
     logDiagnostics = false,
+    afterDiagnostic = noop,
     beforeWriteFile = noop
   } = options
 
@@ -263,6 +265,10 @@ export default (options: PluginOptions = {}): Plugin => {
 
       if (diagnostics?.length && logDiagnostics) {
         logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+      }
+
+      if (typeof afterDiagnostic === 'function') {
+        afterDiagnostic(diagnostics)
       }
 
       await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
