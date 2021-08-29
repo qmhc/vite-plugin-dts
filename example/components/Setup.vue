@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineProps, ref } from 'vue'
 import HelloWorld from './HelloWorld.vue'
 
 const props = defineProps({
@@ -24,6 +24,4 @@ const inc = () => {
   currentCount.value++
   emit('on-add', currentCount.value)
 }
-
-defineExpose({})
 </script>

@@ -5,21 +5,31 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue'
+import { defineProps, ref } from 'vue'
 
 const props = defineProps({
 	tag: {
 		type: String,
 		default: 'div'
-	}
+	},
+	count: {
+    type: Number,
+    default: 0
+  }
 })
+
+const currentCount = ref(props.count)
+
+const inc = () => {
+  currentCount.value++
+}
 </script>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+// do not use defineComponent
 
-export default defineComponent({
+export default {
 	name: 'BothScripts',
 	customOptions: {}
-})
+}
 </script>

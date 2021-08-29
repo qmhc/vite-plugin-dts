@@ -9,7 +9,8 @@ import {
   normalizeGlob,
   transformDynamicImport,
   transformAliasImport,
-  removePureImport
+  removePureImport,
+  transferSetupPosition
 } from './transform'
 import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
 
@@ -211,10 +212,11 @@ export default (options: PluginOptions = {}): Plugin => {
                   }
 
                   // 不断言会影响 setup 的类型推断
-                  content = content.replace(
-                    '...__default__',
-                    '...(__default__ as Record<string, unknown>)'
-                  )
+                  // content = content.replace(
+                  //   '...__default__',
+                  //   '...(__default__ as Record<string, unknown>)'
+                  // )
+                  content = transferSetupPosition(content)
                   content += '\nexport default _sfc_main\n'
 
                   if (scriptSetup.lang === 'ts') {
