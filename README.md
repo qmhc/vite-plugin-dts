@@ -33,7 +33,7 @@ export default defineConfig({
 ## Options
 
 ```ts
-import type { ts } from 'ts-morph'
+import type { ts, Diagnostic } from 'ts-morph'
 
 interface TransformWriteFile {
   filePath?: string
@@ -91,6 +91,11 @@ export interface PluginOptions {
   // Whether log diagnostic informations
   // Default: false
   logDiagnostics?: boolean
+
+  // After emit diagnostic hook
+  // According to the length to judge whether there is any type error
+  // Default: () => {}
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void
 
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it

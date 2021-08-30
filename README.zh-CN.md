@@ -33,7 +33,7 @@ export default defineConfig({
 ## 选项
 
 ```ts
-import type { ts } from 'ts-morph'
+import type { ts, Diagnostic } from 'ts-morph'
 
 interface TransformWriteFile {
   filePath?: string
@@ -91,6 +91,11 @@ export interface PluginOptions {
   // 是否打印类型诊断信息
   // 默认值: false
   logDiagnostics?: boolean
+
+  // 获取诊断信息后的钩子
+  // 可以根据参数 length 来判断有误类型错误
+  // 默认值: () => {}
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void
 
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
