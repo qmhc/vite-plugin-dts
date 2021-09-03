@@ -159,6 +159,8 @@ export default (options: PluginOptions = {}): Plugin => {
       const include = options.include || tsConfig.include
       const exclude = options.exclude || tsConfig.exclude
 
+      const includedFileSet = new Set<string>()
+
       if (include && include.length) {
         const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
@@ -185,6 +187,10 @@ export default (options: PluginOptions = {}): Plugin => {
 
         await Promise.all(
           files.map(async file => {
+            includedFileSet.add(
+              (file.endsWith('.ts') || file.endsWith('.js') ? file.slice(0, -3) : file) + '.d.ts'
+            )
+
             if (/\.vue$/.test(file)) {
               const { parse, compileScript, rewriteDefault } = requireCompiler()
               const { descriptor } = parse(await fs.readFile(file, 'utf-8'))
@@ -213,11 +219,6 @@ export default (options: PluginOptions = {}): Plugin => {
                     content = rewriteDefault(compiled.content, `_sfc_main`)
                   }
 
-                  // 不断言会影响 setup 的类型推断
-                  // content = content.replace(
-                  //   '...__default__',
-                  //   '...(__default__ as Record<string, unknown>)'
-                  // )
                   content = transferSetupPosition(content)
                   content += '\nexport default _sfc_main\n'
 
@@ -275,9 +276,15 @@ export default (options: PluginOptions = {}): Plugin => {
         let filePath = outputFile.filePath as string
         let content = outputFile.text
 
-        if (clearPureImport && content === noneExport) return
+        const isMapFile = filePath.endsWith('.map')
 
-        if (!filePath.endsWith('.map') && content !== noneExport) {
+        if (
+          !includedFileSet.has(isMapFile ? filePath.slice(0, -4) : filePath) ||
+          (clearPureImport && content === noneExport)
+        )
+          return
+
+        if (!isMapFile && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
           content = transformAliasImport(filePath, content, aliases)
           content = staticImport ? transformDynamicImport(content) : content

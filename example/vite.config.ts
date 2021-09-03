@@ -28,6 +28,7 @@ export default defineConfig({
   plugins: [
     dts({
       outputDir: 'types',
+      // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       staticImport: true,
       insertTypesEntry: true,
