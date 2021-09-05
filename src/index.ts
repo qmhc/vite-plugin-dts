@@ -72,6 +72,24 @@ export default (options: PluginOptions = {}): Plugin => {
   const sourceFiles: SourceFile[] = []
   const sourceDtsFiles: string[] = []
 
+  let index = 1
+  let compiler: typeof import('@vue/compiler-sfc')
+
+  const requireCompiler = () => {
+    if (!compiler) {
+      try {
+        compiler = require('@vue/compiler-sfc')
+      } catch (e) {
+        throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
+      }
+    }
+
+    return compiler
+  }
+
+  let hasJsVue = false
+  let allowJs = false
+
   return {
     name: 'vite:dts',
 
@@ -135,6 +153,8 @@ export default (options: PluginOptions = {}): Plugin => {
         tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true
       })
+
+      allowJs = project.getCompilerOptions().allowJs ?? false
     },
 
     buildStart(inputOptions) {
@@ -143,14 +163,76 @@ export default (options: PluginOptions = {}): Plugin => {
         : Object.values(inputOptions.input)
     },
 
+    transform(code, id) {
+      if (/\.vue$/.test(id)) {
+        const { parse, compileScript, rewriteDefault } = requireCompiler()
+        const { descriptor } = parse(code)
+        const { script, scriptSetup } = descriptor
+
+        if (script || scriptSetup) {
+          let content = ''
+          let isTs = false
+
+          if (scriptSetup) {
+            const compiled = compileScript(descriptor, {
+              id: `${index++}`
+            })
+
+            const classMatch = compiled.content.match(exportDefaultClassRE)
+
+            if (classMatch) {
+              content =
+                compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
+                `\nconst _sfc_main = ${classMatch[1]}`
+
+              if (/export\s+default/.test(content)) {
+                content = rewriteDefault(compiled.content, `_sfc_main`)
+              }
+            } else {
+              content = rewriteDefault(compiled.content, `_sfc_main`)
+            }
+
+            content = transferSetupPosition(content)
+            content += '\nexport default _sfc_main\n'
+
+            if (scriptSetup.lang === 'ts') {
+              isTs = true
+            } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
+              hasJsVue = true
+            }
+          } else if (script && script.content) {
+            content += script.content
+
+            if (script.lang === 'ts') {
+              isTs = true
+            } else if (!script.lang || script.lang === 'js') {
+              hasJsVue = true
+            }
+          }
+
+          sourceFiles.push(project.createSourceFile(id + (isTs ? '.ts' : '.js'), content))
+        }
+      } else if (
+        !id.includes('.vue?vue') &&
+        (/\.tsx?$/.test(id) || (allowJs && /\.jsx?$/.test(id)))
+      ) {
+        sourceFiles.push(project.addSourceFileAtPath(id))
+      }
+
+      return null
+    },
+
     async closeBundle() {
       if (!outputDir || !project || isBundle) return
+
+      logger.info(
+        `${chalk.cyan('\n[vite:dts]')} ${chalk.green('Generating declaration files...\n')}`
+      )
 
       isBundle = true
       sourceFiles.length = 0
       sourceDtsFiles.length = 0
 
-      const allowJs = project.getCompilerOptions().allowJs
       const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
         include?: string[],
         exclude?: string[]
@@ -168,88 +250,19 @@ export default (options: PluginOptions = {}): Plugin => {
           ignore: ensureArray(exclude || ['node_modules/**']).map(normalizeGlob)
         })
 
-        let index = 1
-        let compiler: typeof import('@vue/compiler-sfc')
+        files.forEach(file => {
+          includedFileSet.add(
+            /\.d\.tsx?$/.test(file)
+              ? file
+              : `${/\.(t|j)sx?$/.test(file) ? file.replace(/\.(t|j)sx?$/, '') : file}.d.ts`
+          )
 
-        const requireCompiler = () => {
-          if (!compiler) {
-            try {
-              compiler = require('@vue/compiler-sfc')
-            } catch (e) {
-              throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
-            }
+          if (/\.d\.tsx?$/.test(file)) {
+            sourceDtsFiles.push(file)
           }
+        })
 
-          return compiler
-        }
-
-        let hasJs = false
-
-        await Promise.all(
-          files.map(async file => {
-            includedFileSet.add(
-              (file.endsWith('.ts') || file.endsWith('.js') ? file.slice(0, -3) : file) + '.d.ts'
-            )
-
-            if (/\.vue$/.test(file)) {
-              const { parse, compileScript, rewriteDefault } = requireCompiler()
-              const { descriptor } = parse(await fs.readFile(file, 'utf-8'))
-              const { script, scriptSetup } = descriptor
-
-              if (script || scriptSetup) {
-                let content = ''
-                let isTs = false
-
-                if (scriptSetup) {
-                  const compiled = compileScript(descriptor, {
-                    id: `${index++}`
-                  })
-
-                  const classMatch = compiled.content.match(exportDefaultClassRE)
-
-                  if (classMatch) {
-                    content =
-                      compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
-                      `\nconst _sfc_main = ${classMatch[1]}`
-
-                    if (/export\s+default/.test(content)) {
-                      content = rewriteDefault(compiled.content, `_sfc_main`)
-                    }
-                  } else {
-                    content = rewriteDefault(compiled.content, `_sfc_main`)
-                  }
-
-                  content = transferSetupPosition(content)
-                  content += '\nexport default _sfc_main\n'
-
-                  if (scriptSetup.lang === 'ts') {
-                    isTs = true
-                  } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
-                    hasJs = true
-                  }
-                } else if (script && script.content) {
-                  content += script.content
-
-                  if (script.lang === 'ts') {
-                    isTs = true
-                  } else if (!script.lang || script.lang === 'js') {
-                    hasJs = true
-                  }
-                }
-
-                sourceFiles.push(project.createSourceFile(file + (isTs ? '.ts' : '.js'), content))
-              }
-            } else if (/\.tsx?$/.test(file) || (allowJs && /\.jsx?$/.test(file))) {
-              sourceFiles.push(project.addSourceFileAtPath(file))
-
-              if (/\.d.tsx?$/.test(file)) {
-                sourceDtsFiles.push(file)
-              }
-            }
-          })
-        )
-
-        if (hasJs) {
+        if (hasJsVue) {
           if (!allowJs) {
             logger.warn(
               chalk.yellow(
@@ -261,6 +274,8 @@ export default (options: PluginOptions = {}): Plugin => {
           project.compilerOptions.set({ allowJs: true })
         }
       }
+
+      project.resolveSourceFileDependencies()
 
       const diagnostics = project.getPreEmitDiagnostics()
 
