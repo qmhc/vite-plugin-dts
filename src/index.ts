@@ -9,13 +9,13 @@ import {
   normalizeGlob,
   transformDynamicImport,
   transformAliasImport,
-  removePureImport,
-  transferSetupPosition
+  removePureImport
 } from './transform'
+import { compileVueCode } from './compile'
 import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
-import type { ts, SourceFile, Diagnostic } from 'ts-morph'
+import type { ts, Diagnostic } from 'ts-morph'
 
 interface TransformWriteFile {
   filePath?: string,
@@ -43,9 +43,8 @@ export interface PluginOptions {
 const noneExport = 'export {};\n'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
-const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
-export default (options: PluginOptions = {}): Plugin => {
+export default function dtsPlugin(options: PluginOptions = {}): Plugin {
   const {
     tsConfigFilePath = 'tsconfig.json',
     cleanVueFileName = false,
@@ -69,23 +68,7 @@ export default (options: PluginOptions = {}): Plugin => {
   let outputDir: string
   let isBundle = false
 
-  const sourceFiles: SourceFile[] = []
-  const sourceDtsFiles: string[] = []
-
-  let index = 1
-  let compiler: typeof import('@vue/compiler-sfc')
-
-  const requireCompiler = () => {
-    if (!compiler) {
-      try {
-        compiler = require('@vue/compiler-sfc')
-      } catch (e) {
-        throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
-      }
-    }
-
-    return compiler
-  }
+  const sourceDtsFiles = new Set<string>()
 
   let hasJsVue = false
   let allowJs = false
@@ -119,7 +102,9 @@ export default (options: PluginOptions = {}): Plugin => {
       if (!config.build.lib) {
         logger.warn(
           chalk.yellow(
-            '\n[vite:dts] You building not a library that may not need to generate declaration files.\n'
+            `\n${chalk.cyan(
+              '[vite:dts]'
+            )} You building not a library that may not need to generate declaration files.\n`
           )
         )
       }
@@ -134,7 +119,9 @@ export default (options: PluginOptions = {}): Plugin => {
       if (!outputDir) {
         logger.error(
           chalk.red(
-            '\n[vite:dts] Can not resolve declaration directory, please check your vite config and plugin options.\n'
+            `\n${chalk.cyan(
+              '[vite:dts]'
+            )} Can not resolve declaration directory, please check your vite config and plugin options.\n`
           )
         )
 
@@ -165,58 +152,18 @@ export default (options: PluginOptions = {}): Plugin => {
 
     transform(code, id) {
       if (/\.vue$/.test(id)) {
-        const { parse, compileScript, rewriteDefault } = requireCompiler()
-        const { descriptor } = parse(code)
-        const { script, scriptSetup } = descriptor
+        const { content, isTs, isJs } = compileVueCode(code)
 
-        if (script || scriptSetup) {
-          let content = ''
-          let isTs = false
+        if (content) {
+          if (isJs) hasJsVue = true
 
-          if (scriptSetup) {
-            const compiled = compileScript(descriptor, {
-              id: `${index++}`
-            })
-
-            const classMatch = compiled.content.match(exportDefaultClassRE)
-
-            if (classMatch) {
-              content =
-                compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
-                `\nconst _sfc_main = ${classMatch[1]}`
-
-              if (/export\s+default/.test(content)) {
-                content = rewriteDefault(compiled.content, `_sfc_main`)
-              }
-            } else {
-              content = rewriteDefault(compiled.content, `_sfc_main`)
-            }
-
-            content = transferSetupPosition(content)
-            content += '\nexport default _sfc_main\n'
-
-            if (scriptSetup.lang === 'ts') {
-              isTs = true
-            } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
-              hasJsVue = true
-            }
-          } else if (script && script.content) {
-            content += script.content
-
-            if (script.lang === 'ts') {
-              isTs = true
-            } else if (!script.lang || script.lang === 'js') {
-              hasJsVue = true
-            }
-          }
-
-          sourceFiles.push(project.createSourceFile(id + (isTs ? '.ts' : '.js'), content))
+          project.createSourceFile(id + (isTs ? '.ts' : '.js'), content, { overwrite: true })
         }
       } else if (
         !id.includes('.vue?vue') &&
         (/\.tsx?$/.test(id) || (allowJs && /\.jsx?$/.test(id)))
       ) {
-        sourceFiles.push(project.addSourceFileAtPath(id))
+        project.addSourceFileAtPath(id)
       }
 
       return null
@@ -225,13 +172,11 @@ export default (options: PluginOptions = {}): Plugin => {
     async closeBundle() {
       if (!outputDir || !project || isBundle) return
 
-      logger.info(
-        `${chalk.cyan('\n[vite:dts]')} ${chalk.green('Generating declaration files...\n')}`
-      )
+      logger.info(chalk.green(`\n${chalk.cyan('[vite:dts]')} Compiling source files...`))
 
       isBundle = true
-      sourceFiles.length = 0
-      sourceDtsFiles.length = 0
+
+      sourceDtsFiles.clear()
 
       const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
         include?: string[],
@@ -258,7 +203,7 @@ export default (options: PluginOptions = {}): Plugin => {
           )
 
           if (/\.d\.tsx?$/.test(file)) {
-            sourceDtsFiles.push(file)
+            sourceDtsFiles.add(file)
           }
         })
 
@@ -266,7 +211,9 @@ export default (options: PluginOptions = {}): Plugin => {
           if (!allowJs) {
             logger.warn(
               chalk.yellow(
-                "\n[vite:dts] Some js files are referenced, but you may not enable the 'allowJs' option.\n"
+                `${chalk.cyan(
+                  '[vite:dts]'
+                )} Some js files are referenced, but you may not enable the 'allowJs' option.`
               )
             )
           }
@@ -286,6 +233,8 @@ export default (options: PluginOptions = {}): Plugin => {
       if (typeof afterDiagnostic === 'function') {
         afterDiagnostic(diagnostics)
       }
+
+      logger.info(chalk.green(`${chalk.cyan('[vite:dts]')} Generating declaration files...`))
 
       await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
         let filePath = outputFile.filePath as string
@@ -328,7 +277,7 @@ export default (options: PluginOptions = {}): Plugin => {
       })
 
       await Promise.all(
-        sourceDtsFiles.map(async filePath => {
+        Array.from(sourceDtsFiles).map(async filePath => {
           const targetPath = resolve(outputDir, relative(root, filePath))
 
           await fs.mkdir(dirname(targetPath), { recursive: true })
@@ -359,6 +308,8 @@ export default (options: PluginOptions = {}): Plugin => {
           await fs.writeFile(typesPath, content, 'utf-8')
         }
       }
+
+      logger.info(chalk.green(`${chalk.cyan('[vite:dts]')} Declaration files built.\n`))
     }
   }
 }

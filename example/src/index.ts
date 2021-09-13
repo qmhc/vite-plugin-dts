@@ -9,6 +9,7 @@ import JsxLangTest from '@/components/JsxLangTest.vue'
 import JsxTest from '@/components/JsxTest.jsx'
 import TsxLangTest from '@/components/TsxLangTest.vue'
 import TsxTest from '@/components/TsxTest'
+import TypeProps from '@/components/TypeProps.vue'
 
 export interface Test extends TestBase {
   count: number
@@ -24,6 +25,6 @@ export type { User } from './types'
 export type { DtsType } from './dts-types'
 export type { Component } from '@/components'
 
-export { BothScripts, JsTest, JsxLangTest, JsxTest, TsxLangTest, TsxTest }
+export { BothScripts, JsTest, JsxLangTest, JsxTest, TsxLangTest, TsxTest, TypeProps }
 
 export default DefaultImport
