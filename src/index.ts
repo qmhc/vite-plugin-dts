@@ -169,6 +169,12 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
       return null
     },
 
+    watchChange(id) {
+      if (/\.(vue|(t|j)sx?)$/.test(id)) {
+        isBundle = false
+      }
+    },
+
     async closeBundle() {
       if (!outputDir || !project || isBundle) return
 
