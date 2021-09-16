@@ -134,6 +134,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         compilerOptions: mergeObjects(compilerOptions || {}, {
           noEmitOnError,
           outDir: '.',
+          // #27 declarationDir option will make no declaration file generated
+          declarationDir: null,
           declaration: true,
           emitDeclarationOnly: true
         }),
