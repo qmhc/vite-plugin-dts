@@ -137,6 +137,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
           // #27 declarationDir option will make no declaration file generated
           declarationDir: null,
           declaration: true,
+          noEmit: false,
           emitDeclarationOnly: true
         }),
         tsConfigFilePath: tsConfigPath,
