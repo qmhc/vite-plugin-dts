@@ -23,8 +23,7 @@ export function compileVueCode(code: string) {
   const { script, scriptSetup } = descriptor
 
   let content: string | null = null
-  let isTs = false
-  let isJs = false
+  let ext: string | null = null
 
   if (script || scriptSetup) {
     if (scriptSetup) {
@@ -49,21 +48,21 @@ export function compileVueCode(code: string) {
       content = transferSetupPosition(content)
       content += '\nexport default _sfc_main\n'
 
-      if (scriptSetup.lang === 'ts') {
-        isTs = true
-      } else if (!scriptSetup.lang || scriptSetup.lang === 'js') {
-        isJs = true
+      if (scriptSetup.lang === 'ts' || scriptSetup.lang === 'tsx') {
+        ext = scriptSetup.lang
+      } else if (!scriptSetup.lang || scriptSetup.lang === 'js'|| scriptSetup.lang === 'jsx') {
+        ext = scriptSetup.lang || 'js'
       }
     } else if (script && script.content) {
       content = script.content
 
-      if (script.lang === 'ts') {
-        isTs = true
-      } else if (!script.lang || script.lang === 'js') {
-        isJs = true
+      if (script.lang === 'ts' || script.lang === 'tsx') {
+        ext = script.lang
+      } else if (!script.lang || script.lang === 'js' || script.lang === 'jsx') {
+        ext = script.lang || 'js'
       }
     }
   }
 
-  return { content, isTs, isJs }
+  return { content, ext }
 }

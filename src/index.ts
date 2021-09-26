@@ -155,12 +155,12 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
     transform(code, id) {
       if (/\.vue$/.test(id)) {
-        const { content, isTs, isJs } = compileVueCode(code)
+        const { content, ext } = compileVueCode(code)
 
         if (content) {
-          if (isJs) hasJsVue = true
+          if (ext === 'js' || ext === 'jsx') hasJsVue = true
 
-          project.createSourceFile(id + (isTs ? '.ts' : '.js'), content, { overwrite: true })
+          project.createSourceFile(id + `.${ext || 'js'}`, content, { overwrite: true })
         }
       } else if (
         !id.includes('.vue?vue') &&
