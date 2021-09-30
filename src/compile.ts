@@ -48,19 +48,10 @@ export function compileVueCode(code: string) {
       content = transferSetupPosition(content)
       content += '\nexport default _sfc_main\n'
 
-      if (scriptSetup.lang === 'ts' || scriptSetup.lang === 'tsx') {
-        ext = scriptSetup.lang
-      } else if (!scriptSetup.lang || scriptSetup.lang === 'js'|| scriptSetup.lang === 'jsx') {
-        ext = scriptSetup.lang || 'js'
-      }
+      ext = scriptSetup.lang || 'js'
     } else if (script && script.content) {
       content = script.content
-
-      if (script.lang === 'ts' || script.lang === 'tsx') {
-        ext = script.lang
-      } else if (!script.lang || script.lang === 'js' || script.lang === 'jsx') {
-        ext = script.lang || 'js'
-      }
+      ext = script.lang || 'js'
     }
   }
 
