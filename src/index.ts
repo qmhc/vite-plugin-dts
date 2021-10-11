@@ -5,6 +5,7 @@ import chalk from 'chalk'
 import glob from 'fast-glob'
 import { Project } from 'ts-morph'
 import { normalizePath } from 'vite'
+import { readConfigFile } from 'typescript'
 import {
   normalizeGlob,
   transformDynamicImport,
@@ -187,10 +188,10 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       sourceDtsFiles.clear()
 
-      const tsConfig = JSON.parse(await fs.readFile(tsConfigPath, 'utf-8')) as {
+      const tsConfig: {
         include?: string[],
         exclude?: string[]
-      }
+      } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config || {}
 
       const include = options.include || tsConfig.include
       const exclude = options.exclude || tsConfig.exclude

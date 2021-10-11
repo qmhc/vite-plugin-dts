@@ -1,4 +1,5 @@
 {
+  // test comment
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
