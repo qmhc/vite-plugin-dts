@@ -36,6 +36,7 @@ export interface PluginOptions {
   insertTypesEntry?: boolean,
   copyDtsFiles?: boolean,
   noEmitOnError?: boolean,
+  skipDiagnostics?: boolean,
   logDiagnostics?: boolean,
   afterDiagnostic?: (diagnostics: Diagnostic[]) => void,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
@@ -59,6 +60,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     clearPureImport = true,
     insertTypesEntry = false,
     noEmitOnError = false,
+    skipDiagnostics = true,
     logDiagnostics = false,
     afterDiagnostic = noop,
     beforeWriteFile = noop
@@ -187,12 +189,13 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     async closeBundle() {
       if (!outputDir || !project || isBundle) return
 
-      logger.info(chalk.green(`\n${chalk.cyan('[vite:dts]')} Compiling source files...`))
+      logger.info(chalk.green(`\n${chalk.cyan('[vite:dts]')} Start generate declaration files...`))
 
       isBundle = true
 
       sourceDtsFiles.clear()
 
+      const startTime = Date.now()
       const tsConfig: {
         include?: string[],
         exclude?: string[]
@@ -237,21 +240,29 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       project.resolveSourceFileDependencies()
 
-      const diagnostics = project.getPreEmitDiagnostics()
+      if (!skipDiagnostics) {
+        const diagnostics = project.getPreEmitDiagnostics()
 
-      if (diagnostics?.length && logDiagnostics) {
-        logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+        if (diagnostics?.length && logDiagnostics) {
+          logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+        }
+
+        if (typeof afterDiagnostic === 'function') {
+          afterDiagnostic(diagnostics)
+        }
       }
 
-      if (typeof afterDiagnostic === 'function') {
-        afterDiagnostic(diagnostics)
-      }
+      const service = project.getLanguageService()
+      const outputFiles = project
+        .getSourceFiles()
+        .map(sourceFile => {
+          return service.getEmitOutput(sourceFile, true).getOutputFiles()
+        })
+        .flat()
 
-      logger.info(chalk.green(`${chalk.cyan('[vite:dts]')} Generating declaration files...`))
-
-      await runParallel(os.cpus().length, project.emitToMemory().getFiles(), async outputFile => {
-        let filePath = outputFile.filePath as string
-        let content = outputFile.text
+      await runParallel(os.cpus().length, outputFiles, async outputFile => {
+        let filePath = outputFile.getFilePath() as string
+        let content = outputFile.getText()
 
         const isMapFile = filePath.endsWith('.map')
 
@@ -322,7 +333,11 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         }
       }
 
-      logger.info(chalk.green(`${chalk.cyan('[vite:dts]')} Declaration files built.\n`))
+      logger.info(
+        chalk.green(
+          `${chalk.cyan('[vite:dts]')} Declaration files built in ${Date.now() - startTime}ms.\n`
+        )
+      )
     }
   }
 }
