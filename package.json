@@ -13,6 +13,7 @@
   "devDependencies": {
     "@commitlint/cli": "^13.2.0",
     "@commitlint/config-conventional": "^13.2.0",
+    "@types/debug": "^4.1.7",
     "@types/fs-extra": "^9.0.13",
     "@types/jest": "^27.0.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
@@ -22,7 +23,9 @@
     "chalk": "^4.1.2",
     "commitizen": "^4.2.4",
     "conventional-changelog-cli": "^2.1.1",
+    "cross-env": "^7.0.3",
     "cz-customizable": "^6.3.0",
+    "debug": "^4.3.2",
     "enquirer": "^2.3.6",
     "eslint": "^7.32.0",
     "execa": "^5.1.1",
@@ -78,7 +81,7 @@
     "prettier": "pretty-quick --staged",
     "release": "node scripts/release.js",
     "test": "jest --runInBand",
-    "test:e2e": "cd example && vite build"
+    "test:e2e": "cd example && cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "types": "dist/index.d.ts",
   "version": "0.8.3"

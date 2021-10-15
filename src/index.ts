@@ -3,6 +3,7 @@ import fs from 'fs-extra'
 import os from 'os'
 import chalk from 'chalk'
 import glob from 'fast-glob'
+import { debug } from 'debug'
 import { Project } from 'ts-morph'
 import { normalizePath } from 'vite'
 import { readConfigFile } from 'typescript'
@@ -51,6 +52,8 @@ const tjsRE = /\.(t|j)sx?$/
 const watchExtensionRE = /\.(vue|(t|j)sx?)$/
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
+
+const bundleDebug = debug('vite-plugin-dts:bundle')
 
 export default function dtsPlugin(options: PluginOptions = {}): Plugin {
   const {
@@ -190,6 +193,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (!outputDir || !project || isBundle) return
 
       logger.info(chalk.green(`\n${chalk.cyan('[vite:dts]')} Start generate declaration files...`))
+      bundleDebug('start')
 
       isBundle = true
 
@@ -203,6 +207,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       const include = options.include ?? tsConfig.include
       const exclude = options.exclude ?? tsConfig.exclude
+
+      bundleDebug('read config')
 
       const includedFileSet = new Set<string>()
 
@@ -236,9 +242,12 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
           project.compilerOptions.set({ allowJs: true })
         }
+
+        bundleDebug('collect files')
       }
 
       project.resolveSourceFileDependencies()
+      bundleDebug('resolve')
 
       if (!skipDiagnostics) {
         const diagnostics = project.getPreEmitDiagnostics()
@@ -250,6 +259,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (typeof afterDiagnostic === 'function') {
           afterDiagnostic(diagnostics)
         }
+
+        bundleDebug('diagnostics')
       }
 
       const service = project.getLanguageService()
@@ -259,6 +270,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
           return service.getEmitOutput(sourceFile, true).getOutputFiles()
         })
         .flat()
+
+      bundleDebug('emit')
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
         let filePath = outputFile.getFilePath() as string
@@ -300,6 +313,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         )
       })
 
+      bundleDebug('output')
+
       await Promise.all(
         Array.from(sourceDtsFiles).map(async filePath => {
           const targetPath = resolve(outputDir, relative(root, filePath))
@@ -308,6 +323,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
           await fs.copyFile(filePath, targetPath)
         })
       )
+
+      bundleDebug('copy dts')
 
       if (insertTypesEntry) {
         const pkgPath = resolve(root, 'package.json')
@@ -331,6 +348,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
           await fs.writeFile(typesPath, content, 'utf-8')
         }
+
+        bundleDebug('insert index')
       }
 
       logger.info(
