@@ -42,6 +42,12 @@ export interface PluginOptions {
 }
 
 const noneExport = 'export {};\n'
+const vueRE = /\.vue$/
+const tsRE = /\.tsx?$/
+const jsRE = /\.jsx?$/
+const dtsRE = /\.d\.tsx?$/
+const tjsRE = /\.(t|j)sx?$/
+const watchExtensionRE = /\.(vue|(t|j)sx?)$/
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
@@ -58,7 +64,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     beforeWriteFile = noop
   } = options
 
-  const compilerOptions = options.compilerOptions || {}
+  const compilerOptions = options.compilerOptions ?? {}
 
   let root: string
   let aliases: Alias[]
@@ -84,7 +90,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     config(config) {
       if (isBundle) return
 
-      const aliasOptions = (config.resolve && config.resolve.alias) || []
+      const aliasOptions = (config.resolve && config.resolve.alias) ?? []
 
       if (isNativeObj(aliasOptions)) {
         aliases = Object.entries(aliasOptions).map(([key, value]) => {
@@ -110,7 +116,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         )
       }
 
-      root = ensureAbsolute(options.root || '', config.root)
+      root = ensureAbsolute(options.root ?? '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
 
       outputDir = options.outputDir
@@ -129,10 +135,10 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         return
       }
 
-      compilerOptions.rootDir = compilerOptions.rootDir || root
+      compilerOptions.rootDir ||= root
 
       project = new Project({
-        compilerOptions: mergeObjects(compilerOptions || {}, {
+        compilerOptions: mergeObjects(compilerOptions, {
           noEmitOnError,
           outDir: '.',
           // #27 declarationDir option will make no declaration file generated
@@ -149,13 +155,15 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     buildStart(inputOptions) {
-      entries = Array.isArray(inputOptions.input)
-        ? inputOptions.input
-        : Object.values(inputOptions.input)
+      if (insertTypesEntry) {
+        entries = Array.isArray(inputOptions.input)
+          ? inputOptions.input
+          : Object.values(inputOptions.input)
+      }
     },
 
     transform(code, id) {
-      if (/\.vue$/.test(id)) {
+      if (vueRE.test(id)) {
         const { content, ext } = compileVueCode(code)
 
         if (content) {
@@ -163,10 +171,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
 
           project.createSourceFile(`${id}.${ext || 'js'}`, content, { overwrite: true })
         }
-      } else if (
-        !id.includes('.vue?vue') &&
-        (/\.tsx?$/.test(id) || (allowJs && /\.jsx?$/.test(id)))
-      ) {
+      } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
         project.addSourceFileAtPath(id)
       }
 
@@ -174,7 +179,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     watchChange(id) {
-      if (/\.(vue|(t|j)sx?)$/.test(id)) {
+      if (watchExtensionRE.test(id)) {
         isBundle = false
       }
     },
@@ -191,10 +196,10 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
       const tsConfig: {
         include?: string[],
         exclude?: string[]
-      } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config || {}
+      } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
-      const include = options.include || tsConfig.include
-      const exclude = options.exclude || tsConfig.exclude
+      const include = options.include ?? tsConfig.include
+      const exclude = options.exclude ?? tsConfig.exclude
 
       const includedFileSet = new Set<string>()
 
@@ -202,17 +207,15 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
           absolute: true,
-          ignore: ensureArray(exclude || ['node_modules/**']).map(normalizeGlob)
+          ignore: ensureArray(exclude ?? ['node_modules/**']).map(normalizeGlob)
         })
 
         files.forEach(file => {
           includedFileSet.add(
-            /\.d\.tsx?$/.test(file)
-              ? file
-              : `${/\.(t|j)sx?$/.test(file) ? file.replace(/\.(t|j)sx?$/, '') : file}.d.ts`
+            dtsRE.test(file) ? file : `${tjsRE.test(file) ? file.replace(tjsRE, '') : file}.d.ts`
           )
 
-          if (/\.d\.tsx?$/.test(file)) {
+          if (dtsRE.test(file)) {
             sourceDtsFiles.add(file)
           }
         })
@@ -273,8 +276,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
           const result = beforeWriteFile(filePath, content)
 
           if (result && isNativeObj(result)) {
-            filePath = result.filePath || filePath
-            content = result.content || content
+            filePath = result.filePath ?? filePath
+            content = result.content ?? content
           }
         }
 
@@ -308,7 +311,7 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
                   relative(dirname(typesPath), resolve(outputDir, relative(root, entry)))
                 )
 
-                filePath = filePath.replace(/\.tsx?$/, '')
+                filePath = filePath.replace(tsRE, '')
                 filePath = /^\.\.?\//.test(filePath) ? filePath : `./${filePath}`
 
                 return `export * from '${filePath}'`

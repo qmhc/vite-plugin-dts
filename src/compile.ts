@@ -1,5 +1,6 @@
 import { transferSetupPosition } from './transform'
 
+const exportDefaultRE = /export\s+default/
 const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
 let index = 1
@@ -38,7 +39,7 @@ export function compileVueCode(code: string) {
           compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
           `\nconst _sfc_main = ${classMatch[1]}`
 
-        if (/export\s+default/.test(content)) {
+        if (exportDefaultRE.test(content)) {
           content = rewriteDefault(compiled.content, `_sfc_main`)
         }
       } else {
