@@ -88,6 +88,10 @@ export interface PluginOptions {
   // Default: false
   noEmitOnError?: boolean
 
+  // Whether skip typescript diagnostics
+  // Default: true
+  skipDiagnostics?: boolean
+
   // Whether log diagnostic informations
   // Default: false
   logDiagnostics?: boolean

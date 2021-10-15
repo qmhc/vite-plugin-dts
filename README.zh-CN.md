@@ -88,6 +88,10 @@ export interface PluginOptions {
   // 默认值: false
   noEmitOnError?: boolean
 
+  // 是否跳过类型诊断
+  // 默认值: true
+  skipDiagnostics?: boolean
+
   // 是否打印类型诊断信息
   // 默认值: false
   logDiagnostics?: boolean
