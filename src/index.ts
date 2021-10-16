@@ -186,6 +186,12 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     watchChange(id) {
       if (watchExtensionRE.test(id)) {
         isBundle = false
+
+        if (project) {
+          const sourceFile = project.getSourceFile(normalizePath(id))
+
+          sourceFile && project.removeSourceFile(sourceFile)
+        }
       }
     },
 
