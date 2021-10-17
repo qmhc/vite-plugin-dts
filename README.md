@@ -105,6 +105,10 @@ export interface PluginOptions {
   // You can transform declaration file-path and content through it
   // Default: () => {}
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
+
+  // After build hook
+  // Default: () => {}
+  afterBuild?: () => void
 }
 ```
 
