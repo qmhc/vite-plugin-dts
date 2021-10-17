@@ -40,7 +40,8 @@ export interface PluginOptions {
   skipDiagnostics?: boolean,
   logDiagnostics?: boolean,
   afterDiagnostic?: (diagnostics: Diagnostic[]) => void,
-  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
+  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile,
+  afterBuild?: () => void
 }
 
 const noneExport = 'export {};\n'
@@ -66,7 +67,8 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
     skipDiagnostics = true,
     logDiagnostics = false,
     afterDiagnostic = noop,
-    beforeWriteFile = noop
+    beforeWriteFile = noop,
+    afterBuild = noop
   } = options
 
   const compilerOptions = options.compilerOptions ?? {}
@@ -363,6 +365,10 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
           `${chalk.cyan('[vite:dts]')} Declaration files built in ${Date.now() - startTime}ms.\n`
         )
       )
+
+      if (typeof afterBuild === 'function') {
+        afterBuild()
+      }
     }
   }
 }
