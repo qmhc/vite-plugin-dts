@@ -14,7 +14,14 @@ import {
   removePureImport
 } from './transform'
 import { compileVueCode } from './compile'
-import { isNativeObj, mergeObjects, ensureAbsolute, ensureArray, runParallel } from './utils'
+import {
+  isNativeObj,
+  isPromise,
+  mergeObjects,
+  ensureAbsolute,
+  ensureArray,
+  runParallel
+} from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
 import type { ts, Diagnostic } from 'ts-morph'
@@ -39,9 +46,9 @@ export interface PluginOptions {
   noEmitOnError?: boolean,
   skipDiagnostics?: boolean,
   logDiagnostics?: boolean,
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void,
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile,
-  afterBuild?: () => void
+  afterBuild?: () => void | Promise<void>
 }
 
 const noneExport = 'export {};\n'
@@ -265,7 +272,9 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         }
 
         if (typeof afterDiagnostic === 'function') {
-          afterDiagnostic(diagnostics)
+          const result = afterDiagnostic(diagnostics)
+
+          isPromise(result) && (await result)
         }
 
         bundleDebug('diagnostics')
@@ -360,15 +369,19 @@ export default function dtsPlugin(options: PluginOptions = {}): Plugin {
         bundleDebug('insert index')
       }
 
+      if (typeof afterBuild === 'function') {
+        const result = afterBuild()
+
+        isPromise(result) && (await result)
+      }
+
+      bundleDebug('finish')
+
       logger.info(
         chalk.green(
           `${chalk.cyan('[vite:dts]')} Declaration files built in ${Date.now() - startTime}ms.\n`
         )
       )
-
-      if (typeof afterBuild === 'function') {
-        afterBuild()
-      }
     }
   }
 }

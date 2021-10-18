@@ -99,7 +99,7 @@ export interface PluginOptions {
   // After emit diagnostic hook
   // According to the length to judge whether there is any type error
   // Default: () => {}
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
 
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
@@ -107,8 +107,9 @@ export interface PluginOptions {
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
 
   // After build hook
+  // It wil be called after all declaration files are written
   // Default: () => {}
-  afterBuild?: () => void
+  afterBuild?: () => void | Promise<void>
 }
 ```
 

@@ -10,6 +10,14 @@ export function isRegExp(value: unknown): value is RegExp {
   return Object.prototype.toString.call(value) === '[object RegExp]'
 }
 
+export function isPromise(value: unknown): value is Promise<any> {
+  return (
+    !!value &&
+    typeof (value as any).then === 'function' &&
+    typeof (value as any).catch === 'function'
+  )
+}
+
 export function mergeObjects<T extends Record<string, unknown>, U extends Record<string, unknown>>(
   sourceObj: T,
   targetObj: U

@@ -99,12 +99,17 @@ export interface PluginOptions {
   // 获取诊断信息后的钩子
   // 可以根据参数 length 来判断有误类型错误
   // 默认值: () => {}
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
 
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
   // 默认值: () => {}
   beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
+
+  // 构建后回调钩子
+  // 将会在所有类型文件被写入后调用
+  // 默认值: () => {}
+  afterBuild?: () => void | Promise<void>
 }
 ```
 
