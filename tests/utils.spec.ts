@@ -1,7 +1,14 @@
 import { resolve } from 'path'
-import { isNativeObj, isRegExp, mergeObjects, ensureAbsolute, ensureArray } from '../src/utils'
+import {
+  isNativeObj,
+  isRegExp,
+  isPromise,
+  mergeObjects,
+  ensureAbsolute,
+  ensureArray
+} from '../src/utils'
 
-describe('transform tests', () => {
+describe('utils tests', () => {
   it('test: isNativeObj', () => {
     expect(isNativeObj({})).toBe(true)
     expect(isNativeObj([])).toBe(false)
@@ -13,6 +20,21 @@ describe('transform tests', () => {
     expect(isRegExp(/1/)).toBe(true)
     expect(isRegExp(new RegExp(''))).toBe(true)
     expect(isRegExp({})).toBe(false)
+  })
+
+  it('test: isPromise', () => {
+    expect(isPromise(false)).toBe(false)
+    expect(isPromise('')).toBe(false)
+    expect(
+      isPromise(
+        new Promise<void>(r => {
+          r()
+        })
+      )
+    ).toBe(true)
+    expect(isPromise({ then: () => {} })).toBe(false)
+    expect(isPromise({ catch: () => {} })).toBe(false)
+    expect(isPromise({ then: () => {}, catch: () => {} })).toBe(true)
   })
 
   it('test: mergeObjects', () => {

@@ -78,6 +78,9 @@ module.exports = {
       files: ['tests/**/*.spec.{j,t}s?(x)'],
       env: {
         jest: true
+      },
+      rules: {
+        '@typescript-eslint/no-empty-function': 'off'
       }
     }
   ]
