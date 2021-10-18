@@ -1,3 +1,15 @@
+# [0.9.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.3...v0.9.0) (2021-10-18)
+
+### Bug Fixes
+
+- watch mode not update ts/js files ([32a5699](https://github.com/qmhc/vite-plugin-dts/commit/32a5699a9b4f5a24b2a2a870ced43850a0573f82))
+
+### Features
+
+- add afterBuild hook option ([#34](https://github.com/qmhc/vite-plugin-dts/issues/34)) ([e836689](https://github.com/qmhc/vite-plugin-dts/commit/e83668988dab189d185ed9637032f7f80ba1e4db))
+- afterDiagnostic and afterBuild support async ([c92d548](https://github.com/qmhc/vite-plugin-dts/commit/c92d54826b81f50fbb38fa909df730b323b75b24))
+- skip diagnostic by default (add skipDiagnostics option) ([8ca3ed3](https://github.com/qmhc/vite-plugin-dts/commit/8ca3ed30dfcc23c2dd9822fe6ef460a6c832dfe2))
+
 ## [0.8.3](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.2...v0.8.3) (2021-10-11)
 
 ### Bug Fixes
