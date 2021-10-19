@@ -12,6 +12,8 @@ yarn add vite-plugin-dts -D
 
 ## 使用
 
+在 `vite.config.ts`:
+
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
@@ -28,6 +30,36 @@ export default defineConfig({
   },
   plugins: [dts()]
 })
+```
+
+在你的组件中:
+
+```vue
+<template>
+  <div></div>
+</template>
+
+<script lang="ts">
+// 使用 defineComponent 来进行类型推断
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'Component'
+})
+</script>
+```
+
+```vue
+<script setup lang="ts">
+// 尽管没有直接使用 props，你仍需要接收 defineProps 的返回值
+const props = defineProps<{
+  color: 'blue' | 'red'
+}>()
+</script>
+
+<template>
+  <div>{{ color }}</div>
+</template>
 ```
 
 ## 选项

@@ -1,6 +1,5 @@
-// 尽管在使用 jsx 语法
-// 如果仍想要获得正确的类型推导
-// 依然需要使用 defineComponent 定义组件
+// If you still want to ge the currect types inference with using  
+// js syntax, you need using defineComponent to define component
 import { defineComponent } from 'vue'
 
 export default defineComponent({

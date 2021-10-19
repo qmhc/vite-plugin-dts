@@ -12,6 +12,8 @@ yarn add vite-plugin-dts -D
 
 ## Usage
 
+In `vite.config.ts`:
+
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
@@ -28,6 +30,37 @@ export default defineConfig({
   },
   plugins: [dts()]
 })
+```
+
+In your component:
+
+```vue
+<template>
+  <div></div>
+</template>
+
+<script lang="ts">
+// using defineComponent for inferring types
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'Component'
+})
+</script>
+```
+
+```vue
+<script setup lang="ts">
+// Need to access the defineProps returned value to
+// infer types although you never use the props directly
+const props = defineProps<{
+  color: 'blue' | 'red'
+}>()
+</script>
+
+<template>
+  <div>{{ color }}</div>
+</template>
 ```
 
 ## Options
