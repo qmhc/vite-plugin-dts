@@ -1328,7 +1328,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-sfc@npm:3.2.20, @vue/compiler-sfc@npm:^3.2.20":
+"@vue/compiler-sfc@npm:3.2.20":
   version: 3.2.20
   resolution: "@vue/compiler-sfc@npm:3.2.20"
   dependencies:
@@ -7849,7 +7849,6 @@ typescript@4.4.3:
     "@typescript-eslint/eslint-plugin": ^4.33.0
     "@typescript-eslint/parser": ^4.33.0
     "@vitejs/plugin-vue": ^1.9.3
-    "@vue/compiler-sfc": ^3.2.20
     chalk: ^4.1.2
     commitizen: ^4.2.4
     conventional-changelog-cli: ^2.1.1

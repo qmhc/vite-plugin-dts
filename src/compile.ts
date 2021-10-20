@@ -9,9 +9,14 @@ let compiler: typeof import('@vue/compiler-sfc')
 function requireCompiler() {
   if (!compiler) {
     try {
-      compiler = require('@vue/compiler-sfc')
+      // Vue 3.2.13+ ships the SFC compiler directly under the `vue` package
+      compiler = require('vue/compiler-sfc')
     } catch (e) {
-      throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
+      try {
+        compiler = require('@vue/compiler-sfc')
+      } catch (e) {
+        throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
+      }
     }
   }
 
