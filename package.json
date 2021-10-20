@@ -83,5 +83,5 @@
     "test:e2e": "cd example && cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "types": "dist/index.d.ts",
-  "version": "0.9.1"
+  "version": "0.9.2"
 }

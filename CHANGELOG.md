@@ -1,3 +1,9 @@
+## [0.9.2](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.1...v0.9.2) (2021-10-20)
+
+### Bug Fixes
+
+- support optional @vue/compiler-sfc ([34e1958](https://github.com/qmhc/vite-plugin-dts/commit/34e19587aa64c802cfbd99c5c8018bde8d0e1e2f))
+
 ## [0.9.1](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.3...v0.9.1) (2021-10-18)
 
 # [0.9.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.3...v0.9.0) (2021-10-18)
