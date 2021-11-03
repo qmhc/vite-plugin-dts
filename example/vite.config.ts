@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import { existsSync, readdirSync, lstatSync, rmdirSync, unlinkSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import dts from '../src'
+import { dtsPlugin } from '../src/plugin'
 
 emptyDir(resolve(__dirname, 'types'))
 
@@ -26,7 +26,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    dts({
+    dtsPlugin({
       outputDir: 'types',
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],

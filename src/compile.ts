@@ -4,7 +4,7 @@ const exportDefaultRE = /export\s+default/
 const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
 let index = 1
-let compiler: typeof import('@vue/compiler-sfc')
+let compiler: typeof import('vue/compiler-sfc')
 
 function requireCompiler() {
   if (!compiler) {
