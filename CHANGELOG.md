@@ -1,3 +1,9 @@
+## [0.9.3](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.2...v0.9.3) (2021-11-03)
+
+### Bug Fixes
+
+- support require for cjs exports ([cc5aff9](https://github.com/qmhc/vite-plugin-dts/commit/cc5aff9b9906fc87f6012fb66566fd1937a9381e)), closes [#39](https://github.com/qmhc/vite-plugin-dts/issues/39)
+
 ## [0.9.2](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.1...v0.9.2) (2021-10-20)
 
 ### Bug Fixes
