@@ -28,3 +28,5 @@ export type { Component } from '@/components'
 export { BothScripts, JsTest, JsxLangTest, JsxTest, TsxLangTest, TsxTest, TypeProps }
 
 export default DefaultImport
+
+export const dtsTypeTest: GlobalType = 1

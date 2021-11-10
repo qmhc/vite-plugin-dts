@@ -240,6 +240,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           )
 
           if (dtsRE.test(file)) {
+            project.addSourceFileAtPath(file)
             sourceDtsFiles.add(file)
           }
         })
