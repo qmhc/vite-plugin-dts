@@ -157,6 +157,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           outDir: '.',
           // #27 declarationDir option will make no declaration file generated
           declarationDir: null,
+          // compile vue setup script will generate expose parameter for setup function
+          // although user never use it which will get an unexpected unused error
+          noUnusedParameters: false,
           declaration: true,
           noEmit: false,
           emitDeclarationOnly: true
