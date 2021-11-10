@@ -122,10 +122,13 @@ export interface PluginOptions {
   noEmitOnError?: boolean
 
   // Whether skip typescript diagnostics
+  // Skip type diagnostics means that type errors will not interrupt the build process
+  // But for the source files with type errors will not be emitted.
   // Default: true
   skipDiagnostics?: boolean
 
   // Whether log diagnostic informations
+  // Not effective when `skipDiagnostics` is true
   // Default: false
   logDiagnostics?: boolean
 

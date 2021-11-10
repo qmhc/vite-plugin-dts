@@ -121,10 +121,13 @@ export interface PluginOptions {
   noEmitOnError?: boolean
 
   // 是否跳过类型诊断
+  // 跳过类型诊断意味着出现错误时不会中断打包进程的执行
+  // 但对于出现错误的源文件，将无法生成相应的类型文件
   // 默认值: true
   skipDiagnostics?: boolean
 
   // 是否打印类型诊断信息
+  // 当跳过类型诊断时该属性将不会生效
   // 默认值: false
   logDiagnostics?: boolean
 
@@ -157,4 +160,4 @@ yarn run test:e2e
 
 ## 授权
 
-MIT License
+MIT 授权。
