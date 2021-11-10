@@ -1,3 +1,10 @@
+## [0.9.4](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.3...v0.9.4) (2021-11-10)
+
+### Bug Fixes
+
+- cannot resolve types defined in dts files ([666ca09](https://github.com/qmhc/vite-plugin-dts/commit/666ca0925075bed6926f648a210f37d56af9577b)), closes [#42](https://github.com/qmhc/vite-plugin-dts/issues/42)
+- take unused error when using setup-script ([c4145b7](https://github.com/qmhc/vite-plugin-dts/commit/c4145b7352359c79b8ba7c01a1c4afeace4dbc7c))
+
 ## [0.9.3](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.2...v0.9.3) (2021-11-03)
 
 ### Bug Fixes
