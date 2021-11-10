@@ -123,7 +123,7 @@ export interface PluginOptions {
 
   // Whether skip typescript diagnostics
   // Skip type diagnostics means that type errors will not interrupt the build process
-  // But for the source files with type errors will not be emitted.
+  // But for the source files with type errors will not be emitted
   // Default: true
   skipDiagnostics?: boolean
 
@@ -158,6 +158,16 @@ yarn run test:e2e
 ```
 
 Then check `example/types`.
+
+## FAQ
+
+Here will include some FAQ's and provide some solutions.
+
+### Missing some declaration files after build
+
+By default `skipDiagnostics` option is `true`, which means that type diagnostic will be skipped during the build process (some projects may have diagnostic tool such as `vue-tsc`). If there are some files with type errors which will interrupt the build process, these files will not be emitted (not generate declaration files).
+
+If your project has not type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on the diagnostic and log features of this plugin. It will help you to check the type errors during build and log error information to the terminal.
 
 ## License
 
