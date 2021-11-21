@@ -27,7 +27,7 @@
     "debug": "^4.3.2",
     "enquirer": "^2.3.6",
     "eslint": "^8.3.0",
-    "execa": "^6.0.0",
+    "execa": "^5.1.1",
     "husky": "^7.0.4",
     "is-ci": "^3.0.1",
     "jest": "^27.3.1",
@@ -83,5 +83,5 @@
     "test:e2e": "cd example && cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "types": "dist/index.d.ts",
-  "version": "0.9.4"
+  "version": "0.9.5"
 }

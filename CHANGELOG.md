@@ -1,3 +1,9 @@
+## [0.9.5](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.4...v0.9.5) (2021-11-21)
+
+### Bug Fixes
+
+- ensure dts source files through beforeWriteFile hook ([3265412](https://github.com/qmhc/vite-plugin-dts/commit/3265412e26dd8736fefab0cf99e920d01bb246c5)), closes [#43](https://github.com/qmhc/vite-plugin-dts/issues/43)
+
 ## [0.9.4](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.3...v0.9.4) (2021-11-10)
 
 ### Bug Fixes
