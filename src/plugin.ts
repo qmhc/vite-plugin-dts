@@ -337,11 +337,32 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       bundleDebug('output')
 
       await Promise.all(
-        Array.from(sourceDtsFiles).map(async filePath => {
-          const targetPath = resolve(outputDir, relative(root, filePath))
+        Array.from(sourceDtsFiles).map(async originPath => {
+          let filePath = resolve(outputDir, relative(root, originPath))
+          let content = ''
+          let isRewrite = false
 
-          await fs.mkdir(dirname(targetPath), { recursive: true })
-          await fs.copyFile(filePath, targetPath)
+          // dts source file will not emit any output file
+          // so need to call the `beforeWriteFile` hook here
+          if (typeof beforeWriteFile === 'function') {
+            content = await fs.readFile(originPath, 'utf-8')
+
+            const result = beforeWriteFile(filePath, content)
+
+            if (result && isNativeObj(result)) {
+              filePath = result.filePath ?? filePath
+              isRewrite = result.content !== content
+              content = result.content ?? content
+            }
+          }
+
+          await fs.mkdir(dirname(filePath), { recursive: true })
+
+          if (isRewrite) {
+            await fs.writeFile(filePath, content, 'utf-8')
+          } else {
+            await fs.copyFile(originPath, filePath)
+          }
         })
       )
 
