@@ -1,3 +1,10 @@
+## [0.9.6](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.5...v0.9.6) (2021-11-23)
+
+### Bug Fixes
+
+- aliases are not resolved when find ends with '/' ([f04aab2](https://github.com/qmhc/vite-plugin-dts/commit/f04aab21f9f6dc02316a9ff3a9cd43e90cd97828)), closes [#37](https://github.com/qmhc/vite-plugin-dts/issues/37)
+- not equally transform dts source files ([ede5146](https://github.com/qmhc/vite-plugin-dts/commit/ede514649282aec786549d490e8127824913914c))
+
 ## [0.9.5](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.4...v0.9.5) (2021-11-21)
 
 ### Bug Fixes
