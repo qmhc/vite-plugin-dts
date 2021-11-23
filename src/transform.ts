@@ -64,7 +64,10 @@ function isAliasMatch(alias: Alias, importee: string) {
   if (importee.length < alias.find.length) return false
   if (importee === alias.find) return true
 
-  return importee.indexOf(alias.find) === 0 && importee.substring(alias.find.length)[0] === '/'
+  return (
+    importee.indexOf(alias.find) === 0 &&
+    (alias.find.endsWith('/') || importee.substring(alias.find.length)[0] === '/')
+  )
 }
 
 const globalImportRE =
@@ -98,7 +101,8 @@ export function transformAliasImport(filePath: string, content: string, aliases:
           isDynamic ? simpleDynamicImportRE : simpleStaticImportRE,
           `$1'${matchResult[1].replace(
             matchedAlias.find,
-            truthPath.startsWith('.') ? truthPath : `./${truthPath}`
+            (truthPath.startsWith('.') ? truthPath : `./${truthPath}`) +
+              (typeof matchedAlias.find === 'string' && matchedAlias.find.endsWith('/') ? '/' : '')
           )}'${isDynamic ? ')' : ''}`
         )
       }
