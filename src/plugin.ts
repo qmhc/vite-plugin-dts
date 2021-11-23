@@ -24,7 +24,7 @@ import {
 } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
-import type { ts, Diagnostic } from 'ts-morph'
+import type { ts, Diagnostic, SourceFile } from 'ts-morph'
 
 interface TransformWriteFile {
   filePath?: string,
@@ -89,7 +89,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   let outputDir: string
   let isBundle = false
 
-  const sourceDtsFiles = new Set<string>()
+  const sourceDtsFiles = new Set<SourceFile>()
 
   let hasJsVue = false
   let allowJs = false
@@ -243,8 +243,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           )
 
           if (dtsRE.test(file)) {
-            project.addSourceFileAtPath(file)
-            sourceDtsFiles.add(file)
+            sourceDtsFiles.add(project.addSourceFileAtPath(file))
           }
         })
 
@@ -287,16 +286,28 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       const service = project.getLanguageService()
       const outputFiles = project
         .getSourceFiles()
-        .map(sourceFile => {
-          return service.getEmitOutput(sourceFile, true).getOutputFiles()
-        })
+        .map(sourceFile =>
+          service
+            .getEmitOutput(sourceFile, true)
+            .getOutputFiles()
+            .map(outputFile => ({
+              path: outputFile.getFilePath() as string,
+              content: outputFile.getText()
+            }))
+        )
         .flat()
+        .concat(
+          Array.from(sourceDtsFiles).map(sourceFile => ({
+            path: sourceFile.getFilePath(),
+            content: sourceFile.getFullText()
+          }))
+        )
 
       bundleDebug('emit')
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
-        let filePath = outputFile.getFilePath() as string
-        let content = outputFile.getText()
+        let filePath = outputFile.path
+        let content = outputFile.content
 
         const isMapFile = filePath.endsWith('.map')
 
@@ -306,7 +317,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         )
           return
 
-        if (!isMapFile && content !== noneExport) {
+        if (!isMapFile && content && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
           content = transformAliasImport(filePath, content, aliases)
           content = staticImport ? transformDynamicImport(content) : content
@@ -335,39 +346,6 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       })
 
       bundleDebug('output')
-
-      await Promise.all(
-        Array.from(sourceDtsFiles).map(async originPath => {
-          let filePath = resolve(outputDir, relative(root, originPath))
-          let content = ''
-          let isRewrite = false
-
-          // dts source file will not emit any output file
-          // so need to call the `beforeWriteFile` hook here
-          if (typeof beforeWriteFile === 'function') {
-            content = await fs.readFile(originPath, 'utf-8')
-
-            const result = beforeWriteFile(filePath, content)
-
-            if (result && isNativeObj(result)) {
-              filePath = result.filePath ?? filePath
-              isRewrite = result.content !== content
-              content = result.content ?? content
-            }
-          }
-
-          await fs.mkdir(dirname(filePath), { recursive: true })
-
-          if (isRewrite) {
-            await fs.writeFile(filePath, content, 'utf-8')
-          } else {
-            await fs.copyFile(originPath, filePath)
-          }
-        })
-      )
-
-      bundleDebug('copy dts')
-
       if (insertTypesEntry) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
