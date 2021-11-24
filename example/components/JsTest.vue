@@ -5,7 +5,7 @@
 </template>
 
 <script>
-// If you still want to ge the currect types inference with using  
+// If you still want to ge the currect types inference with using
 // js syntax, you need using defineComponent to define component
 import { defineComponent, ref } from 'vue'
 

@@ -3,10 +3,16 @@ module.exports = {
   env: {
     node: true
   },
-  parser: '@typescript-eslint/parser',
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  parser: 'vue-eslint-parser',
+  extends: [
+    'plugin:vue/vue3-essential',
+    'plugin:vue/vue3-strongly-recommended',
+    'plugin:vue/vue3-recommended',
+    '@vue/standard',
+    '@vue/typescript/recommended'
+  ],
   parserOptions: {
-    ecmaVersion: 2020
+    ecmaVersion: 'latest'
   },
   rules: {
     'no-console':
@@ -71,7 +77,28 @@ module.exports = {
         prefer: 'type-imports',
         disallowTypeAnnotations: false
       }
-    ]
+    ],
+    'vue/max-attributes-per-line': [
+      'warn',
+      {
+        singleline: 3,
+        multiline: 1
+      }
+    ],
+    'vue/html-self-closing': [
+      'error',
+      {
+        html: {
+          void: 'always',
+          normal: 'never',
+          component: 'never'
+        },
+        svg: 'always',
+        math: 'always'
+      }
+    ],
+    'vue/comment-directive': 'off',
+    'vue/multi-word-component-names': 'off'
   },
   overrides: [
     {
@@ -81,6 +108,14 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-empty-function': 'off'
+      }
+    },
+    {
+      files: ['**/*.vue'],
+      globals: {
+        defineProps: 'readonly',
+        defineEmits: 'readonly',
+        defineExpose: 'readonly'
       }
     }
   ]

@@ -1,5 +1,5 @@
 <template>
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite"></HelloWorld>
 </template>
 
 <script lang="ts">

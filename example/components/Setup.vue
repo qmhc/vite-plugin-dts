@@ -1,5 +1,8 @@
 <template>
-  <div class="setup" @click="inc">
+  <div
+    class="setup"
+    @click="inc"
+  >
     {{ count }}
   </div>
   <HelloWorld></HelloWorld>

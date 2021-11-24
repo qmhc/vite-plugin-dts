@@ -314,8 +314,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (
           !includedFileSet.has(isMapFile ? filePath.slice(0, -4) : filePath) ||
           (clearPureImport && content === noneExport)
-        )
+        ) {
           return
+        }
 
         if (!isMapFile && content && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content

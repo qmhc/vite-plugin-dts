@@ -41,14 +41,14 @@ export function compileVueCode(code: string) {
 
       if (classMatch) {
         content =
-          compiled.content.replace(exportDefaultClassRE, `\nclass $1`) +
+          compiled.content.replace(exportDefaultClassRE, '\nclass $1') +
           `\nconst _sfc_main = ${classMatch[1]}`
 
         if (exportDefaultRE.test(content)) {
-          content = rewriteDefault(compiled.content, `_sfc_main`)
+          content = rewriteDefault(compiled.content, '_sfc_main')
         }
       } else {
-        content = rewriteDefault(compiled.content, `_sfc_main`)
+        content = rewriteDefault(compiled.content, '_sfc_main')
       }
 
       content = transferSetupPosition(content)
