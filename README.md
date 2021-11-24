@@ -7,7 +7,7 @@ A vite plugin that generate `.d.ts` files from `.ts` or `.vue` source files for 
 ## Install
 
 ```sh
-yarn add vite-plugin-dts -D
+pnpm add vite-plugin-dts -D
 ```
 
 ## Usage
@@ -154,7 +154,7 @@ export interface PluginOptions {
 Clone and run the following script:
 
 ```sh
-yarn run test:e2e
+pnpm run test:e2e
 ```
 
 Then check `example/types`.

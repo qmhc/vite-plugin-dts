@@ -7,7 +7,7 @@
 ## 安装
 
 ```sh
-yarn add vite-plugin-dts -D
+pnpm add vite-plugin-dts -D
 ```
 
 ## 使用
@@ -153,7 +153,7 @@ export interface PluginOptions {
 克隆项目然后执行下列命令：
 
 ```sh
-yarn run test:e2e
+pnpm run test:e2e
 ```
 
 然后检查 `example/types` 目录。
