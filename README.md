@@ -169,6 +169,12 @@ By default `skipDiagnostics` option is `true`, which means that type diagnostic 
 
 If your project has not type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on the diagnostic and log features of this plugin. It will help you to check the type errors during build and log error information to the terminal.
 
+### Take type error when using both `script` and `setup-script` in vue component
+
+This is usually caused by using `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result in `script` will be merged into the parameter object of `defineComponent` that in `setup-script`, but there is incompatible of `defineComponent` returned types and parameter types, then a type error is caused.
+
+Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
+
 ## License
 
 MIT License.

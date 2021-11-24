@@ -168,6 +168,12 @@ yarn run test:e2e
 
 如果您的项目没有依赖外部的类型检查工具，这时候可以您可以设置 `skipDiagnostics: false` 和 `logDiagnostics: true` 来打开插件的诊断与输出功能，这将帮助您检查打包过程中出现的类型错误并将错误信息输出至终端。
 
+### Vue 组件中同时使用了 `script` 和 `setup-script` 后出现类型错误
+
+这通常是由于分别在 `script` 和 `setup-script` 中同时使用了 `defineComponent` 方法导致的。 `vue/compiler-sfc` 为这类文件编译时会将 `script` 中的默认导出结果合并到 `setup-script` 的 `defineComponent` 的参数定义中，而 `defineComponent` 的参数类型与结果类型并不兼容，这一行为将会导致类型错误。
+
+这是一个简单的[示例](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue)，您应该将位于 `script` 中的 `defineComponent` 方法移除，直接导出一个原始的对象。
+
 ## 授权
 
 MIT 授权。
