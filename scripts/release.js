@@ -98,7 +98,7 @@ async function main() {
   logStep(`Building package...`)
 
   if (!skipBuild && !isDryRun) {
-    await run('yarn', ['build'])
+    await run('pnpm', ['build'])
   } else {
     logSkipped()
   }
@@ -106,7 +106,7 @@ async function main() {
   // 更新 Change Log
   logStep('Updating changelog...')
 
-  await run('yarn', ['changelog'])
+  await run('pnpm', ['changelog'])
 
   // 提交改动
   logStep('Comitting changes...')

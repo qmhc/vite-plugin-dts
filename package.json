@@ -77,7 +77,7 @@
   "scripts": {
     "build": "tsup src/index.ts --dts --format cjs,esm --external @vue/compiler-sfc",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
-    "dev": "yarn run build -- --watch",
+    "dev": "pnpm run build -- --watch",
     "lint": "pnpm run lint:src && pnpm run lint:example",
     "lint:src": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/**",
     "lint:example": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue example/{src,components}/**",
