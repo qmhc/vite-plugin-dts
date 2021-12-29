@@ -350,10 +350,11 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (insertTypesEntry) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
-        const typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, 'index.d.ts')
+
+        let typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, 'index.d.ts')
 
         if (!fs.existsSync(typesPath)) {
-          const content =
+          let content =
             entries
               .map(entry => {
                 let filePath = normalizePath(
@@ -366,6 +367,15 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
                 return `export * from '${filePath}'`
               })
               .join('\n') + '\n'
+
+          if (typeof beforeWriteFile === 'function') {
+            const result = beforeWriteFile(typesPath, content)
+
+            if (result && isNativeObj(result)) {
+              typesPath = result.filePath ?? typesPath
+              content = result.content ?? content
+            }
+          }
 
           await fs.writeFile(typesPath, content, 'utf-8')
         }
