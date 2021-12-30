@@ -1,3 +1,9 @@
+## [0.9.7](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.6...v0.9.7) (2021-12-30)
+
+### Bug Fixes
+
+- inserted entry not through beforeWriteFile ([e16b9b1](https://github.com/qmhc/vite-plugin-dts/commit/e16b9b15c66df887bac0ca0b6be05e4d1f8628ed)), closes [#48](https://github.com/qmhc/vite-plugin-dts/issues/48)
+
 ## [0.9.6](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.5...v0.9.6) (2021-11-23)
 
 ### Bug Fixes
