@@ -73,6 +73,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     noEmitOnError = false,
     skipDiagnostics = true,
     logDiagnostics = false,
+    copyDtsFiles = true,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -238,13 +239,17 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         })
 
         files.forEach(file => {
-          includedFileSet.add(
-            dtsRE.test(file) ? file : `${tjsRE.test(file) ? file.replace(tjsRE, '') : file}.d.ts`
-          )
-
           if (dtsRE.test(file)) {
+            if (!copyDtsFiles) {
+              return
+            }
+            
+            includedFileSet.add(file)
             sourceDtsFiles.add(project.addSourceFileAtPath(file))
+            return 
           }
+          
+          includedFileSet.add(`${tjsRE.test(file) ? file.replace(tjsRE, '') : file}.d.ts`)
         })
 
         if (hasJsVue) {
