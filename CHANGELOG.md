@@ -1,3 +1,9 @@
+## [0.9.8](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.7...v0.9.8) (2022-01-10)
+
+### Bug Fixes
+
+- put `copyDtsFiles` option in use ([#53](https://github.com/qmhc/vite-plugin-dts/issues/53)) ([261700f](https://github.com/qmhc/vite-plugin-dts/commit/261700f80a60b3bc1f22f391e00d9999205fe0d2)), closes [#52](https://github.com/qmhc/vite-plugin-dts/issues/52)
+
 ## [0.9.7](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.6...v0.9.7) (2021-12-30)
 
 ### Bug Fixes

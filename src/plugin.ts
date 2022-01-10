@@ -243,12 +243,12 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             if (!copyDtsFiles) {
               return
             }
-            
+
             includedFileSet.add(file)
             sourceDtsFiles.add(project.addSourceFileAtPath(file))
-            return 
+            return
           }
-          
+
           includedFileSet.add(`${tjsRE.test(file) ? file.replace(tjsRE, '') : file}.d.ts`)
         })
 
