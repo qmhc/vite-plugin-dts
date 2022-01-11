@@ -1,3 +1,9 @@
+## [0.9.9](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.8...v0.9.9) (2022-01-11)
+
+### Bug Fixes
+
+- should filter vite virtual files ([5fb24ba](https://github.com/qmhc/vite-plugin-dts/commit/5fb24ba2c40ad2ef81e45c33533aada3bb5aefd3)), closes [#50](https://github.com/qmhc/vite-plugin-dts/issues/50)
+
 ## [0.9.8](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.7...v0.9.8) (2022-01-10)
 
 ### Bug Fixes
