@@ -52,6 +52,7 @@ export interface PluginOptions {
 }
 
 const noneExport = 'export {};\n'
+const virtualPrefix = '\0'
 const vueRE = /\.vue$/
 const tsRE = /\.tsx?$/
 const jsRE = /\.jsx?$/
@@ -182,6 +183,10 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     transform(code, id) {
+      if (id.startsWith(virtualPrefix)) {
+        return null
+      }
+
       if (vueRE.test(id)) {
         const { content, ext } = compileVueCode(code)
 
