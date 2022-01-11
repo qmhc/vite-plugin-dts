@@ -4,23 +4,38 @@ const exportDefaultRE = /export\s+default/
 const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
 let index = 1
-let compiler: typeof import('vue/compiler-sfc')
+let compileRoot: string | null = null
+let compiler: typeof import('vue/compiler-sfc') | null
 
 function requireCompiler() {
   if (!compiler) {
-    try {
-      // Vue 3.2.13+ ships the SFC compiler directly under the `vue` package
-      compiler = require('vue/compiler-sfc')
-    } catch (e) {
+    if (compileRoot) {
       try {
-        compiler = require('@vue/compiler-sfc')
+        compiler = require(require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
+      } catch (e) {}
+    }
+
+    if (!compiler) {
+      try {
+        compiler = require('vue/compiler-sfc')
       } catch (e) {
-        throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
+        try {
+          compiler = require('@vue/compiler-sfc')
+        } catch (e) {
+          throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
+        }
       }
     }
   }
 
-  return compiler
+  return compiler!
+}
+
+export function setCompileRoot(root: string) {
+  if (root && root !== compileRoot) {
+    compileRoot = root
+    compiler = null
+  }
 }
 
 export function compileVueCode(code: string) {

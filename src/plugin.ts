@@ -13,7 +13,7 @@ import {
   transformAliasImport,
   removePureImport
 } from './transform'
-import { compileVueCode } from './compile'
+import { setCompileRoot, compileVueCode } from './compile'
 import {
   isNativeObj,
   isPromise,
@@ -150,6 +150,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         return
       }
 
+      setCompileRoot(root)
       compilerOptions.rootDir ||= root
 
       project = new Project({
