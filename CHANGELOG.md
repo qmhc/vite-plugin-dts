@@ -1,3 +1,9 @@
+## [0.9.10](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.9...v0.9.10) (2022-03-12)
+
+### Bug Fixes
+
+- make default include same as tsconfig.json ([5ca7fc5](https://github.com/qmhc/vite-plugin-dts/commit/5ca7fc51ab321d4b25ce9856c0e52894c1264d44)), closes [#58](https://github.com/qmhc/vite-plugin-dts/issues/58)
+
 ## [0.9.9](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.8...v0.9.9) (2022-01-11)
 
 ### Bug Fixes
