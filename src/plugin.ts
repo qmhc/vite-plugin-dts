@@ -230,7 +230,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         exclude?: string[]
       } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
-      const include = options.include ?? tsConfig.include
+      const include = options.include ?? tsConfig.include ?? '**/*'
       const exclude = options.exclude ?? tsConfig.exclude
 
       bundleDebug('read config')
