@@ -81,6 +81,11 @@ export interface PluginOptions {
   // 默认基于 vite 配置的输出目录
   outputDir?: string
 
+  // 用于手动设置入口文件的根路径
+  // 在计算每个文件的输出路径时将基于该路径
+  // 默认为所有文件的最小公共路径
+  entryRoot?: string
+
   // 提供给 ts-morph Project 初始化的 compilerOptions 选项
   // 默认值: null
   compilerOptions?: ts.CompilerOptions | null

@@ -82,6 +82,11 @@ export interface PluginOptions {
   // Defaults base on your vite config output options
   outputDir?: string
 
+  // Manually set the root path of the entry files
+  // The output path of each file will be caculated base on it
+  // Defaults is the smallest public path for all files
+  entryRoot?: string
+
   // Project init compilerOptions using by ts-morph
   // Default: null
   compilerOptions?: ts.CompilerOptions | null
