@@ -1,3 +1,5 @@
+/* eslint-disable prefer-regex-literals */
+/* eslint-disable promise/param-names */
 import { resolve } from 'path'
 import {
   isNativeObj,
@@ -5,7 +7,8 @@ import {
   isPromise,
   mergeObjects,
   ensureAbsolute,
-  ensureArray
+  ensureArray,
+  queryPublicPath
 } from '../src/utils'
 
 describe('utils tests', () => {
@@ -61,5 +64,33 @@ describe('utils tests', () => {
     expect(ensureArray(1)).toEqual([1])
     expect(ensureArray({ a: 1 })).toEqual([{ a: 1 }])
     expect(ensureArray([1, 2])).toEqual([1, 2])
+  })
+
+  it('test: queryPublicPath', () => {
+    expect(queryPublicPath([])).toBe('')
+    expect(
+      queryPublicPath(['E:\\project\\src\\test\\a.d.ts', 'E:\\project\\src\\test\\b.d.ts'])
+    ).toBe('E:\\project\\src\\test')
+    expect(
+      queryPublicPath([
+        'E:\\project\\src\\test\\a.d.ts',
+        'E:\\project\\src\\test\\b.d.ts',
+        'E:\\project\\src\\c.d.ts'
+      ])
+    ).toBe('E:\\project\\src')
+    expect(
+      queryPublicPath([
+        'E:\\project\\src\\common\\a.d.ts',
+        'E:\\project\\src\\test\\b.d.ts',
+        'E:\\project\\src\\test\\c.d.ts'
+      ])
+    ).toBe('E:\\project\\src')
+    expect(
+      queryPublicPath([
+        'E:\\project\\src\\test\\a.d.ts',
+        'E:\\project\\src\\test1\\b.d.ts',
+        'E:\\project\\src\\test\\c.d.ts'
+      ])
+    ).toBe('E:\\project\\src')
   })
 })
