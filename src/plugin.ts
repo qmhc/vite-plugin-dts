@@ -20,7 +20,8 @@ import {
   mergeObjects,
   ensureAbsolute,
   ensureArray,
-  runParallel
+  runParallel,
+  queryPublicPath
 } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
@@ -36,6 +37,7 @@ export interface PluginOptions {
   exclude?: string | string[],
   root?: string,
   outputDir?: string,
+  entryRoot?: string,
   compilerOptions?: ts.CompilerOptions | null,
   tsConfigFilePath?: string,
   cleanVueFileName?: boolean,
@@ -83,6 +85,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   const compilerOptions = options.compilerOptions ?? {}
 
   let root: string
+  let entryRoot: string
   let aliases: Alias[]
   let entries: string[]
   let logger: Logger
@@ -314,6 +317,10 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           }))
         )
 
+      if (!entryRoot) {
+        entryRoot = queryPublicPath(outputFiles.map(file => file.path))
+      }
+
       bundleDebug('emit')
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
@@ -337,7 +344,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
         filePath = resolve(
           outputDir,
-          relative(root, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+          relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
         )
 
         if (typeof beforeWriteFile === 'function') {
@@ -369,7 +376,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             entries
               .map(entry => {
                 let filePath = normalizePath(
-                  relative(dirname(typesPath), resolve(outputDir, relative(root, entry)))
+                  relative(dirname(typesPath), resolve(outputDir, relative(entryRoot, entry)))
                 )
 
                 filePath = filePath.replace(tsRE, '')
