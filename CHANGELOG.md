@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.10...v1.0.0) (2022-03-22)
+
+### Features
+
+- support entryRoot option ([c939e35](https://github.com/qmhc/vite-plugin-dts/commit/c939e358dfecacaf2dfd2b0d42118c16462c260a)), closes [#59](https://github.com/qmhc/vite-plugin-dts/issues/59)
+
+### BREAKING CHANGES
+
+- The calculating output paths funtion of root option is
+  assigned to entryRoot option, and currently will auto calculating the
+  smallest public path as the default value for entryRoot option.
+
 ## [0.9.10](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.9...v0.9.10) (2022-03-12)
 
 ### Bug Fixes
