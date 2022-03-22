@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0...v1.0.1) (2022-03-22)
+
+### Bug Fixes
+
+- missing some libs defind in dependencies ([ab7960f](https://github.com/qmhc/vite-plugin-dts/commit/ab7960f0d957aad6945ef469274bca3e142baa87))
+
 # [1.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.9.10...v1.0.0) (2022-03-22)
 
 ### Features
