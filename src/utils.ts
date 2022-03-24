@@ -1,4 +1,4 @@
-import { resolve, isAbsolute, dirname } from 'path'
+import { resolve, isAbsolute, dirname, normalize, sep } from 'path'
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
@@ -100,6 +100,8 @@ export async function runParallel<T>(
   return Promise.all(ret)
 }
 
+const speRE = /[\\/]/
+
 export function queryPublicPath(paths: string[]) {
   if (paths.length === 0) {
     return ''
@@ -107,8 +109,8 @@ export function queryPublicPath(paths: string[]) {
     return dirname(paths[0])
   }
 
-  let publicPath = dirname(paths[0]) + '\\'
-  let publicUnits = publicPath.split(/[\\/]/)
+  let publicPath = normalize(dirname(paths[0])) + sep
+  let publicUnits = publicPath.split(speRE)
   let index = publicUnits.length - 1
 
   for (const path of paths.slice(1)) {
@@ -116,13 +118,13 @@ export function queryPublicPath(paths: string[]) {
       return publicPath
     }
 
-    const dirPath = dirname(path) + '\\'
+    const dirPath = normalize(dirname(path)) + sep
 
     if (dirPath.startsWith(publicPath)) {
       continue
     }
 
-    const units = dirPath.split(/[\\/]/)
+    const units = dirPath.split(speRE)
 
     if (units.length < index) {
       publicPath = dirPath
@@ -138,7 +140,7 @@ export function queryPublicPath(paths: string[]) {
 
         index = i - 1
         publicUnits = publicUnits.slice(0, index + 1)
-        publicPath = publicUnits.join('\\') + '\\'
+        publicPath = publicUnits.join(sep) + sep
         break
       }
     }

@@ -321,6 +321,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         entryRoot = queryPublicPath(outputFiles.map(file => file.path))
       }
 
+      entryRoot = ensureAbsolute(entryRoot, root)
+
       bundleDebug('emit')
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
