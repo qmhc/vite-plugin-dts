@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.1...v1.0.2) (2022-03-24)
+
+### Bug Fixes
+
+- incorrect entryRoot calculation in linux an mac ([0136990](https://github.com/qmhc/vite-plugin-dts/commit/01369903f484eb74ae6fa23b49537fa64d610706)), closes [#62](https://github.com/qmhc/vite-plugin-dts/issues/62)
+
 ## [1.0.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0...v1.0.1) (2022-03-22)
 
 ### Bug Fixes
