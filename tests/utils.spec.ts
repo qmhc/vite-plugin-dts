@@ -1,6 +1,6 @@
 /* eslint-disable prefer-regex-literals */
 /* eslint-disable promise/param-names */
-import { resolve } from 'path'
+import { resolve, normalize } from 'path'
 import {
   isNativeObj,
   isRegExp,
@@ -57,7 +57,7 @@ describe('utils tests', () => {
     expect(ensureAbsolute('', root)).toBe(root)
     expect(ensureAbsolute('./src/index.ts', root)).toBe(resolve(root, 'src/index.ts'))
     expect(ensureAbsolute('/src/index.ts', root)).toBe('/src/index.ts')
-    expect(ensureAbsolute('E:/vite-plugin-dts', root)).toBe('E:/vite-plugin-dts')
+    expect(ensureAbsolute('/vite-plugin-dts', root)).toBe('/vite-plugin-dts')
   })
 
   it('test: ensureArray', () => {
@@ -67,30 +67,27 @@ describe('utils tests', () => {
   })
 
   it('test: queryPublicPath', () => {
+    const n = <T extends string | string[]>(p: T) =>
+      (Array.isArray(p) ? p.map(normalize) : normalize(p)) as T
+
     expect(queryPublicPath([])).toBe('')
+    expect(queryPublicPath(n(['/project/src/test/a.d.ts', '/project/src/test/b.d.ts']))).toBe(
+      n('/project/src/test')
+    )
     expect(
-      queryPublicPath(['E:\\project\\src\\test\\a.d.ts', 'E:\\project\\src\\test\\b.d.ts'])
-    ).toBe('E:\\project\\src\\test')
+      queryPublicPath(
+        n(['/project/src/test/a.d.ts', '/project/src/test/b.d.ts', '/project/src/c.d.ts'])
+      )
+    ).toBe(n('/project/src'))
     expect(
-      queryPublicPath([
-        'E:\\project\\src\\test\\a.d.ts',
-        'E:\\project\\src\\test\\b.d.ts',
-        'E:\\project\\src\\c.d.ts'
-      ])
-    ).toBe('E:\\project\\src')
+      queryPublicPath(
+        n(['/project/src/common/a.d.ts', '/project/src/test/b.d.ts', '/project/src/test/c.d.ts'])
+      )
+    ).toBe(n('/project/src'))
     expect(
-      queryPublicPath([
-        'E:\\project\\src\\common\\a.d.ts',
-        'E:\\project\\src\\test\\b.d.ts',
-        'E:\\project\\src\\test\\c.d.ts'
-      ])
-    ).toBe('E:\\project\\src')
-    expect(
-      queryPublicPath([
-        'E:\\project\\src\\test\\a.d.ts',
-        'E:\\project\\src\\test1\\b.d.ts',
-        'E:\\project\\src\\test\\c.d.ts'
-      ])
-    ).toBe('E:\\project\\src')
+      queryPublicPath(
+        n(['/project/src/test/a.d.ts', '/project/src/test1/b.d.ts', '/project/src/test/c.d.ts'])
+      )
+    ).toBe(n('/project/src'))
   })
 })
