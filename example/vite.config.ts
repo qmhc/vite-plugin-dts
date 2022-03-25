@@ -32,6 +32,7 @@ export default defineConfig({
       exclude: ['src/ignore'],
       staticImport: true,
       insertTypesEntry: true,
+      skipDiagnostics: false,
       logDiagnostics: true
     }),
     vue()

@@ -1,4 +1,4 @@
 types/
 dist/
+node_modules/
 components/*.d.ts
-!/node_modules/

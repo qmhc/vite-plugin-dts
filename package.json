@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
-    "debug": "^4.3.4",
     "fast-glob": "^3.2.11",
     "fs-extra": "^10.0.1",
     "ts-morph": "^14.0.0"
@@ -27,6 +26,7 @@
     "conventional-changelog-cli": "^2.2.2",
     "cross-env": "^7.0.3",
     "cz-customizable": "^6.3.0",
+    "debug": "^4.3.4",
     "enquirer": "^2.3.6",
     "eslint": "^8.11.0",
     "eslint-plugin-import": "^2.25.4",
@@ -48,7 +48,7 @@
     "tsup": "^5.12.1",
     "typescript": "4.6.2",
     "vite": "^2.8.6",
-    "vue": "^3.2.31"
+    "vue": "3.2.26"
   },
   "engines": {
     "node": ">=12.0.0"
