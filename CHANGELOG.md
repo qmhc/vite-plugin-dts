@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.2...v1.0.3) (2022-03-25)
+
+### Bug Fixes
+
+- **example:** cannot resolve types through symlinks ([0914a6a](https://github.com/qmhc/vite-plugin-dts/commit/0914a6ad8dde3514f94e586798d6d73a9c2ac165)), closes [#63](https://github.com/qmhc/vite-plugin-dts/issues/63)
+
 ## [1.0.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.1...v1.0.2) (2022-03-24)
 
 ### Bug Fixes
