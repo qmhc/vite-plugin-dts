@@ -47,6 +47,7 @@ importers:
       vue: 3.2.26
     dependencies:
       chalk: 4.1.2
+      debug: 4.3.4
       fast-glob: 3.2.11
       fs-extra: 10.0.1
       ts-morph: 14.0.0
@@ -65,7 +66,6 @@ importers:
       conventional-changelog-cli: 2.2.2
       cross-env: 7.0.3
       cz-customizable: 6.3.0
-      debug: 4.3.4
       enquirer: 2.3.6
       eslint: 8.11.0
       eslint-plugin-import: 2.25.4_eslint@8.11.0
@@ -2290,7 +2290,6 @@ packages:
         optional: true
     dependencies:
       ms: 2.1.2
-    dev: true
 
   /debug/4.3.4_supports-color@9.2.1:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
@@ -4776,7 +4775,6 @@ packages:
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
-    dev: true
 
   /multimatch/4.0.0:
     resolution: {integrity: sha512-lDmx79y1z6i7RNx0ZGCPq1bzJ6ZoDDKbvh7jxr9SJcWLkShMzXrHbYVpTdnhNM5MXpDUxCQ4DgqVttVXlBgiBQ==}

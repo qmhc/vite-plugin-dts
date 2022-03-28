@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
+    "debug": "^4.3.4",
     "fast-glob": "^3.2.11",
     "fs-extra": "^10.0.1",
     "ts-morph": "^14.0.0"
@@ -26,7 +27,6 @@
     "conventional-changelog-cli": "^2.2.2",
     "cross-env": "^7.0.3",
     "cz-customizable": "^6.3.0",
-    "debug": "^4.3.4",
     "enquirer": "^2.3.6",
     "eslint": "^8.11.0",
     "eslint-plugin-import": "^2.25.4",
