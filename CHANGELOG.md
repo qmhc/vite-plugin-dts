@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.3...v1.0.4) (2022-03-28)
+
+### Bug Fixes
+
+- transfer 'debug' to dependencies ([7af9232](https://github.com/qmhc/vite-plugin-dts/commit/7af9232e381f6d572a543706d640c6ecdb5a6c00))
+
 ## [1.0.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.2...v1.0.3) (2022-03-25)
 
 ### Bug Fixes
