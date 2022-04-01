@@ -2,7 +2,7 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-A vite plugin that generate `.d.ts` files from `.ts` or `.vue` source files for lib.
+A vite plugin that generates declaration files (`*.d.ts`) from `.ts` or `.vue` source files when using vite in [library mode](https://vitejs.dev/guide/build.html#library-mode).
 
 ## Install
 
@@ -166,17 +166,17 @@ Then check `example/types`.
 
 ## FAQ
 
-Here will include some FAQ's and provide some solutions.
+Here are some FAQ's and solutions.
 
 ### Missing some declaration files after build
 
-By default `skipDiagnostics` option is `true`, which means that type diagnostic will be skipped during the build process (some projects may have diagnostic tool such as `vue-tsc`). If there are some files with type errors which will interrupt the build process, these files will not be emitted (not generate declaration files).
+By default `skipDiagnostics` option is `true`, which means that type diagnostic will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). If there are some files with type errors which interrupt the build process, these files will not be emitted (declaration files won't be generated).
 
-If your project has not type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on the diagnostic and log features of this plugin. It will help you to check the type errors during build and log error information to the terminal.
+If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on the diagnostic and log features of this plugin. It will help you check the type errors during build and log error information to the terminal.
 
 ### Take type error when using both `script` and `setup-script` in vue component
 
-This is usually caused by using `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result in `script` will be merged into the parameter object of `defineComponent` that in `setup-script`, but there is incompatible of `defineComponent` returned types and parameter types, then a type error is caused.
+This is usually caused by using `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
 
 Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
 
