@@ -2,7 +2,7 @@
 
 **中文** | [English](./README.md)
 
-一款用于从 `.ts` 或 `.vue` 源文件生成 `.d.ts` 文件的 Vite 插件。
+一款用于在 [库模式](https://cn.vitejs.dev/guide/build.html#library-mode) 中，从 `.ts` 或 `.vue` 源文件生成类型文件（`.d.ts`）的 Vite 插件。
 
 ## 安装
 

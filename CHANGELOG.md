@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.4...v1.0.5) (2022-04-02)
+
+### Bug Fixes
+
+- entryRoot option not work ([#66](https://github.com/qmhc/vite-plugin-dts/issues/66)) ([bca6423](https://github.com/qmhc/vite-plugin-dts/commit/bca64236076a28dbdd7e6e373c46f3af3723b4e1))
+
 ## [1.0.4](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.3...v1.0.4) (2022-03-28)
 
 ### Bug Fixes
