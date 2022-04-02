@@ -85,7 +85,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   const compilerOptions = options.compilerOptions ?? {}
 
   let root: string
-  let entryRoot: string
+  let entryRoot = options.entryRoot ?? ''
   let aliases: Alias[]
   let entries: string[]
   let logger: Logger
