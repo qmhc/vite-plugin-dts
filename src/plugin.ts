@@ -81,11 +81,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     beforeWriteFile = noop,
     afterBuild = noop
   } = options
-
+  let { entryRoot = '' } = options
   const compilerOptions = options.compilerOptions ?? {}
-
   let root: string
-  let entryRoot: string
   let aliases: Alias[]
   let entries: string[]
   let logger: Logger
