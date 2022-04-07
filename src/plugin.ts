@@ -1,4 +1,4 @@
-import { resolve, dirname, relative } from 'path'
+import { resolve, dirname, relative, basename } from 'path'
 import fs from 'fs-extra'
 import os from 'os'
 import chalk from 'chalk'
@@ -14,6 +14,7 @@ import {
   removePureImport
 } from './transform'
 import { setCompileRoot, compileVueCode } from './compile'
+import { rollupDeclarationFiles } from './rollup'
 import {
   isNativeObj,
   isPromise,
@@ -21,7 +22,8 @@ import {
   ensureAbsolute,
   ensureArray,
   runParallel,
-  queryPublicPath
+  queryPublicPath,
+  removeDirIfEmpty
 } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
@@ -44,6 +46,7 @@ export interface PluginOptions {
   staticImport?: boolean,
   clearPureImport?: boolean,
   insertTypesEntry?: boolean,
+  rollupTypes?: boolean,
   copyDtsFiles?: boolean,
   noEmitOnError?: boolean,
   skipDiagnostics?: boolean,
@@ -61,9 +64,11 @@ const jsRE = /\.jsx?$/
 const dtsRE = /\.d\.tsx?$/
 const tjsRE = /\.(t|j)sx?$/
 const watchExtensionRE = /\.(vue|(t|j)sx?)$/
+const fullRelativeRE = /^\.\.?\//
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
+const logPrefix = chalk.cyan('[vite:dts]')
 const bundleDebug = debug('vite-plugin-dts:bundle')
 
 export function dtsPlugin(options: PluginOptions = {}): Plugin {
@@ -73,6 +78,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     staticImport = false,
     clearPureImport = true,
     insertTypesEntry = false,
+    rollupTypes = false,
     noEmitOnError = false,
     skipDiagnostics = true,
     logDiagnostics = false,
@@ -220,7 +226,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     async closeBundle() {
       if (!outputDir || !project || isBundle) return
 
-      logger.info(chalk.green(`\n${chalk.cyan('[vite:dts]')} Start generate declaration files...`))
+      logger.info(chalk.green(`\n${logPrefix} Start generate declaration files...`))
       bundleDebug('start')
 
       isBundle = true
@@ -297,6 +303,11 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         bundleDebug('diagnostics')
       }
 
+      const dtsOutputFiles = Array.from(sourceDtsFiles).map(sourceFile => ({
+        path: sourceFile.getFilePath(),
+        content: sourceFile.getFullText()
+      }))
+
       const service = project.getLanguageService()
       const outputFiles = project
         .getSourceFiles()
@@ -310,12 +321,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             }))
         )
         .flat()
-        .concat(
-          Array.from(sourceDtsFiles).map(sourceFile => ({
-            path: sourceFile.getFilePath(),
-            content: sourceFile.getFullText()
-          }))
-        )
+        .concat(dtsOutputFiles)
+
+      bundleDebug('emit')
 
       if (!entryRoot) {
         entryRoot = queryPublicPath(outputFiles.map(file => file.path))
@@ -323,7 +331,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       entryRoot = ensureAbsolute(entryRoot, root)
 
-      bundleDebug('emit')
+      const wroteFiles = new Set<string>()
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
         let filePath = outputFile.path
@@ -341,7 +349,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (!isMapFile && content && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
           content = transformAliasImport(filePath, content, aliases)
-          content = staticImport ? transformDynamicImport(content) : content
+          content = staticImport || rollupTypes ? transformDynamicImport(content) : content
         }
 
         filePath = resolve(
@@ -364,10 +372,13 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
           'utf8'
         )
+
+        wroteFiles.add(filePath)
       })
 
       bundleDebug('output')
-      if (insertTypesEntry) {
+
+      if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
 
@@ -382,7 +393,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
                 )
 
                 filePath = filePath.replace(tsRE, '')
-                filePath = /^\.\.?\//.test(filePath) ? filePath : `./${filePath}`
+                filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
 
                 return `export * from '${filePath}'`
               })
@@ -401,6 +412,29 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         }
 
         bundleDebug('insert index')
+
+        if (rollupTypes) {
+          logger.info(chalk.green(`${logPrefix} Start rollup declaration files...`))
+
+          rollupDeclarationFiles({
+            root,
+            tsConfigPath,
+            outputDir,
+            entryPath: typesPath,
+            fileName: basename(typesPath)
+          })
+
+          await runParallel(os.cpus().length, Array.from(wroteFiles), f => fs.unlink(f))
+          removeDirIfEmpty(outputDir)
+
+          if (copyDtsFiles) {
+            await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
+              await fs.writeFile(resolve(outputDir, basename(path)), content, 'utf8')
+            })
+          }
+
+          bundleDebug('rollup')
+        }
       }
 
       if (typeof afterBuild === 'function') {
@@ -412,9 +446,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       bundleDebug('finish')
 
       logger.info(
-        chalk.green(
-          `${chalk.cyan('[vite:dts]')} Declaration files built in ${Date.now() - startTime}ms.\n`
-        )
+        chalk.green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`)
       )
     }
   }

@@ -1,4 +1,5 @@
 import { resolve, isAbsolute, dirname, normalize, sep } from 'path'
+import { existsSync, readdirSync, lstatSync, rmdirSync } from 'fs'
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
@@ -147,4 +148,30 @@ export function queryPublicPath(paths: string[]) {
   }
 
   return publicPath.slice(0, -1)
+}
+
+export function removeDirIfEmpty(dir: string) {
+  if (!existsSync(dir)) {
+    return
+  }
+
+  let onlyHasDir = true
+
+  for (const file of readdirSync(dir)) {
+    const abs = resolve(dir, file)
+
+    if (lstatSync(abs).isDirectory()) {
+      if (!removeDirIfEmpty(abs)) {
+        onlyHasDir = false
+      }
+    } else {
+      onlyHasDir = false
+    }
+  }
+
+  if (onlyHasDir) {
+    rmdirSync(dir)
+  }
+
+  return onlyHasDir
 }

@@ -6,6 +6,8 @@
     "url": "https://github.com/qmhc/vite-plugin-dts/issues"
   },
   "dependencies": {
+    "@microsoft/api-extractor": "^7.20.0",
+    "@rushstack/node-core-library": "^3.45.1",
     "chalk": "^4.1.2",
     "debug": "^4.3.4",
     "fast-glob": "^3.2.11",

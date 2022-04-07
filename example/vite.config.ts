@@ -31,9 +31,10 @@ export default defineConfig({
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       staticImport: true,
+      // skipDiagnostics: false,
+      // logDiagnostics: true,
       insertTypesEntry: true,
-      skipDiagnostics: false,
-      logDiagnostics: true
+      rollupTypes: true
     }),
     vue()
   ]

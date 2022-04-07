@@ -71,7 +71,9 @@ export function compileVueCode(code: string) {
 
       ext = scriptSetup.lang || 'js'
     } else if (script && script.content) {
-      content = script.content
+      content = rewriteDefault(script.content, '_sfc_main')
+      content += '\nexport default _sfc_main\n'
+
       ext = script.lang || 'js'
     }
   }
