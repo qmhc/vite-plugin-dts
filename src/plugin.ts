@@ -65,6 +65,7 @@ const dtsRE = /\.d\.tsx?$/
 const tjsRE = /\.(t|j)sx?$/
 const watchExtensionRE = /\.(vue|(t|j)sx?)$/
 const fullRelativeRE = /^\.\.?\//
+const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
@@ -92,6 +93,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
   let root: string
   let entryRoot = options.entryRoot ?? ''
+  let libName: string
+  let indexName: string
   let aliases: Alias[]
   let entries: string[]
   let logger: Logger
@@ -139,6 +142,18 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             )} You building not a library that may not need to generate declaration files.\n`
           )
         )
+
+        libName = '_default'
+        indexName = defaultIndex
+      } else {
+        const filename = config.build.lib.fileName ?? defaultIndex
+
+        libName = config.build.lib.name || '_default'
+        indexName = typeof filename === 'string' ? filename : filename('es')
+
+        if (!dtsRE.test(indexName)) {
+          indexName = `${tjsRE.test(indexName) ? indexName.replace(tjsRE, '') : indexName}.d.ts`
+        }
       }
 
       root = ensureAbsolute(options.root ?? '', config.root)
@@ -184,7 +199,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     buildStart(inputOptions) {
-      if (insertTypesEntry) {
+      if (!isBundle && (insertTypesEntry || rollupTypes)) {
         entries = Array.isArray(inputOptions.input)
           ? inputOptions.input
           : Object.values(inputOptions.input)
@@ -373,7 +388,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           'utf8'
         )
 
-        wroteFiles.add(filePath)
+        wroteFiles.add(normalizePath(filePath))
       })
 
       bundleDebug('output')
@@ -382,22 +397,19 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
 
-        let typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, 'index.d.ts')
+        let typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, indexName)
 
         if (!fs.existsSync(typesPath)) {
-          let content =
-            entries
-              .map(entry => {
-                let filePath = normalizePath(
-                  relative(dirname(typesPath), resolve(outputDir, relative(entryRoot, entry)))
-                )
+          const entry = entries[0]
 
-                filePath = filePath.replace(tsRE, '')
-                filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
+          let filePath = normalizePath(
+            relative(dirname(typesPath), resolve(outputDir, relative(entryRoot, entry)))
+          )
 
-                return `export * from '${filePath}'`
-              })
-              .join('\n') + '\n'
+          filePath = filePath.replace(tsRE, '')
+          filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
+
+          let content = `import ${libName} from '${filePath}'\nexport default ${libName}\nexport * from '${filePath}'\n`
 
           if (typeof beforeWriteFile === 'function') {
             const result = beforeWriteFile(typesPath, content)
@@ -420,10 +432,11 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             root,
             tsConfigPath,
             outputDir,
-            entryPath: typesPath,
+            entryPath: resolve(outputDir, 'src/index.d.ts'),
             fileName: basename(typesPath)
           })
 
+          wroteFiles.delete(normalizePath(typesPath))
           await runParallel(os.cpus().length, Array.from(wroteFiles), f => fs.unlink(f))
           removeDirIfEmpty(outputDir)
 
