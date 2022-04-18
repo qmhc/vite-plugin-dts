@@ -101,6 +101,7 @@ export interface PluginOptions {
   cleanVueFileName?: boolean
 
   // Whether transform dynamic import to static
+  // Force true when `rollupTypes` is effective
   // eg. 'import('vue').DefineComponent' to 'import { DefineComponent } from "vue"'
   // Default: false
   staticImport?: boolean
@@ -115,8 +116,14 @@ export interface PluginOptions {
 
   // Whether generate types entry file
   // When true will from package.json types field if exists or `${outputDir}/index.d.ts`
+  // Force true when `rollupTypes` is effective
   // Default: false
   insertTypesEntry?: boolean
+
+  // Set to rollup declaration files after emit
+  // Power by `@microsoft/api-extractor`, it will start a new program which takes some time
+  // Default: false
+  rollupTypes?: boolean
 
   // Whether copy .d.ts source files into outputDir
   // Default: true

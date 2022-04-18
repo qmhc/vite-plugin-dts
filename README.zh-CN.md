@@ -100,6 +100,7 @@ export interface PluginOptions {
   cleanVueFileName?: boolean
 
   //是否将动态引入转换为静态
+  // 当开启打包类型文件时强制为 true
   // eg. 'import('vue').DefineComponent' 转换为 'import { DefineComponent } from "vue"'
   // 默认值: false
   staticImport?: boolean
@@ -114,8 +115,14 @@ export interface PluginOptions {
 
   // 是否生成类型声明入口
   // 当为 true 时会基于 package.json 的 tpyes 字段生成，或者 `${outputDir}/index.d.ts`
+  // 当开启打包类型文件时强制为 true
   // 默认值: false
   insertTypesEntry?: boolean
+
+  // 设置是否在发出类型文件后将其打包
+  // 基于 `@microsoft/api-extractor`，由于这开启了一个新的进程，将会消耗一些时间
+  // 默认值: false
+  rollupTypes?: boolean
 
   // 是否将源码里的 .d.ts 文件复制到 outputDir
   // 默认值: true
