@@ -1,3 +1,13 @@
+# [1.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.5...v1.1.0) (2022-04-18)
+
+### Bug Fixes
+
+- lose the type of entry export default ([50f55de](https://github.com/qmhc/vite-plugin-dts/commit/50f55de3ec89d7995056c428a37d16e0cd2a6a4a))
+
+### Features
+
+- support rollup dts files after output ([1d87b44](https://github.com/qmhc/vite-plugin-dts/commit/1d87b44dff3c54a5b1b983b060d3d0d4972c1d94))
+
 ## [1.0.5](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.4...v1.0.5) (2022-04-02)
 
 ### Bug Fixes
