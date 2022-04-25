@@ -432,7 +432,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             root,
             tsConfigPath,
             outputDir,
-            entryPath: resolve(outputDir, 'src/index.d.ts'),
+            entryPath: typesPath,
             fileName: basename(typesPath)
           })
 
