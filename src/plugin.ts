@@ -414,8 +414,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
+        const types = pkg.types || pkg.typings
 
-        let typesPath = pkg.types ? resolve(root, pkg.types) : resolve(outputDir, indexName)
+        let typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
 
         if (!fs.existsSync(typesPath)) {
           const entry = entries[0]
