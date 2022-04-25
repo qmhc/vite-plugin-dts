@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.1.0...v1.1.1) (2022-04-25)
+
+### Bug Fixes
+
+- incorrect rollup entry path ([a9309d8](https://github.com/qmhc/vite-plugin-dts/commit/a9309d8ca8c0531d1579d3a541cd67ac0a37ce1b))
+
 # [1.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.5...v1.1.0) (2022-04-18)
 
 ### Bug Fixes
