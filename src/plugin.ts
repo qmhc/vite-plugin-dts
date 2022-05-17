@@ -18,6 +18,7 @@ import { rollupDeclarationFiles } from './rollup'
 import {
   isNativeObj,
   isPromise,
+  isRegExp,
   mergeObjects,
   ensureAbsolute,
   ensureArray,
@@ -42,6 +43,7 @@ export interface PluginOptions {
   entryRoot?: string,
   compilerOptions?: ts.CompilerOptions | null,
   tsConfigFilePath?: string,
+  aliasesExclude?: Alias['find'][],
   cleanVueFileName?: boolean,
   staticImport?: boolean,
   clearPureImport?: boolean,
@@ -75,6 +77,7 @@ const bundleDebug = debug('vite-plugin-dts:bundle')
 export function dtsPlugin(options: PluginOptions = {}): Plugin {
   const {
     tsConfigFilePath = 'tsconfig.json',
+    aliasesExclude = [],
     cleanVueFileName = false,
     staticImport = false,
     clearPureImport = true,
@@ -118,7 +121,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     config(config) {
       if (isBundle) return
 
-      const aliasOptions = (config.resolve && config.resolve.alias) ?? []
+      const aliasOptions = config?.resolve?.alias ?? []
 
       if (isNativeObj(aliasOptions)) {
         aliases = Object.entries(aliasOptions).map(([key, value]) => {
@@ -126,6 +129,16 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         })
       } else {
         aliases = ensureArray(aliasOptions)
+      }
+
+      if (aliasesExclude.length > 0) {
+        aliases = aliases.filter(({ find }) => 
+          !aliasesExclude.some(alias => !alias && (isRegExp(find)
+            ? find.toString() === alias.toString()
+            : isRegExp(alias)
+            ? find.match(alias)?.[0]
+            : find === alias)
+        ))
       }
     },
 
