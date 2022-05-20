@@ -132,13 +132,18 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       }
 
       if (aliasesExclude.length > 0) {
-        aliases = aliases.filter(({ find }) => 
-          !aliasesExclude.some(alias => !alias && (isRegExp(find)
-            ? find.toString() === alias.toString()
-            : isRegExp(alias)
-            ? find.match(alias)?.[0]
-            : find === alias)
-        ))
+        aliases = aliases.filter(
+          ({ find }) =>
+            !aliasesExclude.some(
+              alias =>
+                !alias &&
+                (isRegExp(find)
+                  ? find.toString() === alias.toString()
+                  : isRegExp(alias)
+                    ? find.match(alias)?.[0]
+                    : find === alias)
+            )
+        )
       }
     },
 
@@ -444,6 +449,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           rollupDeclarationFiles({
             root,
             tsConfigPath,
+            compilerOptions,
             outputDir,
             entryPath: typesPath,
             fileName: basename(typesPath)

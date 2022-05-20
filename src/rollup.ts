@@ -9,10 +9,12 @@ import {
 import { PackageJsonLookup } from '@rushstack/node-core-library'
 
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
+import type { ts } from 'ts-morph'
 
 export interface BundleOptions {
   root: string,
   tsConfigPath: string,
+  compilerOptions: ts.CompilerOptions,
   outputDir: string,
   entryPath: string,
   fileName: string
@@ -25,7 +27,8 @@ export function rollupDeclarationFiles({
   tsConfigPath,
   outputDir,
   entryPath,
-  fileName
+  fileName,
+  compilerOptions
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
   const packageJsonLookup = new PackageJsonLookup()
@@ -40,7 +43,8 @@ export function rollupDeclarationFiles({
       projectFolder: root,
       mainEntryPointFilePath: entryPath,
       compiler: {
-        tsconfigFilePath: tsConfigPath
+        tsconfigFilePath: tsConfigPath,
+        overrideTsconfig: compilerOptions
       },
       apiReport: {
         enabled: false,
