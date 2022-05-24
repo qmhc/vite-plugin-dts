@@ -1,3 +1,14 @@
+# [1.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.1.1...v1.2.0) (2022-05-24)
+
+### Bug Fixes
+
+- support read typings form package.json ([6b1bb29](https://github.com/qmhc/vite-plugin-dts/commit/6b1bb2951512733091b950f5767bfe5a1cbe8992))
+
+### Features
+
+- add `aliasesExclude` option ([#75](https://github.com/qmhc/vite-plugin-dts/issues/75)) ([7588ba4](https://github.com/qmhc/vite-plugin-dts/commit/7588ba4755c19e25ca2482b95cb99a59621e693e)), closes [#73](https://github.com/qmhc/vite-plugin-dts/issues/73)
+- support override compilerOptions when rollup up ([995612d](https://github.com/qmhc/vite-plugin-dts/commit/995612d5eafa6b610a9ab8826ee7b8691c673b4e)), closes [#74](https://github.com/qmhc/vite-plugin-dts/issues/74)
+
 ## [1.1.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.1.0...v1.1.1) (2022-04-25)
 
 ### Bug Fixes
