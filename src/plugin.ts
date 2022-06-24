@@ -428,7 +428,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           filePath = filePath.replace(tsRE, '')
           filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
 
-          let content = `import ${libName} from '${filePath}'\nexport default ${libName}\nexport * from '${filePath}'\n`
+          let content = `export * from '${filePath}'\n`
 
           if (typeof beforeWriteFile === 'function') {
             const result = beforeWriteFile(typesPath, content)
