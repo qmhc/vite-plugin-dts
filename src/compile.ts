@@ -53,6 +53,7 @@ export function compileVueCode(code: string) {
       })
 
       const classMatch = compiled.content.match(exportDefaultClassRE)
+      const plugins = scriptSetup.lang === 'ts' ? ['typescript' as const] : undefined
 
       if (classMatch) {
         content =
@@ -60,10 +61,10 @@ export function compileVueCode(code: string) {
           `\nconst _sfc_main = ${classMatch[1]}`
 
         if (exportDefaultRE.test(content)) {
-          content = rewriteDefault(compiled.content, '_sfc_main')
+          content = rewriteDefault(compiled.content, '_sfc_main', plugins)
         }
       } else {
-        content = rewriteDefault(compiled.content, '_sfc_main')
+        content = rewriteDefault(compiled.content, '_sfc_main', plugins)
       }
 
       content = transferSetupPosition(content)
@@ -71,7 +72,11 @@ export function compileVueCode(code: string) {
 
       ext = scriptSetup.lang || 'js'
     } else if (script && script.content) {
-      content = rewriteDefault(script.content, '_sfc_main')
+      content = rewriteDefault(
+        script.content,
+        '_sfc_main',
+        script.lang === 'ts' ? ['typescript'] : undefined
+      )
       content += '\nexport default _sfc_main\n'
 
       ext = script.lang || 'js'

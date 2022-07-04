@@ -96,7 +96,6 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
   let root: string
   let entryRoot = options.entryRoot ?? ''
-  let libName: string
   let indexName: string
   let aliases: Alias[]
   let entries: string[]
@@ -161,12 +160,10 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           )
         )
 
-        libName = '_default'
         indexName = defaultIndex
       } else {
         const filename = config.build.lib.fileName ?? defaultIndex
 
-        libName = config.build.lib.name || '_default'
         indexName = typeof filename === 'string' ? filename : filename('es')
 
         if (!dtsRE.test(indexName)) {
