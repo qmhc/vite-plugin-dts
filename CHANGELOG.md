@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.2.0...v1.2.1) (2022-07-05)
+
+### Bug Fixes
+
+- add parser plugins param for vue compiler ([7d6bd16](https://github.com/qmhc/vite-plugin-dts/commit/7d6bd16af88701152bf8847e160acf6169bd0918)), closes [#78](https://github.com/qmhc/vite-plugin-dts/issues/78)
+- insert entry fail when no default export in source entry ([#82](https://github.com/qmhc/vite-plugin-dts/issues/82)) ([1a4b161](https://github.com/qmhc/vite-plugin-dts/commit/1a4b161647ba1826c3bfa7c9ca5ee7ca4c3ee4bf))
+
 # [1.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.1.1...v1.2.0) (2022-05-24)
 
 ### Bug Fixes
