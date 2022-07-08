@@ -346,7 +346,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             .getEmitOutput(sourceFile, true)
             .getOutputFiles()
             .map(outputFile => ({
-              path: outputFile.getFilePath() as string,
+              path: normalizePath(resolve(root, outputFile.compilerObject.name)),
               content: outputFile.getText()
             }))
         )
