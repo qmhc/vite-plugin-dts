@@ -27,15 +27,15 @@ export default defineConfig({
   },
   plugins: [
     dtsPlugin({
-      outputDir: 'types',
+      outputDir: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       aliasesExclude: ['@components'],
       staticImport: true,
       // skipDiagnostics: false,
       // logDiagnostics: true,
-      insertTypesEntry: true,
-      rollupTypes: true
+      insertTypesEntry: true
+      // rollupTypes: true
     }),
     vue()
   ]

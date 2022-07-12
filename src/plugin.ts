@@ -39,7 +39,7 @@ export interface PluginOptions {
   include?: string | string[],
   exclude?: string | string[],
   root?: string,
-  outputDir?: string,
+  outputDir?: string | string[],
   entryRoot?: string,
   compilerOptions?: ts.CompilerOptions | null,
   tsConfigFilePath?: string,
@@ -102,7 +102,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   let logger: Logger
   let project: Project
   let tsConfigPath: string
-  let outputDir: string
+  let outputDirs: string[]
   let isBundle = false
 
   const sourceDtsFiles = new Set<SourceFile>()
@@ -174,11 +174,11 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       root = ensureAbsolute(options.root ?? '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
 
-      outputDir = options.outputDir
-        ? ensureAbsolute(options.outputDir, root)
-        : ensureAbsolute(config.build.outDir, root)
+      outputDirs = options.outputDir
+        ? ensureArray(options.outputDir).map(d => ensureAbsolute(d, root))
+        : [ensureAbsolute(config.build.outDir, root)]
 
-      if (!outputDir) {
+      if (!outputDirs) {
         logger.error(
           chalk.red(
             `\n${chalk.cyan(
@@ -254,7 +254,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     async closeBundle() {
-      if (!outputDir || !project || isBundle) return
+      if (!outputDirs || !project || isBundle) return
 
       logger.info(chalk.green(`\n${logPrefix} Start generate declaration files...`))
       bundleDebug('start')
@@ -362,6 +362,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       entryRoot = ensureAbsolute(entryRoot, root)
 
       const wroteFiles = new Set<string>()
+      const outputDir = outputDirs[0]
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
         let filePath = outputFile.path
@@ -400,7 +401,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         await fs.writeFile(
           filePath,
           cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
-          'utf8'
+          'utf-8'
         )
 
         wroteFiles.add(normalizePath(filePath))
@@ -453,18 +454,43 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             fileName: basename(typesPath)
           })
 
-          wroteFiles.delete(normalizePath(typesPath))
+          const wroteFile = normalizePath(typesPath)
+
+          wroteFiles.delete(wroteFile)
           await runParallel(os.cpus().length, Array.from(wroteFiles), f => fs.unlink(f))
           removeDirIfEmpty(outputDir)
+          wroteFiles.clear()
+          wroteFiles.add(wroteFile)
 
           if (copyDtsFiles) {
             await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
-              await fs.writeFile(resolve(outputDir, basename(path)), content, 'utf8')
+              const filePath = resolve(outputDir, basename(path))
+
+              await fs.writeFile(filePath, content, 'utf-8')
+              wroteFiles.add(normalizePath(filePath))
             })
           }
 
           bundleDebug('rollup')
         }
+      }
+
+      if (outputDirs.length > 1) {
+        const dirs = outputDirs.slice(1)
+
+        await runParallel(os.cpus().length, Array.from(wroteFiles), async wroteFile => {
+          const relativePath = relative(outputDir, wroteFile)
+          const content = await fs.readFile(wroteFile, 'utf-8')
+
+          await Promise.all(
+            dirs.map(async dir => {
+              const filePath = resolve(dir, relativePath)
+
+              await fs.mkdir(dirname(filePath), { recursive: true })
+              await fs.writeFile(filePath, content, 'utf-8')
+            })
+          )
+        })
       }
 
       if (typeof afterBuild === 'function') {
