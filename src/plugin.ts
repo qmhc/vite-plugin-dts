@@ -135,7 +135,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           ({ find }) =>
             !aliasesExclude.some(
               alias =>
-                !alias &&
+                alias &&
                 (isRegExp(find)
                   ? find.toString() === alias.toString()
                   : isRegExp(alias)
