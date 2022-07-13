@@ -1,3 +1,14 @@
+# [1.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.2.1...v1.3.0) (2022-07-13)
+
+### Bug Fixes
+
+- aliasesExclude not work when includes empty value ([#85](https://github.com/qmhc/vite-plugin-dts/issues/85)) ([8b9b9aa](https://github.com/qmhc/vite-plugin-dts/commit/8b9b9aa4e9d1c4fa84a2945f4f2421c9269240ff))
+- correct type files generate when root is set ([#68](https://github.com/qmhc/vite-plugin-dts/issues/68)) ([0b491bd](https://github.com/qmhc/vite-plugin-dts/commit/0b491bd3720c5b6065dd00a00f9b95e39bf6c8fe))
+
+### Features
+
+- support multiple output dirs ([cd19ee7](https://github.com/qmhc/vite-plugin-dts/commit/cd19ee7f4cf25906a3ffcd89a6c93baf7c7266ed))
+
 ## [1.2.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.2.0...v1.2.1) (2022-07-05)
 
 ### Bug Fixes
