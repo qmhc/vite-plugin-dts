@@ -187,6 +187,21 @@ pnpm run test:e2e
 
 这是一个简单的[示例](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue)，您应该将位于 `script` 中的 `defineComponent` 方法移除，直接导出一个原始的对象。
 
+### 打包时出现了无法从 `node_modules` 的包中推断类型的错误
+
+这是 TypeScript 通过软链接 (pnpm) 读取 `node_modules` 中过的类型时会出现的一个已知的问题，可以参考这个 [issue](https://github.com/microsoft/TypeScript/issues/42873)，目前已有的一个解决方案，在你的 `tsconfig.json` 中添加 `baseUrl` 以及在 `paths` 添加这些包的路径：
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "third-lib": ["node_modules/third-lib"]
+    }
+  }
+}
+```
+
 ## 授权
 
 MIT 授权。

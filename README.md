@@ -188,6 +188,21 @@ This is usually caused by using `defineComponent` function in both `script` and 
 
 Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
 
+### Take errors that unable to infer types from packages which under `node_modules`
+
+This is a exist issue when TypeScript inferring types from packages which under `node_modules` through soft links (pnpm), you can refer to this [issue](https://github.com/microsoft/TypeScript/issues/42873). Currently has a workaround that add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "third-lib": ["node_modules/third-lib"]
+    }
+  }
+}
+```
+
 ## License
 
 MIT License.
