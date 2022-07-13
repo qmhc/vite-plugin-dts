@@ -2,7 +2,7 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-A vite plugin that generates declaration files (`*.d.ts`) from `.ts` or `.vue` source files when using vite in [library mode](https://vitejs.dev/guide/build.html#library-mode).
+A vite plugin that generates declaration files (`*.d.ts`) from `.ts(x)` or `.vue` source files when using vite in [library mode](https://vitejs.dev/guide/build.html#library-mode).
 
 ## Install
 
@@ -79,8 +79,9 @@ export interface PluginOptions {
   root?: string
 
   // Declaration files output directory
+  // Can be specified a array to output to multiple directories
   // Defaults base on your vite config output options
-  outputDir?: string
+  outputDir?: string | string[]
 
   // Manually set the root path of the entry files
   // The output path of each file will be caculated base on it

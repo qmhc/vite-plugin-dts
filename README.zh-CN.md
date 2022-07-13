@@ -2,7 +2,7 @@
 
 **中文** | [English](./README.md)
 
-一款用于在 [库模式](https://cn.vitejs.dev/guide/build.html#library-mode) 中，从 `.ts` 或 `.vue` 源文件生成类型文件（`.d.ts`）的 Vite 插件。
+一款用于在 [库模式](https://cn.vitejs.dev/guide/build.html#library-mode) 中，从 `.ts(x)` 或 `.vue` 源文件生成类型文件（`.d.ts`）的 Vite 插件。
 
 ## 安装
 
@@ -78,8 +78,9 @@ export interface PluginOptions {
   root?: string
 
   // 声明文件的输出目录
+  // 可以指定一个数组来输出到多个目录中
   // 默认基于 vite 配置的输出目录
-  outputDir?: string
+  outputDir?: string | string[]
 
   // 用于手动设置入口文件的根路径
   // 在计算每个文件的输出路径时将基于该路径
