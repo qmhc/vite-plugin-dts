@@ -438,6 +438,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           }
 
           await fs.writeFile(typesPath, content, 'utf-8')
+          wroteFiles.add(normalizePath(typesPath))
         }
 
         bundleDebug('insert index')
