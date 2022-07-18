@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.3.0...v1.3.1) (2022-07-18)
+
+### Bug Fixes
+
+- dynamiclly adjust the exports of inserted index file ([abc9431](https://github.com/qmhc/vite-plugin-dts/commit/abc943143b97dbec0935b62171b16faeebd6fbf4)), closes [#81](https://github.com/qmhc/vite-plugin-dts/issues/81) [#86](https://github.com/qmhc/vite-plugin-dts/issues/86)
+- missing inserted entry when multiple outputs ([39ff8ab](https://github.com/qmhc/vite-plugin-dts/commit/39ff8abc0e1dda232c3cf1e6f25ff8daddb37acb))
+
 # [1.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.2.1...v1.3.0) (2022-07-13)
 
 ### Bug Fixes
