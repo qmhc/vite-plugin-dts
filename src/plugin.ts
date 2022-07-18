@@ -96,6 +96,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
   let root: string
   let entryRoot = options.entryRoot ?? ''
+  let libName: string
   let indexName: string
   let aliases: Alias[]
   let entries: string[]
@@ -160,10 +161,12 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           )
         )
 
+        libName = '_default'
         indexName = defaultIndex
       } else {
         const filename = config.build.lib.fileName ?? defaultIndex
 
+        libName = config.build.lib.name || '_default'
         indexName = typeof filename === 'string' ? filename : filename('es')
 
         if (!dtsRE.test(indexName)) {
@@ -418,15 +421,22 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
         if (!fs.existsSync(typesPath)) {
           const entry = entries[0]
+          const outputIndex = resolve(outputDir, relative(entryRoot, entry.replace(tsRE, '.d.ts')))
 
-          let filePath = normalizePath(
-            relative(dirname(typesPath), resolve(outputDir, relative(entryRoot, entry)))
-          )
+          let filePath = normalizePath(relative(dirname(typesPath), outputIndex))
 
-          filePath = filePath.replace(tsRE, '')
+          filePath = filePath.replace(dtsRE, '')
           filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
 
           let content = `export * from '${filePath}'\n`
+
+          if (fs.existsSync(outputIndex)) {
+            const entryCodes = await fs.readFile(outputIndex, 'utf-8')
+
+            if (entryCodes.includes('export default')) {
+              content += `import ${libName} from '${filePath}'\nexport default ${libName}\n`
+            }
+          }
 
           if (typeof beforeWriteFile === 'function') {
             const result = beforeWriteFile(typesPath, content)
