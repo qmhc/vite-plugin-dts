@@ -5,6 +5,8 @@ import type { SFCDescriptor } from 'vue/compiler-sfc'
 const exportDefaultRE = /export\s+default/
 const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
+const noScriptContent = "import { defineComponent } from 'vue'\nexport default defineComponent({})"
+
 let index = 1
 let compileRoot: string | null = null
 let compiler: typeof import('vue/compiler-sfc') | null
@@ -118,6 +120,9 @@ export function compileVueCode(code: string) {
 
       ext = script.lang || 'js'
     }
+  } else {
+    content = noScriptContent
+    ext = 'ts'
   }
 
   return { content, ext }
