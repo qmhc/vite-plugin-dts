@@ -1,3 +1,13 @@
+# [1.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.3.1...v1.4.0) (2022-07-20)
+
+### Bug Fixes
+
+- ensure emit dts when no script sfc in vue component ([869a466](https://github.com/qmhc/vite-plugin-dts/commit/869a4662af2e690b2e1e63faf941a9e1343dd6ea)), closes [#88](https://github.com/qmhc/vite-plugin-dts/issues/88)
+
+### Features
+
+- support vue 2.7 ([c4e2c4b](https://github.com/qmhc/vite-plugin-dts/commit/c4e2c4b479da837ab697220284ac3c54e89c54a0)), closes [#87](https://github.com/qmhc/vite-plugin-dts/issues/87)
+
 ## [1.3.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.3.0...v1.3.1) (2022-07-18)
 
 ### Bug Fixes
