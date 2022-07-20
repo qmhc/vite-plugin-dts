@@ -1,11 +1,14 @@
 import { transferSetupPosition } from './transform'
 
+import type { SFCDescriptor } from 'vue/compiler-sfc'
+
 const exportDefaultRE = /export\s+default/
 const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
 
 let index = 1
 let compileRoot: string | null = null
 let compiler: typeof import('vue/compiler-sfc') | null
+let vue: typeof import('vue') | null
 
 function requireCompiler() {
   if (!compiler) {
@@ -31,6 +34,26 @@ function requireCompiler() {
   return compiler!
 }
 
+function isVue3() {
+  if (!vue) {
+    if (compileRoot) {
+      try {
+        vue = require(require.resolve('vue', { paths: [compileRoot] }))
+      } catch (e) {}
+    }
+
+    if (!vue) {
+      try {
+        vue = require('vue')
+      } catch (e) {
+        throw new Error('vue is not present in the dependency tree.\n')
+      }
+    }
+  }
+
+  return vue!.version.startsWith('3')
+}
+
 export function setCompileRoot(root: string) {
   if (root && root !== compileRoot) {
     compileRoot = root
@@ -38,9 +61,23 @@ export function setCompileRoot(root: string) {
   }
 }
 
+function parseCode(code: string) {
+  const { parse } = requireCompiler()
+  let descriptor: any
+
+  if (isVue3()) {
+    descriptor = parse(code).descriptor
+  } else {
+    // #87 support vue 2.7
+    descriptor = (parse as any)({ source: code })
+  }
+
+  return descriptor as SFCDescriptor
+}
+
 export function compileVueCode(code: string) {
-  const { parse, compileScript, rewriteDefault } = requireCompiler()
-  const { descriptor } = parse(code)
+  const { compileScript, rewriteDefault } = requireCompiler()
+  const descriptor = parseCode(code)
   const { script, scriptSetup } = descriptor
 
   let content: string | null = null
