@@ -268,12 +268,30 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       const startTime = Date.now()
       const tsConfig: {
+        extends?: string,
         include?: string[],
         exclude?: string[]
       } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
+      // when the `tsconfig.json` is extended from another config,
+      // the `include` and `exclude` should concat the parent.
+      const extendedTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
+      const extendedTsConfig: {
+        include?: string[],
+        exclude?: string[]
+      } = extendedTsConfigPath
+        ? readConfigFile(extendedTsConfigPath, project.getFileSystem().readFileSync).config
+        : {}
+
+      if (extendedTsConfig.include) {
+        tsConfig.include = tsConfig.include && extendedTsConfig.include.concat(tsConfig.include)
+      }
+      if (extendedTsConfig.exclude) {
+        tsConfig.exclude = tsConfig.exclude && extendedTsConfig.exclude.concat(tsConfig.exclude)
+      }
+
       const include = options.include ?? tsConfig.include ?? '**/*'
-      const exclude = options.exclude ?? tsConfig.exclude
+      const exclude = options.exclude ?? tsConfig.exclude ?? 'node_modules/**'
 
       bundleDebug('read config')
 
@@ -283,7 +301,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
           absolute: true,
-          ignore: ensureArray(exclude ?? ['node_modules/**']).map(normalizeGlob)
+          ignore: ensureArray(exclude).map(normalizeGlob)
         })
 
         files.forEach(file => {
