@@ -275,19 +275,19 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       // when the `tsconfig.json` is extended from another config,
       // the `include` and `exclude` should concat the parent.
-      const extendedTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
-      const extendedTsConfig: {
+      const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
+      const parentTsConfig: {
         include?: string[],
         exclude?: string[]
-      } = extendedTsConfigPath
-        ? readConfigFile(extendedTsConfigPath, project.getFileSystem().readFileSync).config
+      } = parentTsConfigPath
+        ? readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
         : {}
 
-      if (extendedTsConfig.include) {
-        tsConfig.include = tsConfig.include && extendedTsConfig.include.concat(tsConfig.include)
+      if (parentTsConfig.include) {
+        tsConfig.include = tsConfig.include && parentTsConfig.include.concat(tsConfig.include)
       }
-      if (extendedTsConfig.exclude) {
-        tsConfig.exclude = tsConfig.exclude && extendedTsConfig.exclude.concat(tsConfig.exclude)
+      if (parentTsConfig.exclude) {
+        tsConfig.exclude = tsConfig.exclude && parentTsConfig.exclude.concat(tsConfig.exclude)
       }
 
       const include = options.include ?? tsConfig.include ?? '**/*'
