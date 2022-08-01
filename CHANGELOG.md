@@ -1,3 +1,9 @@
+## [1.4.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.4.0...v1.4.1) (2022-08-01)
+
+### Bug Fixes
+
+- includes `extends` field when parse tsconfig.json ([#96](https://github.com/qmhc/vite-plugin-dts/issues/96)) ([2631de0](https://github.com/qmhc/vite-plugin-dts/commit/2631de0725e89083752fd590ff604f3f763abd3a))
+
 # [1.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.3.1...v1.4.0) (2022-07-20)
 
 ### Bug Fixes
