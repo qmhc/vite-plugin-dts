@@ -268,12 +268,25 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       const startTime = Date.now()
       const tsConfig: {
+        extends?: string,
         include?: string[],
         exclude?: string[]
       } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
-      const include = options.include ?? tsConfig.include ?? '**/*'
-      const exclude = options.exclude ?? tsConfig.exclude
+      // #95 should parse include or exclude from the base config when they are missing from the inheriting config
+      // if the inherit config doesn't have `include` or `exclude` field,
+      // should get them from the parent config.
+      const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
+      const parentTsConfig: {
+        include?: string[],
+        exclude?: string[]
+      } = parentTsConfigPath
+        ? readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
+        : {}
+
+      const include = options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'
+      const exclude =
+        options.exclude ?? tsConfig.exclude ?? parentTsConfig.exclude ?? 'node_modules/**'
 
       bundleDebug('read config')
 
@@ -283,7 +296,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         const files = await glob(ensureArray(include).map(normalizeGlob), {
           cwd: root,
           absolute: true,
-          ignore: ensureArray(exclude ?? ['node_modules/**']).map(normalizeGlob)
+          ignore: ensureArray(exclude).map(normalizeGlob)
         })
 
         files.forEach(file => {
