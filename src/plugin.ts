@@ -273,8 +273,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         exclude?: string[]
       } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
-      // when the `tsconfig.json` is extended from another config,
-      // the `include` and `exclude` should concat the parent.
+      // #95 should parse include or exclude from the base config when they are missing from the inheriting config
+      // if the inherit config doesn't have `include` or `exclude` field,
+      // should get them from the parent config.
       const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
       const parentTsConfig: {
         include?: string[],
@@ -283,15 +284,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         ? readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
         : {}
 
-      if (parentTsConfig.include) {
-        tsConfig.include = tsConfig.include && parentTsConfig.include.concat(tsConfig.include)
-      }
-      if (parentTsConfig.exclude) {
-        tsConfig.exclude = tsConfig.exclude && parentTsConfig.exclude.concat(tsConfig.exclude)
-      }
-
-      const include = options.include ?? tsConfig.include ?? '**/*'
-      const exclude = options.exclude ?? tsConfig.exclude ?? 'node_modules/**'
+      const include = options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'
+      const exclude =
+        options.exclude ?? tsConfig.exclude ?? parentTsConfig.exclude ?? 'node_modules/**'
 
       bundleDebug('read config')
 
