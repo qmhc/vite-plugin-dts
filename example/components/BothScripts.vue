@@ -2,6 +2,7 @@
   <component
     :is="tag"
     class="both-scripts"
+    @click="emit('click', $event)"
   >
     <slot></slot>
   </component>
@@ -19,6 +20,10 @@ const props = defineProps({
     type: Number,
     default: 0
   }
+})
+
+const emit = defineEmits({
+  click: (event: MouseEvent) => true
 })
 
 const currentCount = ref(props.count)
