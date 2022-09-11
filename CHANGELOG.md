@@ -1,3 +1,9 @@
+# [1.5.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.4.1...v1.5.0) (2022-09-11)
+
+### Features
+
+- improve aliasesExclude to support more flexible definition ([f652523](https://github.com/qmhc/vite-plugin-dts/commit/f6525235758b0d29347feb7f21a5085dc81b13a4)), closes [#93](https://github.com/qmhc/vite-plugin-dts/issues/93)
+
 ## [1.4.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.4.0...v1.4.1) (2022-08-01)
 
 ### Bug Fixes
