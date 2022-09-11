@@ -97,6 +97,11 @@ export interface PluginOptions {
   // Default: 'tsconfig.json'
   tsConfigFilePath?: string
 
+  // Set which paths should exclude when transform aliases
+  // If it's regexp, it will test the original import path directly
+  // Default: []
+  aliasesExclude?: (string | RegExp)[]
+
   // Whether transform file name '.vue.d.ts' to '.d.ts'
   // Default: false
   cleanVueFileName?: boolean

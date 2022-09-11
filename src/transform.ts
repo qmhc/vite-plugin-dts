@@ -77,7 +77,12 @@ const dynamicImportRE = /import\(['"]([^;\n]+?)['"]\)/
 const simpleStaticImportRE = /((?:import|export).+from\s?)['"](.+)['"]/
 const simpleDynamicImportRE = /(import\()['"](.+)['"]\)/
 
-export function transformAliasImport(filePath: string, content: string, aliases: Alias[]) {
+export function transformAliasImport(
+  filePath: string,
+  content: string,
+  aliases: Alias[],
+  exclude: (string | RegExp)[] = []
+) {
   if (!aliases.length) return content
 
   return content.replace(globalImportRE, str => {
@@ -93,6 +98,12 @@ export function transformAliasImport(filePath: string, content: string, aliases:
       const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult![1]))
 
       if (matchedAlias) {
+        if (
+          exclude.some(e => (isRegExp(e) ? e.test(matchResult![1]) : String(e) === matchResult![1]))
+        ) {
+          return str
+        }
+
         const truthPath = isAbsolute(matchedAlias.replacement)
           ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
           : normalizePath(matchedAlias.replacement)

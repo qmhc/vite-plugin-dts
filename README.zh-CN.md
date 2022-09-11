@@ -96,6 +96,11 @@ export interface PluginOptions {
   // 默认值: 'tsconfig.json'
   tsConfigFilePath?: string
 
+  // 设置在转换别名时哪些路径需要排除
+  // 如果为正则，会直接使用 test 和原始路径进行比较
+  // 默认值: []
+  aliasesExclude?: (string | RegExp)[]
+
   // 是否将 '.vue.d.ts' 文件名转换为 '.d.ts'
   // 默认值: false
   cleanVueFileName?: boolean

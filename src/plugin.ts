@@ -43,7 +43,7 @@ export interface PluginOptions {
   entryRoot?: string,
   compilerOptions?: ts.CompilerOptions | null,
   tsConfigFilePath?: string,
-  aliasesExclude?: Alias['find'][],
+  aliasesExclude?: (string | RegExp)[],
   cleanVueFileName?: boolean,
   staticImport?: boolean,
   clearPureImport?: boolean,
@@ -395,7 +395,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
         if (!isMapFile && content && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
-          content = transformAliasImport(filePath, content, aliases)
+          content = transformAliasImport(filePath, content, aliases, aliasesExclude)
           content = staticImport || rollupTypes ? transformDynamicImport(content) : content
         }
 
