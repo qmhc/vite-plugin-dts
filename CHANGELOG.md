@@ -1,3 +1,14 @@
+# [1.6.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.5.0...v1.6.0) (2022-09-28)
+
+### Bug Fixes
+
+- correct compilerOptions.outDir for project init ([8699219](https://github.com/qmhc/vite-plugin-dts/commit/86992194411017e75b1d17c3f72d631267ec187b))
+- type error occurred while define `defineProps` retruns as `props` ([41eb53a](https://github.com/qmhc/vite-plugin-dts/commit/41eb53a4da681d2c809dc8a7674a03284acbea02)), closes [#113](https://github.com/qmhc/vite-plugin-dts/issues/113)
+
+### Features
+
+- skip write file when `beforeWriteFile` return exact `false` ([9404ebc](https://github.com/qmhc/vite-plugin-dts/commit/9404ebc811b919a59a21b954d4ba4d43be255390)), closes [#110](https://github.com/qmhc/vite-plugin-dts/issues/110)
+
 # [1.5.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.4.1...v1.5.0) (2022-09-11)
 
 ### Features
