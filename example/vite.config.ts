@@ -3,6 +3,7 @@ import { existsSync, readdirSync, lstatSync, rmdirSync, unlinkSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { dtsPlugin } from '../src/plugin'
+// import dtsPlugin from 'vite-plugin-dts'
 
 emptyDir(resolve(__dirname, 'types'))
 
@@ -30,10 +31,10 @@ export default defineConfig({
       outputDir: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
-      aliasesExclude: [/^@components/],
+      // aliasesExclude: [/^@components/],
       staticImport: true,
-      // skipDiagnostics: false,
-      // logDiagnostics: true,
+      skipDiagnostics: false,
+      logDiagnostics: true,
       // rollupTypes: true,
       insertTypesEntry: true
     }),
