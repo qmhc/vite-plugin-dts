@@ -181,7 +181,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         ? ensureArray(options.outputDir).map(d => ensureAbsolute(d, root))
         : [ensureAbsolute(config.build.outDir, root)]
 
-      if (!outputDirs) {
+      if (!outputDirs[0]) {
         logger.error(
           chalk.red(
             `\n${chalk.cyan(
@@ -199,7 +199,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions, {
           noEmitOnError,
-          outDir: '.',
+          outDir: relative(compilerOptions.rootDir, outputDirs[0]),
           // #27 declarationDir option will make no declaration file generated
           declarationDir: null,
           // compile vue setup script will generate expose parameter for setup function
@@ -330,7 +330,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         bundleDebug('collect files')
       }
 
-      project.resolveSourceFileDependencies()
+      // project.resolveSourceFileDependencies()
       bundleDebug('resolve')
 
       if (!skipDiagnostics) {
