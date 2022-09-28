@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module'
 import { transferSetupPosition } from './transform'
 
 import type { SFCDescriptor } from 'vue/compiler-sfc'
@@ -13,22 +12,20 @@ let compileRoot: string | null = null
 let compiler: typeof import('vue/compiler-sfc') | null
 let vue: typeof import('vue') | null
 
-const _require = createRequire(import.meta.url)
-
 function requireCompiler() {
   if (!compiler) {
     if (compileRoot) {
       try {
-        compiler = _require(_require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
+        compiler = require(require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
       } catch (e) {}
     }
 
     if (!compiler) {
       try {
-        compiler = _require('vue/compiler-sfc')
+        compiler = require('vue/compiler-sfc')
       } catch (e) {
         try {
-          compiler = _require('@vue/compiler-sfc')
+          compiler = require('@vue/compiler-sfc')
         } catch (e) {
           throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
         }
@@ -43,13 +40,13 @@ function isVue3() {
   if (!vue) {
     if (compileRoot) {
       try {
-        vue = _require(_require.resolve('vue', { paths: [compileRoot] }))
+        vue = require(require.resolve('vue', { paths: [compileRoot] }))
       } catch (e) {}
     }
 
     if (!vue) {
       try {
-        vue = _require('vue')
+        vue = require('vue')
       } catch (e) {
         throw new Error('vue is not present in the dependency tree.\n')
       }

@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { ExtractorConfig, CompilerState } from '@microsoft/api-extractor'
 import { Collector } from '@microsoft/api-extractor/lib/collector/Collector'
 import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter'
@@ -73,8 +73,8 @@ export function rollupDeclarationFiles({
         }
       }
     },
-    configObjectFullPath: configObjectFullPath,
-    packageJsonFullPath: packageJsonFullPath
+    configObjectFullPath,
+    packageJsonFullPath
   })
 
   const compilerState = CompilerState.create(extractorConfig, {

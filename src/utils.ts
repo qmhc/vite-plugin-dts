@@ -1,5 +1,5 @@
-import { resolve, isAbsolute, dirname, normalize, sep } from 'path'
-import { existsSync, readdirSync, lstatSync, rmdirSync } from 'fs'
+import { resolve, isAbsolute, dirname, normalize, sep } from 'node:path'
+import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T

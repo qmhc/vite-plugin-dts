@@ -1,4 +1,4 @@
-import { resolve, dirname, relative, basename } from 'path'
+import { resolve, dirname, relative, basename } from 'node:path'
 import fs from 'fs-extra'
 import os from 'os'
 import chalk from 'chalk'
