@@ -157,8 +157,9 @@ export interface PluginOptions {
 
   // Before declaration file be writed hook
   // You can transform declaration file-path and content through it
+  // The file will be skipped when return exact false
   // Default: () => {}
-  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
+  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
 
   // After build hook
   // It wil be called after all declaration files are written

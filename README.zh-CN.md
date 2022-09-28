@@ -156,8 +156,9 @@ export interface PluginOptions {
 
   // 类型声明文件被写入前的钩子
   // 可以在钩子里转换文件路径和文件内容
+  // 当返回 false 时会跳过该文件
   // 默认值: () => {}
-  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile
+  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
 
   // 构建后回调钩子
   // 将会在所有类型文件被写入后调用
