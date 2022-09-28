@@ -54,7 +54,7 @@ export interface PluginOptions {
   skipDiagnostics?: boolean,
   logDiagnostics?: boolean,
   afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
-  beforeWriteFile?: (filePath: string, content: string) => void | TransformWriteFile,
+  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile,
   afterBuild?: () => void | Promise<void>
 }
 
@@ -407,6 +407,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (typeof beforeWriteFile === 'function') {
           const result = beforeWriteFile(filePath, content)
 
+          // #110 skip if return false
+          if (result === false) return
+
           if (result && isNativeObj(result)) {
             filePath = result.filePath ?? filePath
             content = result.content ?? content
@@ -451,8 +454,10 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             }
           }
 
+          let result: ReturnType<typeof beforeWriteFile>
+
           if (typeof beforeWriteFile === 'function') {
-            const result = beforeWriteFile(typesPath, content)
+            result = beforeWriteFile(typesPath, content)
 
             if (result && isNativeObj(result)) {
               typesPath = result.filePath ?? typesPath
@@ -460,8 +465,10 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
             }
           }
 
-          await fs.writeFile(typesPath, content, 'utf-8')
-          wroteFiles.add(normalizePath(typesPath))
+          if (result !== false) {
+            await fs.writeFile(typesPath, content, 'utf-8')
+            wroteFiles.add(normalizePath(typesPath))
+          }
         }
 
         bundleDebug('insert index')
