@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.0...v1.6.1) (2022-09-28)
+
+### Bug Fixes
+
+- path error in cjs running ([0832af4](https://github.com/qmhc/vite-plugin-dts/commit/0832af4ab49d8166e14b6897bb1538ec6ddf3bb5))
+
 # [1.6.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.5.0...v1.6.0) (2022-09-28)
 
 ### Bug Fixes
