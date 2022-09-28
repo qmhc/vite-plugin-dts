@@ -17,9 +17,9 @@ export default defineComponent({
   name: 'HelloWorld',
   props: {
     msg: {
-      required: true,
       type: String,
-      validator: (value: string) => value.length > 0
+      validator: (value: string) => value.length > 0,
+      default: ''
     }
   },
   setup(props) {

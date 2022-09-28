@@ -3,6 +3,7 @@ import fs from 'fs-extra'
 import os from 'os'
 import chalk from 'chalk'
 import glob from 'fast-glob'
+// import execa from 'execa'
 import { debug } from 'debug'
 import { Project } from 'ts-morph'
 import { normalizePath } from 'vite'
@@ -199,7 +200,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions, {
           noEmitOnError,
-          outDir: relative(compilerOptions.rootDir, outputDirs[0]),
+          outDir: '.',
           // #27 declarationDir option will make no declaration file generated
           declarationDir: null,
           // compile vue setup script will generate expose parameter for setup function

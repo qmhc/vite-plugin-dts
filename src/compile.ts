@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { transferSetupPosition } from './transform'
 
 import type { SFCDescriptor } from 'vue/compiler-sfc'
@@ -12,20 +13,22 @@ let compileRoot: string | null = null
 let compiler: typeof import('vue/compiler-sfc') | null
 let vue: typeof import('vue') | null
 
+const _require = createRequire(import.meta.url)
+
 function requireCompiler() {
   if (!compiler) {
     if (compileRoot) {
       try {
-        compiler = require(require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
+        compiler = _require(_require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
       } catch (e) {}
     }
 
     if (!compiler) {
       try {
-        compiler = require('vue/compiler-sfc')
+        compiler = _require('vue/compiler-sfc')
       } catch (e) {
         try {
-          compiler = require('@vue/compiler-sfc')
+          compiler = _require('@vue/compiler-sfc')
         } catch (e) {
           throw new Error('@vue/compiler-sfc is not present in the dependency tree.\n')
         }
@@ -40,13 +43,13 @@ function isVue3() {
   if (!vue) {
     if (compileRoot) {
       try {
-        vue = require(require.resolve('vue', { paths: [compileRoot] }))
+        vue = _require(_require.resolve('vue', { paths: [compileRoot] }))
       } catch (e) {}
     }
 
     if (!vue) {
       try {
-        vue = require('vue')
+        vue = _require('vue')
       } catch (e) {
         throw new Error('vue is not present in the dependency tree.\n')
       }
@@ -92,7 +95,10 @@ export function compileVueCode(code: string) {
       })
 
       const classMatch = compiled.content.match(exportDefaultClassRE)
-      const plugins = scriptSetup.lang === 'ts' ? ['typescript' as const] : undefined
+      const plugins =
+        scriptSetup.lang === 'ts'
+          ? ['typescript' as const, 'decorators-legacy' as const]
+          : undefined
 
       if (classMatch) {
         content =
@@ -107,6 +113,12 @@ export function compileVueCode(code: string) {
       }
 
       content = transferSetupPosition(content)
+      content = content
+        .replace(/(const __returned__\s?=\s?\{[\s\S]+?)(props)(\s?\})/, '$1props: props as any$3')
+        .replace(
+          /(const __returned__\s?=\s?\{[\s\S]+?)(props,)([\s\S]+?)/,
+          '$1props: props as any,$3'
+        )
       content += '\nexport default _sfc_main\n'
 
       ext = scriptSetup.lang || 'js'

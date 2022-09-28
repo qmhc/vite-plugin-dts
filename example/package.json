@@ -7,7 +7,7 @@
     "build": "cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "dependencies": {
-    "vue": "3.2.40"
+    "vue": "^3.2.40"
   },
   "devDependencies": {
     "vite-plugin-dts": "workspace:*"
