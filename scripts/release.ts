@@ -1,25 +1,34 @@
-const fs = require('fs-extra')
-const path = require('path')
-const execa = require('execa')
-const semver = require('semver')
-const chalk = require('chalk')
-const { prompt } = require('enquirer')
-const { logger } = require('./logger')
+import path from 'node:path'
+import fs from 'fs-extra'
+import { fileURLToPath } from 'node:url'
+import minimist from 'minimist'
+import { execa } from 'execa'
+import semver from 'semver'
+import { lightBlue } from 'kolorist'
+import prompts from 'prompts'
+// @ts-ignore
+import { logger } from './logger.ts'
 
-const args = require('minimist')(process.argv.slice(2))
+const args = minimist<{
+  d?: boolean,
+  dry?: boolean,
+  t?: string,
+  tag?: string,
+  p: string,
+  preid?: string
+}>(process.argv.slice(2))
 
 const isDryRun = args.dry || args.d
-const skipTests = args.skipTests || args.s
-const skipBuild = args.skipBuild || args.b
 const releaseTag = args.tag || args.t
 
-const bin = name => path.resolve(__dirname, '../node_modules/.bin/' + name)
-const run = (bin, args, opts = {}) => execa(bin, args, { stdio: 'inherit', ...opts })
-const dryRun = (bin, args, opts = {}) => {
-  console.log(chalk.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
+const rootDir = path.resolve(fileURLToPath(import.meta.url), '../..')
+
+const run = (bin: string, args: string[], opts: Record<string, any> = {}) => execa(bin, args, { stdio: 'inherit', ...opts })
+const dryRun = async (bin: string, args: string[], opts: Record<string, any> = {}) => {
+  console.log(lightBlue(`[dryrun] ${bin} ${args.join(' ')}`), opts)
 }
 const runIfNotDry = isDryRun ? dryRun : run
-const logStep = msg => {
+const logStep = (msg: string) => {
   logger.ln()
   logger.infoText(msg)
 }
@@ -30,13 +39,15 @@ const logSkipped = (msg = 'Skipped') => {
 main()
 
 async function main() {
-  const package = require('../package.json')
-  const currentVersion = package.version
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8')
+  )
+  const currentVersion = pkg.version
 
   const preId =
     args.preid ||
     args.p ||
-    (semver.prerelease(currentVersion) && semver.prerelease(currentVersion)[0])
+    semver.prerelease(currentVersion)?.[0]
 
   const versionIncrements = [
     'patch',
@@ -45,29 +56,32 @@ async function main() {
     ...(preId ? ['prepatch', 'preminor', 'premajor', 'prerelease'] : [])
   ]
 
-  const inc = i => semver.inc(currentVersion, i, preId)
+  const inc = (i: any) => semver.inc(currentVersion, i, preId as string)
 
-  const { release } = await prompt({
+  const { release } = await prompts({
     type: 'select',
     name: 'release',
     message: 'Select release type:',
-    choices: versionIncrements.map(i => `${i} (${inc(i)})`).concat(['custom'])
+    choices: versionIncrements
+      .map(i => `${i} (${inc(i)})`)
+      .concat(['custom'])
+      .map(i => ({ title: i, value: i }))
   })
 
   const version =
     release === 'custom'
-      ? await prompt({
-        type: 'input',
+      ? (await prompts({
+        type: 'text',
         name: 'version',
         message: 'Input custom version:'
-      }).version
-      : release.match(/\((.*)\)/)[1]
+      })).version
+      : release.match(/\((.*)\)/)?.[1]
 
   if (!semver.valid(version)) {
     throw new Error(`Invalid target version: ${version}`)
   }
 
-  const { confirm } = await prompt({
+  const { confirm } = await prompts({
     type: 'confirm',
     name: 'confirm',
     message: `Confirm release ${version}?`
@@ -78,26 +92,21 @@ async function main() {
   // 执行单元测试
   logStep('Running test...')
 
-  if (!skipTests && !isDryRun) {
-    await run(bin('jest'), ['--clearCache'])
-    await run(bin('jest'), [
-      '--bail',
-      '--runInBand',
-      '--passWithNoTests'
-    ])
+  if (!isDryRun) {
+    await run('pnpm', ['test'])
   } else {
     logSkipped()
   }
 
   logStep('Updating version...')
 
-  package.version = version
-  await fs.writeFile(path.resolve(__dirname, '../package.json'), JSON.stringify(package, null, 2) + '\n')
+  pkg.version = version
+  await fs.writeFile(path.resolve(rootDir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
 
   // 构建库
   logStep(`Building package...`)
 
-  if (!skipBuild && !isDryRun) {
+  if (!isDryRun) {
     await run('pnpm', ['build'])
   } else {
     logSkipped()
@@ -135,8 +144,8 @@ async function main() {
     )
 
     logger.successText(`Successfully published v${version}'`)
-  } catch (err) {
-    if (err.stderr.match(/previously published/)) {
+  } catch (err: any) {
+    if (err.stderr?.match?.(/previously published/)) {
       logger.errorText(`Skipping already published v'${version}'`)
     } else {
       throw err

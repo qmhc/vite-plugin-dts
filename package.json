@@ -12,6 +12,7 @@
     "debug": "^4.3.4",
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
+    "kolorist": "^1.6.0",
     "ts-morph": "^16.0.0"
   },
   "devDependencies": {
@@ -19,7 +20,10 @@
     "@commitlint/config-conventional": "^17.1.0",
     "@types/debug": "^4.1.7",
     "@types/fs-extra": "^9.0.13",
+    "@types/minimist": "^1.2.2",
     "@types/node": "^18.7.23",
+    "@types/prompts": "^2.0.14",
+    "@types/semver": "^7.3.12",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
     "@vitejs/plugin-vue": "^3.1.0",
@@ -29,13 +33,12 @@
     "conventional-changelog-cli": "^2.2.2",
     "cross-env": "^7.0.3",
     "cz-customizable": "^7.0.0",
-    "enquirer": "^2.3.6",
     "eslint": "^8.24.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.1",
     "eslint-plugin-vue": "^9.5.1",
-    "execa": "^5.1.1",
+    "execa": "^6.1.0",
     "husky": "^8.0.1",
     "is-ci": "^3.0.1",
     "lint-staged": "^13.0.3",
@@ -43,8 +46,10 @@
     "pinst": "^3.0.0",
     "prettier": "^2.7.1",
     "pretty-quick": "^3.1.3",
+    "prompts": "^2.4.2",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
+    "ts-node": "^10.9.1",
     "tsup": "^6.2.3",
     "typescript": "4.7.4",
     "vite": "^3.1.4",
@@ -52,7 +57,7 @@
     "vue": "3.2.40"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": "^14.18.0 || >=16.0.0"
   },
   "files": [
     "dist"
@@ -76,7 +81,7 @@
     "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
   },
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "ts-node --esm scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "pnpm run build -- --watch",
     "lint": "pnpm run lint:src && pnpm run lint:example",
@@ -87,10 +92,11 @@
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged",
-    "release": "node scripts/release.js",
+    "release": "ts-node --esm scripts/release.ts",
     "test": "vitest run",
     "test:e2e": "pnpm -C example build"
   },
+  "type": "module",
   "types": "dist/index.d.ts",
   "version": "1.6.1"
 }
