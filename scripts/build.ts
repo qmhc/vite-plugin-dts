@@ -13,6 +13,11 @@ async function main() {
     { stdio: 'inherit' }
   )
 
+  await patchCommomJs()
+  await patchESModule()
+}
+
+async function patchCommomJs() {
   const indexPath = path.resolve(root, '../dist/index.cjs')
 
   let indexCodes = await fs.readFile(indexPath, 'utf-8')
@@ -29,6 +34,24 @@ async function main() {
 
     await fs.writeFile(indexPath, indexCodes)
   }
+}
+
+const cjsBridge = `
+import __cjs_url__ from 'url';
+import __cjs_path__ from 'path';
+import __cjs_mod__ from 'module';
+const __filename = __cjs_url__.fileURLToPath(import.meta.url);
+const __dirname = __cjs_path__.dirname(__filename);
+const require = __cjs_mod__.createRequire(import.meta.url);
+`
+
+async function patchESModule() {
+  const indexPath = path.resolve(root, '../dist/index.mjs')
+
+  let indexCodes = await fs.readFile(indexPath, 'utf-8')
+  indexCodes = cjsBridge + indexCodes
+
+  await fs.writeFile(indexPath, indexCodes)
 }
 
 main().catch(error => {
