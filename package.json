@@ -81,7 +81,7 @@
     "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
   },
   "scripts": {
-    "build": "ts-node --esm scripts/build.ts",
+    "build": "ts-node --esm scripts/build.mts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "pnpm run build -- --watch",
     "lint": "pnpm run lint:src && pnpm run lint:example",
@@ -92,11 +92,10 @@
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged",
-    "release": "ts-node --esm scripts/release.ts",
+    "release": "ts-node --esm scripts/release.mts",
     "test": "vitest run",
     "test:e2e": "pnpm -C example build"
   },
-  "type": "module",
   "types": "dist/index.d.ts",
   "version": "1.6.2"
 }
