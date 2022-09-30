@@ -1,3 +1,9 @@
+## [1.6.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.1...v1.6.2) (2022-09-30)
+
+### Bug Fixes
+
+- ensure generate dts for type only files ([f3f4919](https://github.com/qmhc/vite-plugin-dts/commit/f3f4919fa441a27b7d842f1e64dd8d711bd05ec9)), closes [#118](https://github.com/qmhc/vite-plugin-dts/issues/118)
+
 ## [1.6.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.0...v1.6.1) (2022-09-28)
 
 ### Bug Fixes
