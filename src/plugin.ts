@@ -4,10 +4,10 @@ import os from 'os'
 import chalk from 'chalk'
 import glob from 'fast-glob'
 // import execa from 'execa'
-import { debug } from 'debug'
+import debug from 'debug'
 import { Project } from 'ts-morph'
 import { normalizePath } from 'vite'
-import { readConfigFile } from 'typescript'
+import typescript from 'typescript'
 import {
   normalizeGlob,
   transformDynamicImport,
@@ -272,7 +272,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         extends?: string,
         include?: string[],
         exclude?: string[]
-      } = readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
+      } = typescript.readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
 
       // #95 should parse include or exclude from the base config when they are missing from the inheriting config
       // if the inherit config doesn't have `include` or `exclude` field,
@@ -282,7 +282,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         include?: string[],
         exclude?: string[]
       } = parentTsConfigPath
-        ? readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
+        ? typescript.readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
         : {}
 
       const include = options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'

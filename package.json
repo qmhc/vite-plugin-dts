@@ -29,10 +29,8 @@
     "@vitejs/plugin-vue": "^3.1.0",
     "@vue/eslint-config-standard": "^8.0.1",
     "@vue/eslint-config-typescript": "^11.0.2",
-    "commitizen": "^4.2.5",
     "conventional-changelog-cli": "^2.2.2",
     "cross-env": "^7.0.3",
-    "cz-customizable": "^7.0.0",
     "eslint": "^8.24.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
@@ -49,15 +47,21 @@
     "prompts": "^2.4.2",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
-    "ts-node": "^10.9.1",
-    "tsup": "^6.2.3",
+    "tsx": "^3.9.0",
     "typescript": "4.7.4",
+    "unbuild": "^0.8.11",
     "vite": "^3.1.4",
     "vitest": "^0.23.4",
     "vue": "3.2.40"
   },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
   },
   "files": [
     "dist"
@@ -70,7 +74,7 @@
     "typescript"
   ],
   "license": "MIT",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "name": "vite-plugin-dts",
   "peerDependencies": {
@@ -81,9 +85,9 @@
     "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
   },
   "scripts": {
-    "build": "ts-node --esm scripts/build.ts",
+    "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
-    "dev": "pnpm run build -- --watch",
+    "dev": "unbuild --stub",
     "lint": "pnpm run lint:src && pnpm run lint:example",
     "lint:src": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/**",
     "lint:example": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue example/{src,components}/**",
@@ -92,7 +96,7 @@
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged",
-    "release": "ts-node --esm scripts/release.ts",
+    "release": "tsx scripts/release.ts",
     "test": "vitest run",
     "test:e2e": "pnpm -C example build"
   },

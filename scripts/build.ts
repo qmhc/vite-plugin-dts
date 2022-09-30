@@ -8,17 +8,12 @@ const bin = (name: string) => path.resolve(root, '../node_modules/.bin/' + name)
 
 async function main() {
   await execa(
-    bin('tsup-node'),
-    [
-      'src/index.ts',
-      '--dts',
-      '--format',
-      'cjs,esm'
-    ],
+    bin('unbuild'),
+    [],
     { stdio: 'inherit' }
   )
 
-  const indexPath = path.resolve(root, '../dist/index.js')
+  const indexPath = path.resolve(root, '../dist/index.cjs')
 
   let indexCodes = await fs.readFile(indexPath, 'utf-8')
 

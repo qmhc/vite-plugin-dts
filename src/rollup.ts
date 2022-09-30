@@ -1,11 +1,11 @@
 import { resolve } from 'node:path'
 import { ExtractorConfig, CompilerState } from '@microsoft/api-extractor'
-import { Collector } from '@microsoft/api-extractor/lib/collector/Collector'
-import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter'
+import { Collector } from '@microsoft/api-extractor/lib/collector/Collector.js'
+import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter.js'
 import {
   DtsRollupGenerator,
   DtsRollupKind
-} from '@microsoft/api-extractor/lib/generators/DtsRollupGenerator'
+} from '@microsoft/api-extractor/lib/generators/DtsRollupGenerator.js'
 import { PackageJsonLookup } from '@rushstack/node-core-library'
 
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
