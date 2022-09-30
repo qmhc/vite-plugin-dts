@@ -1,3 +1,9 @@
+## [1.6.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.2...v1.6.3) (2022-09-30)
+
+### Bug Fixes
+
+- both support cjs and esm(using by tsx) ([38bd6a6](https://github.com/qmhc/vite-plugin-dts/commit/38bd6a6789fe375dd5da0aec1ea9b6816751719a))
+
 ## [1.6.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.1...v1.6.2) (2022-09-30)
 
 ### Bug Fixes
