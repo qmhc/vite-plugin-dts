@@ -13,8 +13,7 @@
     "sourceMap": false,
     "outDir": "dist",
     "types": [
-      "vite/client",
-      "jest"
+      "vite/client"
     ]
   },
   "include": [

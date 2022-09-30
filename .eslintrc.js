@@ -103,19 +103,8 @@ module.exports = {
   overrides: [
     {
       files: ['tests/**/*.spec.{j,t}s?(x)'],
-      env: {
-        jest: true
-      },
       rules: {
         '@typescript-eslint/no-empty-function': 'off'
-      }
-    },
-    {
-      files: ['**/*.vue'],
-      globals: {
-        defineProps: 'readonly',
-        defineEmits: 'readonly',
-        defineExpose: 'readonly'
       }
     }
   ]

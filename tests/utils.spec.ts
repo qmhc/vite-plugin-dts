@@ -1,6 +1,8 @@
 /* eslint-disable prefer-regex-literals */
 /* eslint-disable promise/param-names */
-import { resolve, normalize } from 'path'
+
+import { resolve, normalize } from 'node:path'
+import { describe, it, expect } from 'vitest'
 import {
   isNativeObj,
   isRegExp,
