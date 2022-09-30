@@ -331,7 +331,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         bundleDebug('collect files')
       }
 
-      // project.resolveSourceFileDependencies()
+      project.resolveSourceFileDependencies()
       bundleDebug('resolve')
 
       if (!skipDiagnostics) {
