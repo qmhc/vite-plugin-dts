@@ -1,3 +1,9 @@
+## [1.6.4](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.3...v1.6.4) (2022-09-30)
+
+### Bug Fixes
+
+- patch cjs vars for esm scope ([57e093d](https://github.com/qmhc/vite-plugin-dts/commit/57e093d734e4b81bbeeecbd694b269cca698f914)), closes [#119](https://github.com/qmhc/vite-plugin-dts/issues/119) [#122](https://github.com/qmhc/vite-plugin-dts/issues/122)
+
 ## [1.6.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.2...v1.6.3) (2022-09-30)
 
 ### Bug Fixes
