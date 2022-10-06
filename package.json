@@ -94,7 +94,6 @@
     "postinstall": "is-ci || husky install",
     "postpublish": "pinst --enable",
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
-    "preinstall": "npx only-allow pnpm",
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged",
     "release": "tsx scripts/release.ts",
