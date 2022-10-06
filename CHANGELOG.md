@@ -1,3 +1,9 @@
+## [1.6.5](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.4...v1.6.5) (2022-10-06)
+
+### Bug Fixes
+
+- remove pnpm limitation in preinstall to support npm@6 ([d7167b8](https://github.com/qmhc/vite-plugin-dts/commit/d7167b83381c54075e0e9114c07fe9451b6ffa2d)), closes [#123](https://github.com/qmhc/vite-plugin-dts/issues/123)
+
 ## [1.6.4](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.3...v1.6.4) (2022-09-30)
 
 ### Bug Fixes
