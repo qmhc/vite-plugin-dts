@@ -302,12 +302,13 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
         files.forEach(file => {
           if (dtsRE.test(file)) {
+            sourceDtsFiles.add(project.addSourceFileAtPath(file))
+
             if (!copyDtsFiles) {
               return
             }
 
             includedFileSet.add(file)
-            sourceDtsFiles.add(project.addSourceFileAtPath(file))
             return
           }
 
