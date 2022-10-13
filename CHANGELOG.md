@@ -1,3 +1,10 @@
+## [1.6.6](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.5...v1.6.6) (2022-10-13)
+
+### Bug Fixes
+
+- adapt @microsoft/api-extractor 7.33+ ([5acb4be](https://github.com/qmhc/vite-plugin-dts/commit/5acb4be4d1e4fe41e42a38ec9e92eeeb6f3a9c15))
+- always ship included dts files into soure ([fc345e3](https://github.com/qmhc/vite-plugin-dts/commit/fc345e31b79fd7ca40581727d1964f80d1b9db82)), closes [#126](https://github.com/qmhc/vite-plugin-dts/issues/126)
+
 ## [1.6.5](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.4...v1.6.5) (2022-10-06)
 
 ### Bug Fixes

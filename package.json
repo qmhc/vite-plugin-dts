@@ -101,5 +101,5 @@
   },
   "type": "module",
   "types": "dist/index.d.ts",
-  "version": "1.6.5"
+  "version": "1.6.6"
 }
