@@ -10,3 +10,9 @@ export interface Component {
 export const test: TestBase = {
   name: 'test'
 }
+
+export const CONSTANT = ['one', 'two'] as const
+
+export interface WithConstant {
+  constant: typeof CONSTANT[number]
+}
