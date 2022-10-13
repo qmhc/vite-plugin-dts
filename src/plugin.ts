@@ -1,7 +1,7 @@
 import { resolve, dirname, relative, basename } from 'node:path'
 import fs from 'fs-extra'
 import os from 'os'
-import chalk from 'chalk'
+import { cyan, yellow, red, green } from 'kolorist'
 import glob from 'fast-glob'
 // import execa from 'execa'
 import debug from 'debug'
@@ -72,7 +72,7 @@ const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 
-const logPrefix = chalk.cyan('[vite:dts]')
+const logPrefix = cyan('[vite:dts]')
 const bundleDebug = debug('vite-plugin-dts:bundle')
 
 export function dtsPlugin(options: PluginOptions = {}): Plugin {
@@ -155,8 +155,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       if (!config.build.lib) {
         logger.warn(
-          chalk.yellow(
-            `\n${chalk.cyan(
+          yellow(
+            `\n${cyan(
               '[vite:dts]'
             )} You building not a library that may not need to generate declaration files.\n`
           )
@@ -184,8 +184,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       if (!outputDirs[0]) {
         logger.error(
-          chalk.red(
-            `\n${chalk.cyan(
+          red(
+            `\n${cyan(
               '[vite:dts]'
             )} Can not resolve declaration directory, please check your vite config and plugin options.\n`
           )
@@ -260,7 +260,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     async closeBundle() {
       if (!outputDirs || !project || isBundle) return
 
-      logger.info(chalk.green(`\n${logPrefix} Start generate declaration files...`))
+      logger.info(green(`\n${logPrefix} Start generate declaration files...`))
       bundleDebug('start')
 
       isBundle = true
@@ -317,8 +317,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (hasJsVue) {
           if (!allowJs) {
             logger.warn(
-              chalk.yellow(
-                `${chalk.cyan(
+              yellow(
+                `${cyan(
                   '[vite:dts]'
                 )} Some js files are referenced, but you may not enable the 'allowJs' option.`
               )
@@ -475,7 +475,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         bundleDebug('insert index')
 
         if (rollupTypes) {
-          logger.info(chalk.green(`${logPrefix} Start rollup declaration files...`))
+          logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
           rollupDeclarationFiles({
             root,
@@ -533,9 +533,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
 
       bundleDebug('finish')
 
-      logger.info(
-        chalk.green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`)
-      )
+      logger.info(green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`))
     }
   }
 }

@@ -35,7 +35,7 @@ export default defineConfig({
       staticImport: true,
       skipDiagnostics: false,
       logDiagnostics: true,
-      // rollupTypes: true,
+      rollupTypes: true,
       insertTypesEntry: true
     }),
     vue()

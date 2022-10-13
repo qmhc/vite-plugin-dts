@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { ExtractorConfig, CompilerState } from '@microsoft/api-extractor'
 import { Collector } from '@microsoft/api-extractor/lib/collector/Collector.js'
 import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter.js'
+import { SourceMapper } from '@microsoft/api-extractor/lib/collector/SourceMapper.js'
 import {
   DtsRollupGenerator,
   DtsRollupKind
@@ -82,19 +83,23 @@ export function rollupDeclarationFiles({
     showVerboseMessages: false
   } as IExtractorInvokeOptions)
 
+  const sourceMapper = new SourceMapper()
+
   const messageRouter = new MessageRouter({
     workingPackageFolder: root,
     messageCallback: undefined,
     messagesConfig: extractorConfig.messages as any,
     showVerboseMessages: false,
     showDiagnostics: false,
-    tsdocConfiguration: extractorConfig.tsdocConfiguration
+    tsdocConfiguration: extractorConfig.tsdocConfiguration,
+    sourceMapper
   })
 
   const collector = new Collector({
     program: compilerState.program as any,
     messageRouter,
-    extractorConfig: extractorConfig as any
+    extractorConfig: extractorConfig as any,
+    sourceMapper
   })
 
   collector.analyze()
