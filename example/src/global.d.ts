@@ -1,1 +1,1 @@
-declare type GlobalType = string | number
+type GlobalType = string | number
