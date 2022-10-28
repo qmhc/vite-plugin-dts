@@ -20,7 +20,11 @@ function requireCompiler() {
     if (compileRoot) {
       try {
         compiler = _require(_require.resolve('vue/compiler-sfc', { paths: [compileRoot] }))
-      } catch (e) {}
+      } catch (e) {
+        try {
+          compiler = _require(_require.resolve('@vue/compiler-sfc', { paths: [compileRoot] }))
+        } catch (e) {}
+      }
     }
 
     if (!compiler) {
