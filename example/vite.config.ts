@@ -2,6 +2,7 @@ import { resolve } from 'path'
 import { existsSync, readdirSync, lstatSync, rmdirSync, unlinkSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import { dtsPlugin } from '../src/plugin'
 // import dtsPlugin from 'vite-plugin-dts'
 
@@ -38,7 +39,8 @@ export default defineConfig({
       // rollupTypes: true,
       insertTypesEntry: true
     }),
-    vue()
+    vue(),
+    vueJsx()
   ]
 })
 
