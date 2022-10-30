@@ -100,7 +100,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   let libName: string
   let indexName: string
   let aliases: Alias[]
-  let entries: string[]
+  let entries: Record<string, string>
   let logger: Logger
   let project: Project
   let tsConfigPath: string
@@ -166,9 +166,13 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         indexName = defaultIndex
       } else {
         const filename = config.build.lib.fileName ?? defaultIndex
+        const entry =
+          typeof config.build.lib.entry === 'string'
+            ? config.build.lib.entry
+            : Object.values(config.build.lib.entry)[0]
 
         libName = config.build.lib.name || '_default'
-        indexName = typeof filename === 'string' ? filename : filename('es')
+        indexName = typeof filename === 'string' ? filename : filename('es', entry)
 
         if (!dtsRE.test(indexName)) {
           indexName = `${tjsRE.test(indexName) ? indexName.replace(tjsRE, '') : indexName}.d.ts`
@@ -218,10 +222,14 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     buildStart(inputOptions) {
-      if (!isBundle && (insertTypesEntry || rollupTypes)) {
-        entries = Array.isArray(inputOptions.input)
-          ? inputOptions.input
-          : Object.values(inputOptions.input)
+      if (Array.isArray(inputOptions.input)) {
+        entries = inputOptions.input.reduce((prev, current) => {
+          prev[basename(current)] = current
+
+          return prev
+        }, {} as Record<string, string>)
+      } else {
+        entries = { ...inputOptions.input }
       }
     },
 
@@ -433,43 +441,51 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
+        const entryNames = Object.keys(entries)
         const types = pkg.types || pkg.typings
+        const multiple = entryNames.length > 1
 
-        let typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
+        const typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
 
-        if (!fs.existsSync(typesPath)) {
-          const entry = entries[0]
-          const outputIndex = resolve(outputDir, relative(entryRoot, entry.replace(tsRE, '.d.ts')))
+        for (const name of entryNames) {
+          let filePath = multiple ? resolve(outputDir, name.replace(tsRE, '.d.ts')) : typesPath
 
-          let filePath = normalizePath(relative(dirname(typesPath), outputIndex))
+          if (fs.existsSync(filePath)) continue
 
-          filePath = filePath.replace(dtsRE, '')
-          filePath = fullRelativeRE.test(filePath) ? filePath : `./${filePath}`
+          const index = resolve(
+            outputDir,
+            relative(entryRoot, entries[name].replace(tsRE, '.d.ts'))
+          )
 
-          let content = `export * from '${filePath}'\n`
+          let fromPath = normalizePath(relative(dirname(filePath), index))
 
-          if (fs.existsSync(outputIndex)) {
-            const entryCodes = await fs.readFile(outputIndex, 'utf-8')
+          fromPath = fromPath.replace(dtsRE, '')
+          fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
+
+          let content = `export * from '${fromPath}'\n`
+
+          if (fs.existsSync(index)) {
+            const entryCodes = await fs.readFile(index, 'utf-8')
 
             if (entryCodes.includes('export default')) {
-              content += `import ${libName} from '${filePath}'\nexport default ${libName}\n`
+              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
             }
           }
 
           let result: ReturnType<typeof beforeWriteFile>
 
           if (typeof beforeWriteFile === 'function') {
-            result = beforeWriteFile(typesPath, content)
+            result = beforeWriteFile(filePath, content)
 
             if (result && isNativeObj(result)) {
-              typesPath = result.filePath ?? typesPath
+              filePath = result.filePath ?? filePath
               content = result.content ?? content
             }
           }
 
           if (result !== false) {
-            await fs.writeFile(typesPath, content, 'utf-8')
-            wroteFiles.add(normalizePath(typesPath))
+            await fs.writeFile(filePath, content, 'utf-8')
+            wroteFiles.add(normalizePath(filePath))
           }
         }
 
@@ -478,22 +494,49 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
         if (rollupTypes) {
           logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
-          rollupDeclarationFiles({
-            root,
-            tsConfigPath,
-            compilerOptions,
-            outputDir,
-            entryPath: typesPath,
-            fileName: basename(typesPath)
-          })
+          const rollupFiles = new Set<string>()
 
-          const wroteFile = normalizePath(typesPath)
+          if (multiple) {
+            for (const name of entryNames) {
+              const path = resolve(outputDir, name.replace(tsRE, '.d.ts'))
 
-          wroteFiles.delete(wroteFile)
+              rollupDeclarationFiles({
+                root,
+                tsConfigPath,
+                compilerOptions,
+                outputDir,
+                entryPath: path,
+                fileName: basename(path)
+              })
+
+              const wroteFile = normalizePath(path)
+
+              wroteFiles.delete(wroteFile)
+              rollupFiles.add(wroteFile)
+            }
+          } else {
+            rollupDeclarationFiles({
+              root,
+              tsConfigPath,
+              compilerOptions,
+              outputDir,
+              entryPath: typesPath,
+              fileName: basename(typesPath)
+            })
+
+            const wroteFile = normalizePath(typesPath)
+
+            wroteFiles.delete(wroteFile)
+            rollupFiles.add(wroteFile)
+          }
+
           await runParallel(os.cpus().length, Array.from(wroteFiles), f => fs.unlink(f))
           removeDirIfEmpty(outputDir)
           wroteFiles.clear()
-          wroteFiles.add(wroteFile)
+
+          for (const file of rollupFiles) {
+            wroteFiles.add(file)
+          }
 
           if (copyDtsFiles) {
             await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {

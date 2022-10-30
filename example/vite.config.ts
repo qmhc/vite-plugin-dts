@@ -6,6 +6,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import { dtsPlugin } from '../src/plugin'
 // import dtsPlugin from 'vite-plugin-dts'
 
+emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
 
 export default defineConfig({
@@ -18,10 +19,10 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'Test',
-      formats: ['es'],
-      fileName: 'test'
+      formats: ['es']
+      // fileName: 'test'
     },
     rollupOptions: {
       external: ['vue']
@@ -36,7 +37,7 @@ export default defineConfig({
       staticImport: true,
       skipDiagnostics: false,
       logDiagnostics: true,
-      // rollupTypes: true,
+      rollupTypes: true,
       insertTypesEntry: true
     }),
     vue(),
