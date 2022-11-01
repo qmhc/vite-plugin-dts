@@ -130,7 +130,7 @@ export function compileVueCode(code: string) {
       content = rewriteDefault(
         script.content,
         '_sfc_main',
-        script.lang === 'ts' ? ['typescript'] : undefined
+        script.lang === 'ts' ? ['typescript', 'decorators-legacy'] : undefined
       )
       content += '\nexport default _sfc_main\n'
 
