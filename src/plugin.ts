@@ -86,8 +86,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     insertTypesEntry = false,
     rollupTypes = false,
     noEmitOnError = false,
-    skipDiagnostics = true,
-    logDiagnostics = false,
+    skipDiagnostics = false,
+    logDiagnostics = undefined,
     copyDtsFiles = true,
     libFolderPath = undefined,
     afterDiagnostic = noop,
@@ -154,6 +154,16 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (isBundle) return
 
       logger = config.logger
+
+      if (logDiagnostics != null) {
+        logger.warn(
+          yellow(
+            `\n${cyan(
+              '[vite:dts]'
+            )} 'logDiagnostics' has been deprecated, the original feature now following 'skipDiagnostics'.\n`
+          )
+        )
+      }
 
       if (!config.build.lib) {
         logger.warn(
@@ -349,7 +359,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       if (!skipDiagnostics) {
         const diagnostics = project.getPreEmitDiagnostics()
 
-        if (diagnostics?.length && logDiagnostics) {
+        if (diagnostics?.length) {
           logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
         }
 
