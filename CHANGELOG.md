@@ -1,3 +1,16 @@
+# [1.7.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.6...v1.7.0) (2022-11-07)
+
+### Bug Fixes
+
+- compiler missing plugin `decorators-legacy` ([#138](https://github.com/qmhc/vite-plugin-dts/issues/138)) ([717af2f](https://github.com/qmhc/vite-plugin-dts/commit/717af2f4bc1b5bd549339179bc5b75dbbd9a348a))
+- derprecate logDiagnostics option ([e405328](https://github.com/qmhc/vite-plugin-dts/commit/e405328f64870919a3ee4100fac087870ed4662e))
+- incorrect compiler address resolution ([#133](https://github.com/qmhc/vite-plugin-dts/issues/133)) ([01cc125](https://github.com/qmhc/vite-plugin-dts/commit/01cc125ea98b1994e364487f73d71b0cb6ebcdbf))
+
+### Features
+
+- support customize typescript lib path ([27b83f3](https://github.com/qmhc/vite-plugin-dts/commit/27b83f3423f50307852257f3747c112f2f3cd325)), closes [#134](https://github.com/qmhc/vite-plugin-dts/issues/134)
+- support multiple entries for lib mode ([1fafe54](https://github.com/qmhc/vite-plugin-dts/commit/1fafe54991431ce86a404ecb7e179ef1aa8aff0a)), closes [#136](https://github.com/qmhc/vite-plugin-dts/issues/136)
+
 ## [1.6.6](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.5...v1.6.6) (2022-10-13)
 
 ### Bug Fixes
