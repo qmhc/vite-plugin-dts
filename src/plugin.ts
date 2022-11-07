@@ -54,6 +54,7 @@ export interface PluginOptions {
   noEmitOnError?: boolean,
   skipDiagnostics?: boolean,
   logDiagnostics?: boolean,
+  libFolderPath?: string,
   afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
   beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile,
   afterBuild?: () => void | Promise<void>
@@ -88,6 +89,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     skipDiagnostics = true,
     logDiagnostics = false,
     copyDtsFiles = true,
+    libFolderPath = undefined,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -215,7 +217,8 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           emitDeclarationOnly: true
         }),
         tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true
+        skipAddingFilesFromTsConfig: true,
+        libFolderPath: libFolderPath ? ensureAbsolute(libFolderPath, root) : undefined
       })
 
       allowJs = project.getCompilerOptions().allowJs ?? false
