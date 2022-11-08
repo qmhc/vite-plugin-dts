@@ -29,36 +29,8 @@ import {
 } from './utils'
 
 import type { Plugin, Alias, Logger } from 'vite'
-import type { ts, Diagnostic, SourceFile } from 'ts-morph'
-
-interface TransformWriteFile {
-  filePath?: string,
-  content?: string
-}
-
-export interface PluginOptions {
-  include?: string | string[],
-  exclude?: string | string[],
-  root?: string,
-  outputDir?: string | string[],
-  entryRoot?: string,
-  compilerOptions?: ts.CompilerOptions | null,
-  tsConfigFilePath?: string,
-  aliasesExclude?: (string | RegExp)[],
-  cleanVueFileName?: boolean,
-  staticImport?: boolean,
-  clearPureImport?: boolean,
-  insertTypesEntry?: boolean,
-  rollupTypes?: boolean,
-  copyDtsFiles?: boolean,
-  noEmitOnError?: boolean,
-  skipDiagnostics?: boolean,
-  logDiagnostics?: boolean,
-  libFolderPath?: string,
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
-  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile,
-  afterBuild?: () => void | Promise<void>
-}
+import type { SourceFile } from 'ts-morph'
+import type { PluginOptions } from './types'
 
 const noneExport = 'export {};\n'
 const virtualPrefix = '\0'
