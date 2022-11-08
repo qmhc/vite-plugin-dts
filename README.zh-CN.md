@@ -62,121 +62,6 @@ const props = defineProps<{
 </template>
 ```
 
-## 选项
-
-```ts
-import type { ts, Diagnostic } from 'ts-morph'
-
-interface TransformWriteFile {
-  filePath?: string
-  content?: string
-}
-
-export interface PluginOptions {
-  // 执行的根目录
-  // 默认基于 vite 配置的 root 选项
-  root?: string
-
-  // 声明文件的输出目录
-  // 可以指定一个数组来输出到多个目录中
-  // 默认基于 vite 配置的输出目录
-  outputDir?: string | string[]
-
-  // 用于手动设置入口文件的根路径
-  // 在计算每个文件的输出路径时将基于该路径
-  // 默认为所有文件的最小公共路径
-  entryRoot?: string
-
-  // 提供给 ts-morph Project 初始化的 compilerOptions 选项
-  // 默认值: null
-  compilerOptions?: ts.CompilerOptions | null
-
-  // 提供给 ts-morph Project 初始化的 tsconfig.json 路径
-  // 插件也会读取 tsconfig.json 的 incldue 和 exclude 选项来解析文件
-  // 默认值: 'tsconfig.json'
-  tsConfigFilePath?: string
-
-  // 设置在转换别名时哪些路径需要排除
-  // 如果为正则，会直接使用 test 和原始路径进行比较
-  // 默认值: []
-  aliasesExclude?: (string | RegExp)[]
-
-  // 是否将 '.vue.d.ts' 文件名转换为 '.d.ts'
-  // 默认值: false
-  cleanVueFileName?: boolean
-
-  //是否将动态引入转换为静态
-  // 当开启打包类型文件时强制为 true
-  // eg. 'import('vue').DefineComponent' 转换为 'import { DefineComponent } from "vue"'
-  // 默认值: false
-  staticImport?: boolean
-
-  // 手动设置包含路径的 glob
-  // 默认基于 tsconfig.json 的 include 选项
-  include?: string | string[]
-
-  // 手动设置排除路径的 glob
-  // 默认基于 tsconfig.json 的 exclude 选线，未设置时为 'node_module/**'
-  exclude?: string | string[]
-
-  // 是否生成类型声明入口
-  // 当为 true 时会基于 package.json 的 types 字段生成，或者 `${outputDir}/index.d.ts`
-  // 当开启打包类型文件时强制为 true
-  // 默认值: false
-  insertTypesEntry?: boolean
-
-  // 设置是否在发出类型文件后将其打包
-  // 基于 `@microsoft/api-extractor`，由于这开启了一个新的进程，将会消耗一些时间
-  // 默认值: false
-  rollupTypes?: boolean
-
-  // 是否将源码里的 .d.ts 文件复制到 outputDir
-  // 默认值: true
-  copyDtsFiles?: boolean
-
-  // 出现类型诊断信息时不生成类型文件
-  // 默认值: false
-  noEmitOnError?: boolean
-
-  // 是否跳过类型诊断
-  // 跳过类型诊断意味着出现错误时不会中断打包进程的执行
-  // 但对于出现错误的源文件，将无法生成相应的类型文件
-  // 默认值: true
-  skipDiagnostics?: boolean
-
-  // 是否打印类型诊断信息
-  // 当跳过类型诊断时该属性将不会生效
-  // 默认值: false
-  logDiagnostics?: boolean
-
-  // 获取诊断信息后的钩子
-  // 可以根据参数 length 来判断有误类型错误
-  // 默认值: () => {}
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
-
-  // 类型声明文件被写入前的钩子
-  // 可以在钩子里转换文件路径和文件内容
-  // 当返回 false 时会跳过该文件
-  // 默认值: () => {}
-  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
-
-  // 构建后回调钩子
-  // 将会在所有类型文件被写入后调用
-  // 默认值: () => {}
-  afterBuild?: () => void | Promise<void>
-}
-```
-
-## 示例
-
-克隆项目然后执行下列命令：
-
-```sh
-pnpm run test:e2e
-```
-
-然后检查 `example/types` 目录。
-
 ## 常见问题
 
 此处将收录一些常见的问题并提供一些解决方案。
@@ -207,6 +92,211 @@ pnpm run test:e2e
   }
 }
 ```
+
+## 选项
+
+```ts
+import type { ts, Diagnostic } from 'ts-morph'
+
+interface TransformWriteFile {
+  filePath?: string
+  content?: string
+}
+
+export interface PluginOptions {
+  /**
+   * 执行的根目录
+   *
+   * 默认基于 vite 配置的 root 选项
+   */
+  root?: string
+
+  /**
+   * 声明文件的输出目录
+   *
+   * 可以指定一个数组来输出到多个目录中
+   *
+   * 默认基于 vite 配置的输出目录
+   */
+  outputDir?: string | string[]
+
+  /**
+   * 用于手动设置入口文件的根路径
+   *
+   * 在计算每个文件的输出路径时将基于该路径
+   *
+   * 默认为所有文件的最小公共路径
+   */
+  entryRoot?: string
+
+  /**
+   * 提供给 ts-morph Project 初始化的 compilerOptions 选项
+   *
+   * @default null
+   */
+  compilerOptions?: ts.CompilerOptions | null
+
+  /**
+   * 提供给 ts-morph Project 初始化的 tsconfig.json 路径
+   *
+   * 插件也会读取 tsconfig.json 的 incldue 和 exclude 选项来解析文件
+   *
+   * @default 'tsconfig.json'
+   */
+  tsConfigFilePath?: string
+
+  /**
+   * 设置在转换别名时哪些路径需要排除
+   *
+   * 如果为正则，会直接使用 test 和原始路径进行比较
+   *
+   * @default []
+   */
+  aliasesExclude?: (string | RegExp)[]
+
+  /**
+   * 是否将 '.vue.d.ts' 文件名转换为 '.d.ts'
+   *
+   * @default false
+   */
+  cleanVueFileName?: boolean
+
+  /**
+   * 是否将动态引入转换为静态
+   *
+   * 当开启打包类型文件时强制为 true
+   *
+   * 例如将 'import('vue').DefineComponent' 转换为 'import { DefineComponent } from "vue"'
+   *
+   * @default false
+   */
+  staticImport?: boolean
+
+  /**
+   * 手动设置包含路径的 glob
+   *
+   * 默认基于 tsconfig.json 的 include 选项
+   */
+  include?: string | string[]
+
+  /**
+   * 手动设置排除路径的 glob
+   *
+   * 默认基于 tsconfig.json 的 exclude 选线，未设置时为 'node_module/**'
+   */
+  exclude?: string | string[]
+
+  /**
+   * 如果文件内容仅包含 'export {}' 则跳过生成
+   *
+   * @default true
+   */
+  clearPureImport?: boolean
+
+  /**
+   * 是否生成类型声明入口
+   *
+   * 当为 true 时会基于 package.json 的 types 字段生成，或者 `${outputDir}/index.d.ts`
+   *
+   * 当开启打包类型文件时强制为 true
+   *
+   * @default false
+   */
+  insertTypesEntry?: boolean
+
+  /**
+   * 设置是否在发出类型文件后将其打包
+   *
+   * 基于 `@microsoft/api-extractor`，由于这开启了一个新的进程，将会消耗一些时间
+   *
+   * @default false
+   */
+  rollupTypes?: boolean
+
+  /**
+   * 是否将源码里的 .d.ts 文件复制到 outputDir
+   *
+   * @default true
+   */
+  copyDtsFiles?: boolean
+
+  /**
+   * 出现类型诊断信息时不生成类型文件
+   *
+   * @default false
+   */
+  noEmitOnError?: boolean
+
+  /**
+   * 是否跳过类型诊断
+   *
+   * 跳过类型诊断意味着出现错误时不会中断打包进程的执行
+   *
+   * 但对于出现错误的源文件，将无法生成相应的类型文件
+   *
+   * @default false
+   */
+  skipDiagnostics?: boolean
+
+  /**
+   * 是否打印类型诊断信息
+   *
+   * 当跳过类型诊断时该属性将不会生效
+   *
+   * @deprecated
+   * @default false
+   */
+  logDiagnostics?: boolean
+
+  /**
+   * 定制 typescript 的 lib 文件夹路径
+   *
+   * 应传入一个 root 的相对路径或一个绝对路径
+   *
+   * @default undefined
+   */
+  libFolderPath?: string
+
+  /**
+   * 获取诊断信息后的钩子
+   *
+   * 可以根据参数 length 来判断有误类型错误
+   *
+   * @default () => {}
+   */
+  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
+
+  /**
+   * 类型声明文件被写入前的钩子
+   *
+   * 可以在钩子里转换文件路径和文件内容
+   *
+   * 当返回 false 时会跳过该文件
+   *
+   * @default () => {}
+   */
+  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
+
+  /**
+   * 构建后回调钩子
+   *
+   * 将会在所有类型文件被写入后调用
+   *
+   * @default () => {}
+   */
+  afterBuild?: () => void | Promise<void>
+}
+```
+
+## 示例
+
+克隆项目然后执行下列命令：
+
+```sh
+pnpm run test:e2e
+```
+
+然后检查 `example/types` 目录。
 
 ## 授权
 
