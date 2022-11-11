@@ -4,6 +4,8 @@
 
 A vite plugin that generates declaration files (`*.d.ts`) from `.ts(x)` or `.vue` source files when using vite in [library mode](https://vitejs.dev/guide/build.html#library-mode).
 
+> **Notice**: `skipDiagnostics` option default to `false` since 1.7.0.
+
 ## Install
 
 ```sh

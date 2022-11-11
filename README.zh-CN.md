@@ -4,6 +4,8 @@
 
 一款用于在 [库模式](https://cn.vitejs.dev/guide/build.html#library-mode) 中，从 `.ts(x)` 或 `.vue` 源文件生成类型文件（`.d.ts`）的 Vite 插件。
 
+> **注意**: 从 1.7.0 开始 `skipDiagnostics` 选项默认为 `false`。
+
 ## 安装
 
 ```sh
