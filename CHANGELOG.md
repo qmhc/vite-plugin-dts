@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.0...v1.7.1) (2022-11-14)
+
+### Bug Fixes
+
+- ensure exulde working when transform ([aea8ebd](https://github.com/qmhc/vite-plugin-dts/commit/aea8ebdc4eac489bc62ccebf3552421bd43d318c)), closes [#143](https://github.com/qmhc/vite-plugin-dts/issues/143) [#140](https://github.com/qmhc/vite-plugin-dts/issues/140) [#97](https://github.com/qmhc/vite-plugin-dts/issues/97)
+- import vite plugin type via dynamic import ([8bd73c8](https://github.com/qmhc/vite-plugin-dts/commit/8bd73c8fae010ba0d32df8b144345b7f641a6085)), closes [#139](https://github.com/qmhc/vite-plugin-dts/issues/139)
+
 # [1.7.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.6.6...v1.7.0) (2022-11-07)
 
 ### Bug Fixes
