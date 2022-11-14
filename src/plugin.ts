@@ -29,12 +29,11 @@ import {
   removeDirIfEmpty
 } from './utils'
 
-import type { Plugin, Alias, Logger } from 'vite'
+import type { Alias, Logger } from 'vite'
 import type { SourceFile } from 'ts-morph'
 import type { PluginOptions } from './types'
 
 const noneExport = 'export {};\n'
-// const virtualPrefix = '\0'
 const vueRE = /\.vue$/
 const tsRE = /\.(m|c)?tsx?$/
 const jsRE = /\.(m|c)?jsx?$/
@@ -49,7 +48,7 @@ const noop = () => {}
 const logPrefix = cyan('[vite:dts]')
 const bundleDebug = debug('vite-plugin-dts:bundle')
 
-export function dtsPlugin(options: PluginOptions = {}): Plugin {
+export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
     tsConfigFilePath = 'tsconfig.json',
     aliasesExclude = [],
