@@ -8,6 +8,7 @@ import debug from 'debug'
 import { Project } from 'ts-morph'
 import { normalizePath } from 'vite'
 import typescript from 'typescript'
+import { createFilter } from '@rollup/pluginutils'
 import {
   normalizeGlob,
   transformDynamicImport,
@@ -33,13 +34,13 @@ import type { SourceFile } from 'ts-morph'
 import type { PluginOptions } from './types'
 
 const noneExport = 'export {};\n'
-const virtualPrefix = '\0'
+// const virtualPrefix = '\0'
 const vueRE = /\.vue$/
-const tsRE = /\.tsx?$/
-const jsRE = /\.jsx?$/
+const tsRE = /\.(m|c)?tsx?$/
+const jsRE = /\.(m|c)?jsx?$/
 const dtsRE = /\.d\.tsx?$/
-const tjsRE = /\.(t|j)sx?$/
-const watchExtensionRE = /\.(vue|(t|j)sx?)$/
+const tjsRE = /\.(m|c)?(t|j)sx?$/
+const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const fullRelativeRE = /^\.\.?\//
 const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -80,6 +81,9 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
   let tsConfigPath: string
   let outputDirs: string[]
   let isBundle = false
+  let include: string[]
+  let exclude: string[]
+  let filter: (id: unknown) => boolean
 
   const sourceDtsFiles = new Set<SourceFile>()
 
@@ -204,6 +208,31 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       })
 
       allowJs = project.getCompilerOptions().allowJs ?? false
+
+      const tsConfig: {
+        extends?: string,
+        include?: string[],
+        exclude?: string[]
+      } = typescript.readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
+
+      // #95 should parse include or exclude from the base config when they are missing from the inheriting config
+      // if the inherit config doesn't have `include` or `exclude` field,
+      // should get them from the parent config.
+      const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
+      const parentTsConfig: {
+        include?: string[],
+        exclude?: string[]
+      } = parentTsConfigPath
+        ? typescript.readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
+        : {}
+
+      include = ensureArray(
+        options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'
+      ).map(normalizeGlob)
+      exclude = ensureArray(
+        options.exclude ?? tsConfig.exclude ?? parentTsConfig.exclude ?? 'node_modules/**'
+      ).map(normalizeGlob)
+      filter = createFilter(include, exclude, { resolve: root })
     },
 
     buildStart(inputOptions) {
@@ -219,7 +248,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
     },
 
     transform(code, id) {
-      if (id.startsWith(virtualPrefix)) {
+      if (!filter(id)) {
         return null
       }
 
@@ -232,7 +261,7 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
           project.createSourceFile(`${id}.${ext || 'js'}`, content, { overwrite: true })
         }
       } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
-        project.addSourceFileAtPath(id)
+        project.createSourceFile(id, code, { overwrite: true })
       }
 
       return null
@@ -261,36 +290,13 @@ export function dtsPlugin(options: PluginOptions = {}): Plugin {
       sourceDtsFiles.clear()
 
       const startTime = Date.now()
-      const tsConfig: {
-        extends?: string,
-        include?: string[],
-        exclude?: string[]
-      } = typescript.readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
-
-      // #95 should parse include or exclude from the base config when they are missing from the inheriting config
-      // if the inherit config doesn't have `include` or `exclude` field,
-      // should get them from the parent config.
-      const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
-      const parentTsConfig: {
-        include?: string[],
-        exclude?: string[]
-      } = parentTsConfigPath
-        ? typescript.readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
-        : {}
-
-      const include = options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'
-      const exclude =
-        options.exclude ?? tsConfig.exclude ?? parentTsConfig.exclude ?? 'node_modules/**'
-
-      bundleDebug('read config')
-
       const includedFileSet = new Set<string>()
 
       if (include && include.length) {
-        const files = await glob(ensureArray(include).map(normalizeGlob), {
+        const files = await glob(include, {
           cwd: root,
           absolute: true,
-          ignore: ensureArray(exclude).map(normalizeGlob)
+          ignore: exclude
         })
 
         files.forEach(file => {
