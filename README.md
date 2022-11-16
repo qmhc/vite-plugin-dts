@@ -308,10 +308,10 @@ export interface PluginOptions {
 Clone and run the following script:
 
 ```sh
-pnpm run test:e2e
+pnpm run test:ts
 ```
 
-Then check `example/types`.
+Then check `examples/ts/types`.
 
 ## License
 

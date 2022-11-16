@@ -307,10 +307,10 @@ export interface PluginOptions {
 克隆项目然后执行下列命令：
 
 ```sh
-pnpm run test:e2e
+pnpm run test:ts
 ```
 
-然后检查 `example/types` 目录。
+然后检查 `examples/ts/types` 目录。
 
 ## 授权
 

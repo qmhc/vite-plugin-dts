@@ -1,10 +1,56 @@
 {
-  "author": {
-    "name": "qmhc"
+  "name": "vite-plugin-dts",
+  "version": "1.7.1",
+  "type": "module",
+  "license": "MIT",
+  "author": "qmhc",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
+    "dev": "unbuild --stub",
+    "lint": "pnpm run lint:src && pnpm run lint:example",
+    "lint:src": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/**",
+    "lint:example": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue example/{src,components}/**",
+    "postinstall": "is-ci || husky install",
+    "postpublish": "pinst --enable",
+    "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
+    "prepublishOnly": "pinst --disable",
+    "prettier": "pretty-quick --staged",
+    "release": "tsx scripts/release.ts",
+    "test": "vitest run",
+    "test:ts": "pnpm -C examples/ts build",
+    "test:vue": "pnpm -C examples/vue build"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
   },
   "bugs": {
     "url": "https://github.com/qmhc/vite-plugin-dts/issues"
   },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "ts",
+    "dts",
+    "typescript"
+  ],
   "dependencies": {
     "@microsoft/api-extractor": "^7.33.5",
     "@rollup/pluginutils": "^5.0.2",
@@ -26,7 +72,6 @@
     "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
-    "@vitejs/plugin-vue": "^3.2.0",
     "@vue/eslint-config-standard": "^8.0.1",
     "@vue/eslint-config-typescript": "^11.0.2",
     "conventional-changelog-cli": "^2.2.2",
@@ -54,54 +99,7 @@
     "vitest": "^0.24.3",
     "vue": "3.2.41"
   },
-  "engines": {
-    "node": "^14.18.0 || >=16.0.0"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "ts",
-    "dts",
-    "typescript"
-  ],
-  "license": "MIT",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "name": "vite-plugin-dts",
   "peerDependencies": {
     "vite": ">=2.9.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
-  },
-  "scripts": {
-    "build": "tsx scripts/build.ts",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
-    "dev": "unbuild --stub",
-    "lint": "pnpm run lint:src && pnpm run lint:example",
-    "lint:src": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue src/**",
-    "lint:example": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue example/{src,components}/**",
-    "postinstall": "is-ci || husky install",
-    "postpublish": "pinst --enable",
-    "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
-    "prepublishOnly": "pinst --disable",
-    "prettier": "pretty-quick --staged",
-    "release": "tsx scripts/release.ts",
-    "test": "vitest run",
-    "test:e2e": "pnpm -C example build"
-  },
-  "type": "module",
-  "types": "dist/index.d.ts",
-  "version": "1.7.1"
+  }
 }

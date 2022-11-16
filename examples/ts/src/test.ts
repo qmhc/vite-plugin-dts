@@ -16,3 +16,7 @@ export const CONSTANT = ['one', 'two'] as const
 export interface WithConstant {
   constant: typeof CONSTANT[number]
 }
+
+export function method(arg: string) {
+  console.log(arg)
+}

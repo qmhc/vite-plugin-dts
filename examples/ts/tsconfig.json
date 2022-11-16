@@ -19,11 +19,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@components/*": ["./src/components/*"]
+      "@/*": ["src/*"]
     },
-    "lib": ["esnext", "dom"],
-    
+    "lib": ["esnext", "dom"]
   },
-  "include": ["src", "components", "*.d.ts"]
+  "include": ["src", "*.d.ts"]
 }
