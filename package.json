@@ -4,6 +4,7 @@
   "type": "module",
   "license": "MIT",
   "author": "qmhc",
+  "packageManager": "pnpm@7.1.0",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
