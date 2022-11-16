@@ -1,10 +1,22 @@
-# vite-plugin-dts
+<h1 align="center">vite-plugin-dts</h1>
 
-**中文** | [English](./README.md)
+<p align="center">
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 vite 插件。
+</p>
 
-一款用于在 [库模式](https://cn.vitejs.dev/guide/build.html#library-mode) 中，从 `.ts(x)` 或 `.vue` 源文件生成类型文件（`.d.ts`）的 Vite 插件。
+<p align="center">
+  <a href="https://www.npmjs.com/package/vite-plugin-dts">
+    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
+  </a>
+</p>
 
-> **注意**: 从 1.7.0 开始 `skipDiagnostics` 选项默认为 `false`。
+<p align="center">
+  <strong>中文</strong> | <a href="./README.md">English</a>
+</p>
+
+<p align="center"><strong>注意：</strong>从 1.7.0 开始 <code>skipDiagnostics</code> 选项默认为 <code>false</code>。</p>
+
+<br />
 
 ## 安装
 
@@ -68,7 +80,7 @@ const props = defineProps<{
 
 此处将收录一些常见的问题并提供一些解决方案。
 
-### 打包后出现类型文件缺失
+### 打包后出现类型文件缺失 (`1.7.0` 之前)
 
 默认情况下 `skipDiagnostics` 选项的值为 `true`，这意味着打包过程中将跳过类型检查（一些项目通常有 `vue-tsc` 等的类型检查工具），这时如果出现存在类型错误的文件，并且这是错误会中断打包过程，那么这些文件对应的类型文件将不会被生成。
 

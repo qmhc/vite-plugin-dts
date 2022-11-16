@@ -1,10 +1,22 @@
-# vite-plugin-dts
+<h1 align="center">vite-plugin-dts</h1>
 
-**English** | [中文](./README.zh-CN.md)
+<p align="center">
+  A vite plugin that generates declaration files (<code>*.d.ts</code>) from <code>.ts(x)</code> or <code>.vue</code> source files when using vite in <a href="https://vitejs.dev/guide/build.html#library-mode">library mode</a>.
+</p>
 
-A vite plugin that generates declaration files (`*.d.ts`) from `.ts(x)` or `.vue` source files when using vite in [library mode](https://vitejs.dev/guide/build.html#library-mode).
+<p align="center">
+  <a href="https://www.npmjs.com/package/vite-plugin-dts">
+    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
+  </a>
+</p>
 
-> **Notice**: `skipDiagnostics` option default to `false` since 1.7.0.
+<p align="center">
+  <strong>English</strong> | <a href="./README.zh-CN.md">中文</a>
+</p>
+
+<p align="center"><strong>Notice: </strong><code>skipDiagnostics</code> option default to <code>false</code> since 1.7.0.</p>
+
+<br />
 
 ## Install
 
@@ -69,7 +81,7 @@ const props = defineProps<{
 
 Here are some FAQ's and solutions.
 
-### Missing some declaration files after build
+### Missing some declaration files after build (before `1.7.0`)
 
 By default `skipDiagnostics` option is `true`, which means that type diagnostic will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). If there are some files with type errors which interrupt the build process, these files will not be emitted (declaration files won't be generated).
 
