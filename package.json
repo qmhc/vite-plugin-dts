@@ -60,7 +60,7 @@
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
     "kolorist": "^1.6.0",
-    "ts-morph": "^16.0.0"
+    "ts-morph": "17.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
