@@ -438,7 +438,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
 
         for (const name of entryNames) {
-          let filePath = multiple ? resolve(outputDir, name.replace(tsRE, '.d.ts')) : typesPath
+          let filePath = multiple ? resolve(outputDir, `${name}.d.ts`) : typesPath
 
           if (fs.existsSync(filePath)) continue
 
