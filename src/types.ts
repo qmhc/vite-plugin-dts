@@ -25,7 +25,7 @@ export interface PluginOptions {
   /**
    * Manually set the root path of the entry files
    *
-   * The output path of each file will be caculated base on it
+   * The output path of each file will be calculated base on it
    *
    * Defaults is the smallest public path for all files
    */
@@ -41,7 +41,7 @@ export interface PluginOptions {
   /**
    * Project init tsconfig.json file path by ts-morph
    *
-   * Plugin also resolve incldue and exclude files from tsconfig.json
+   * Plugin also resolve include and exclude files from tsconfig.json
    *
    * @default 'tsconfig.json'
    */
