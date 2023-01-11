@@ -197,7 +197,7 @@ export interface PluginOptions {
   /**
    * Manual set exclude glob
    *
-   * Defaults base on your tsconfig.json exclude option, be 'node_module/**' when empty
+   * Defaults base on your tsconfig.json exclude option, be 'node_modules/**' when empty
    */
   exclude?: string | string[]
 
