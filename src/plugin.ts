@@ -432,7 +432,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const pkgPath = resolve(root, 'package.json')
         const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
         const entryNames = Object.keys(entries)
-        const types = pkg.types || pkg.typings
+        const types =
+          pkg.types || pkg.typings || pkg.publishConfig?.types || pkg.publishConfig?.typings
         const multiple = entryNames.length > 1
 
         const typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
