@@ -439,13 +439,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
 
         for (const name of entryNames) {
-          let filePath = multiple ? resolve(outputDir, name.replace(tsRE, '.d.ts')) : typesPath
+          let filePath = multiple ? resolve(outputDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
 
           if (fs.existsSync(filePath)) continue
 
           const index = resolve(
             outputDir,
-            relative(entryRoot, entries[name].replace(tsRE, '.d.ts'))
+            relative(entryRoot, `${entries[name].replace(tsRE, '')}.d.ts`)
           )
 
           let fromPath = normalizePath(relative(dirname(filePath), index))
@@ -489,7 +489,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           if (multiple) {
             for (const name of entryNames) {
-              const path = resolve(outputDir, name.replace(tsRE, '.d.ts'))
+              const path = resolve(outputDir, `${name.replace(tsRE, '')}.d.ts`)
 
               rollupDeclarationFiles({
                 root,
