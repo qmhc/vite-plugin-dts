@@ -1,3 +1,11 @@
+## [1.7.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.1...v1.7.2) (2023-01-31)
+
+### Bug Fixes
+
+- correct .d.ts extension in multiple outputs ([5c9709c](https://github.com/qmhc/vite-plugin-dts/commit/5c9709c4082ee36f2f28b4ad6e21b846aa27d5d6)), closes [#144](https://github.com/qmhc/vite-plugin-dts/issues/144)
+- insertTypesEntry config supports publishConfig.types ([#164](https://github.com/qmhc/vite-plugin-dts/issues/164)) ([dae4ef9](https://github.com/qmhc/vite-plugin-dts/commit/dae4ef9de1175cf5bdc5a7dedfa60d7bab381dba))
+- mark typescript as external dependency ([#160](https://github.com/qmhc/vite-plugin-dts/issues/160)) ([31e10d4](https://github.com/qmhc/vite-plugin-dts/commit/31e10d4ec2a37148ad63fdfb141264d6c4966135))
+
 ## [1.7.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.0...v1.7.1) (2022-11-14)
 
 ### Bug Fixes
