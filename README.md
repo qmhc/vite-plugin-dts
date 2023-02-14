@@ -303,6 +303,14 @@ export interface PluginOptions {
 }
 ```
 
+## Contributors
+
+Thanks for all their contributions!
+
+<a href="https://github.com/qmhc/vite-plugin-dts/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=qmhc/vite-plugin-dts" />
+</a>
+
 ## Example
 
 Clone and run the following script:

@@ -302,6 +302,14 @@ export interface PluginOptions {
 }
 ```
 
+## 贡献者
+
+感谢他们的所做的一切贡献！
+
+<a href="https://github.com/qmhc/vite-plugin-dts/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=qmhc/vite-plugin-dts" />
+</a>
+
 ## 示例
 
 克隆项目然后执行下列命令：
