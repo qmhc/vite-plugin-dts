@@ -14,7 +14,7 @@ import type { ts } from 'ts-morph'
 
 export interface BundleOptions {
   root: string,
-  tsConfigPath: string,
+  // tsConfigPath: string,
   compilerOptions: ts.CompilerOptions,
   outputDir: string,
   entryPath: string,
@@ -25,7 +25,7 @@ const dtsRE = /\.d\.tsx?$/
 
 export function rollupDeclarationFiles({
   root,
-  tsConfigPath,
+  // tsConfigPath,
   outputDir,
   entryPath,
   fileName,
@@ -44,8 +44,11 @@ export function rollupDeclarationFiles({
       projectFolder: root,
       mainEntryPointFilePath: entryPath,
       compiler: {
-        tsconfigFilePath: tsConfigPath,
-        overrideTsconfig: compilerOptions
+        // tsconfigFilePath: tsConfigPath,
+        overrideTsconfig: {
+          $schema: 'http://json.schemastore.org/tsconfig',
+          compilerOptions
+        }
       },
       apiReport: {
         enabled: false,

@@ -30,7 +30,7 @@ import {
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
-import type { SourceFile } from 'ts-morph'
+import type { SourceFile, CompilerOptions } from 'ts-morph'
 import type { PluginOptions } from './types'
 
 const noneExport = 'export {};\n'
@@ -70,7 +70,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     afterBuild = noop
   } = options
 
-  const compilerOptions = options.compilerOptions ?? {}
+  let compilerOptions = options.compilerOptions ?? {}
 
   let root: string
   let entryRoot = options.entryRoot ?? ''
@@ -189,10 +189,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       setCompileRoot(root)
-      compilerOptions.rootDir ||= root
+      // compilerOptions.rootDir ||= root
 
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions, {
+          rootDir: compilerOptions.rootDir || root,
           noEmitOnError,
           outDir: '.',
           // #27 declarationDir option will make no declaration file generated
@@ -212,29 +213,41 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       allowJs = project.getCompilerOptions().allowJs ?? false
 
       const tsConfig: {
-        extends?: string,
+        compilerOptions: CompilerOptions,
         include?: string[],
         exclude?: string[]
-      } = typescript.readConfigFile(tsConfigPath, project.getFileSystem().readFileSync).config ?? {}
+      } = { compilerOptions: {} }
+      const readFile = project.getFileSystem().readFileSync
 
-      // #95 should parse include or exclude from the base config when they are missing from the inheriting config
-      // if the inherit config doesn't have `include` or `exclude` field,
+      let currentConfigPath: string | undefined = tsConfigPath
+
+      // #95 Should parse include or exclude from the base config when they are missing from
+      // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
       // should get them from the parent config.
-      const parentTsConfigPath = tsConfig.extends && ensureAbsolute(tsConfig.extends, root)
-      const parentTsConfig: {
-        include?: string[],
-        exclude?: string[]
-      } = parentTsConfigPath
-        ? typescript.readConfigFile(parentTsConfigPath, project.getFileSystem().readFileSync).config
-        : {}
+      while (currentConfigPath) {
+        const currentConfig: any =
+          typescript.readConfigFile(currentConfigPath, readFile).config ?? {}
 
-      include = ensureArray(
-        options.include ?? tsConfig.include ?? parentTsConfig.include ?? '**/*'
-      ).map(normalizeGlob)
-      exclude = ensureArray(
-        options.exclude ?? tsConfig.exclude ?? parentTsConfig.exclude ?? 'node_modules/**'
-      ).map(normalizeGlob)
+        // #171 Need to collect the full `compilerOptions` for `@microsoft/api-extractor`
+        Object.assign(tsConfig.compilerOptions, currentConfig.compilerOptions || {})
+
+        if (!tsConfig.include) {
+          tsConfig.include = currentConfig.include
+        }
+
+        if (!tsConfig.exclude) {
+          tsConfig.exclude = currentConfig.exclude
+        }
+
+        currentConfigPath = currentConfig.extends
+      }
+
+      include = ensureArray(options.include ?? tsConfig.include ?? '**/*').map(normalizeGlob)
+      exclude = ensureArray(options.exclude ?? tsConfig.exclude ?? 'node_modules/**').map(
+        normalizeGlob
+      )
       filter = createFilter(include, exclude, { resolve: root })
+      compilerOptions = tsConfig.compilerOptions
     },
 
     buildStart(inputOptions) {
@@ -496,7 +509,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
               rollupDeclarationFiles({
                 root,
-                tsConfigPath,
+                // tsConfigPath,
                 compilerOptions,
                 outputDir,
                 entryPath: path,
@@ -511,7 +524,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           } else {
             rollupDeclarationFiles({
               root,
-              tsConfigPath,
+              // tsConfigPath,
               compilerOptions,
               outputDir,
               entryPath: typesPath,
