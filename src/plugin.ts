@@ -37,13 +37,16 @@ const noneExport = 'export {};\n'
 const vueRE = /\.vue$/
 const tsRE = /\.(m|c)?tsx?$/
 const jsRE = /\.(m|c)?jsx?$/
-const dtsRE = /\.d\.tsx?$/
+const dtsRE = /\.d\.(m|c)?tsx?$/
 const tjsRE = /\.(m|c)?(t|j)sx?$/
+const mtjsRE = /\.m(t|j)sx?$/
+const ctjsRE = /\.c(t|j)sx?$/
 const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const fullRelativeRE = /^\.\.?\//
 const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
+const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 
 const logPrefix = cyan('[vite:dts]')
 const bundleDebug = debug('vite-plugin-dts:bundle')
@@ -162,7 +165,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         indexName = typeof filename === 'string' ? filename : filename('es', entry)
 
         if (!dtsRE.test(indexName)) {
-          indexName = `${tjsRE.test(indexName) ? indexName.replace(tjsRE, '') : indexName}.d.ts`
+          indexName = `${indexName.replace(tjsRE, '')}.d.${extPrefix(indexName)}ts`
         }
       }
 
@@ -310,7 +313,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             return
           }
 
-          includedFileSet.add(`${tjsRE.test(file) ? file.replace(tjsRE, '') : file}.d.ts`)
+          includedFileSet.add(`${file.replace(tjsRE, '')}.d.${extPrefix(file)}ts`)
         })
 
         if (hasJsVue) {
