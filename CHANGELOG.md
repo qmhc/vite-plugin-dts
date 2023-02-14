@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.2...v1.7.3) (2023-02-14)
+
+### Bug Fixes
+
+- incorrect compilerOptions when rollup dts ([9dd8d9c](https://github.com/qmhc/vite-plugin-dts/commit/9dd8d9c41bed7f79e24ee890c1f28d867346326e)), closes [#171](https://github.com/qmhc/vite-plugin-dts/issues/171)
+- normalize `mts` and `cts` declaration files extension ([410288a](https://github.com/qmhc/vite-plugin-dts/commit/410288ac65d7fb4a3065d93c6d7be9e2a8dd3f77)), closes [#169](https://github.com/qmhc/vite-plugin-dts/issues/169)
+
 ## [1.7.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.1...v1.7.2) (2023-01-31)
 
 ### Bug Fixes
