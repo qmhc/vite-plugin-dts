@@ -174,8 +174,8 @@ export function compileVueCode(code: string) {
   const { script, scriptSetup } = descriptor
 
   let error: unknown
-  let content: string | null = null
-  let ext: string | null = null
+  let content: string
+  let ext = 'js'
 
   if (script || scriptSetup) {
     const compiled = compileScript(
