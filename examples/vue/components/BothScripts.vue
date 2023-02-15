@@ -1,13 +1,3 @@
-<template>
-  <component
-    :is="tag"
-    class="both-scripts"
-    @click="emit('click', $event)"
-  >
-    <slot></slot>
-  </component>
-</template>
-
 <script lang="ts" setup>
 import { defineProps, ref } from 'vue'
 
@@ -43,3 +33,13 @@ export default {
   customOptions: {}
 }
 </script>
+
+<template>
+  <component
+    :is="tag"
+    class="both-scripts"
+    @click="emit('click', $event)"
+  >
+    <slot></slot>
+  </component>
+</template>

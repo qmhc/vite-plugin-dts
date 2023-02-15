@@ -91,6 +91,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
   let hasJsVue = false
   let allowJs = false
+  let transformError = false
 
   return {
     name: 'vite:dts',
@@ -268,7 +269,19 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       if (vueRE.test(id)) {
-        const { content, ext } = compileVueCode(code)
+        const { error, content, ext } = compileVueCode(code)
+
+        if (!transformError && error) {
+          logger.error(
+            red(
+              `\n${cyan(
+                '[vite:dts]'
+              )} A error occurred when transform code, maybe there are some inertnal bugs.\n`
+            )
+          )
+
+          transformError = true
+        }
 
         if (content) {
           if (ext === 'js' || ext === 'jsx') hasJsVue = true

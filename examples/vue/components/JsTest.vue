@@ -1,9 +1,3 @@
-<template>
-  <div class="js-test">
-    {{ count }}
-  </div>
-</template>
-
 <script>
 // If you still want to ge the currect types inference with using
 // js syntax, you need using defineComponent to define component
@@ -18,3 +12,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <div class="js-test">
+    {{ count }}
+  </div>
+</template>

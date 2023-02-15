@@ -11,6 +11,8 @@ import TsxTest from '@/components/TsxTest'
 import TypeProps from '@/components/TypeProps.vue'
 import NoScript from '@/components/NoScript.vue'
 import OutsideProps from '@/components/outside-props'
+import NoDirectExport from '@/components/NoDirectExport.vue'
+import JsSetup from '../components/JsSetup.vue'
 
 export { default as App } from './App.vue'
 export { default as Setup } from '@/components/Setup.vue'
@@ -28,7 +30,9 @@ export {
   TsxTest,
   TypeProps,
   NoScript,
-  OutsideProps
+  OutsideProps,
+  NoDirectExport,
+  JsSetup
 }
 
 export default DefaultImport

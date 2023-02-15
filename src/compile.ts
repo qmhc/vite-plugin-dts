@@ -1,10 +1,9 @@
 import { createRequire } from 'node:module'
+import { parse as babelParse } from '@babel/parser'
+import MagicString from 'magic-string'
 import { transferSetupPosition } from './transform'
 
-import type { SFCDescriptor } from 'vue/compiler-sfc'
-
-const exportDefaultRE = /export\s+default/
-const exportDefaultClassRE = /(?:(?:^|\n|;)\s*)export\s+default\s+class\s+([\w$]+)/
+import type { SFCDescriptor, SFCScriptBlock } from 'vue/compiler-sfc'
 
 const noScriptContent = "import { defineComponent } from 'vue'\nexport default defineComponent({})"
 
@@ -71,17 +70,102 @@ export function setCompileRoot(root: string) {
 }
 
 function parseCode(code: string) {
-  const { parse } = requireCompiler()
+  const { parse: parseVueCode } = requireCompiler()
   let descriptor: any
 
   if (isVue3()) {
-    descriptor = parse(code).descriptor
+    descriptor = parseVueCode(code).descriptor
   } else {
     // #87 support vue 2.7
-    descriptor = (parse as any)({ source: code })
+    descriptor = (parseVueCode as any)({ source: code })
   }
 
   return descriptor as SFCDescriptor
+}
+
+function transformJsToTs(script: SFCScriptBlock | null) {
+  if (!script) return script
+
+  const lang =
+    !script.lang || script.lang === 'js' ? 'ts' : script.lang === 'jsx' ? 'tsx' : script.lang
+
+  return { ...script, lang }
+}
+
+function transformExposed(code: string, hasSetupScript: boolean) {
+  const scriptAst = babelParse(code, {
+    sourceType: 'module',
+    plugins: ['typescript', 'decorators-legacy', 'jsx']
+  }).program.body
+
+  const source = new MagicString(code)
+
+  for (const node of scriptAst!) {
+    if (node.type === 'ExportDefaultDeclaration') {
+      let options
+
+      if (node.declaration.type === 'ObjectExpression') {
+        options = node.declaration.properties
+      } else if (
+        node.declaration.type === 'CallExpression' &&
+        node.declaration.arguments[0].type === 'ObjectExpression'
+      ) {
+        options = node.declaration.arguments[0].properties
+      }
+
+      if (options) {
+        for (const option of options) {
+          if (
+            option.type === 'ObjectMethod' &&
+            option.key.type === 'Identifier' &&
+            option.key.name === 'setup'
+          ) {
+            let exposed
+            let returned
+
+            for (const node of option.body.body) {
+              if (
+                !exposed &&
+                node.type === 'ExpressionStatement' &&
+                node.expression.type === 'CallExpression' &&
+                node.expression.callee.type === 'Identifier' &&
+                node.expression.callee.name === 'expose'
+              ) {
+                exposed = node.expression.arguments[0]
+                continue
+              }
+
+              if (node.type === 'ReturnStatement') {
+                returned = node
+                break
+              }
+            }
+
+            const newReturned =
+              exposed && exposed.type === 'ObjectExpression'
+                ? `return ${code.substring(exposed.start!, exposed.end!)}`
+                : hasSetupScript
+                  ? 'return {}'
+                  : ''
+
+            if (newReturned) {
+              if (returned) {
+                source.overwrite(returned.start!, returned.end!, newReturned)
+              } else if (option.body.body.length) {
+                source.appendRight(option.body.body.at(-1)!.end!, `\n${newReturned}\n`)
+              }
+            }
+
+            break
+          }
+        }
+      }
+
+      break
+    }
+  }
+
+  return source.toString()
 }
 
 export function compileVueCode(code: string) {
@@ -89,57 +173,41 @@ export function compileVueCode(code: string) {
   const descriptor = parseCode(code)
   const { script, scriptSetup } = descriptor
 
+  let error: unknown
   let content: string | null = null
   let ext: string | null = null
 
   if (script || scriptSetup) {
+    const compiled = compileScript(
+      {
+        ...descriptor,
+        script: transformJsToTs(script),
+        scriptSetup: transformJsToTs(scriptSetup)
+      },
+      { id: `${index++}` }
+    )
+
+    try {
+      content = transformExposed(compiled.content, !!scriptSetup)
+    } catch (e) {
+      error = e
+      content = compiled.content
+    }
+
+    content = rewriteDefault(content, '_sfc_main', ['typescript', 'decorators-legacy'])
+
     if (scriptSetup) {
-      const compiled = compileScript(descriptor, {
-        id: `${index++}`
-      })
-
-      const classMatch = compiled.content.match(exportDefaultClassRE)
-      const plugins =
-        scriptSetup.lang === 'ts'
-          ? ['typescript' as const, 'decorators-legacy' as const]
-          : undefined
-
-      if (classMatch) {
-        content =
-          compiled.content.replace(exportDefaultClassRE, '\nclass $1') +
-          `\nconst _sfc_main = ${classMatch[1]}`
-
-        if (exportDefaultRE.test(content)) {
-          content = rewriteDefault(compiled.content, '_sfc_main', plugins)
-        }
-      } else {
-        content = rewriteDefault(compiled.content, '_sfc_main', plugins)
-      }
-
       content = transferSetupPosition(content)
-      content = content
-        .replace(/(const __returned__\s?=\s?\{[\s\S]+?)(props)(\s?\})/, '$1props: props as any$3')
-        .replace(
-          /(const __returned__\s?=\s?\{[\s\S]+?)(props,)([\s\S]+?)/,
-          '$1props: props as any,$3'
-        )
-      content += '\nexport default _sfc_main\n'
-
       ext = scriptSetup.lang || 'js'
     } else if (script && script.content) {
-      content = rewriteDefault(
-        script.content,
-        '_sfc_main',
-        script.lang === 'ts' ? ['typescript', 'decorators-legacy'] : undefined
-      )
-      content += '\nexport default _sfc_main\n'
-
       ext = script.lang || 'js'
     }
+
+    content += '\nexport default _sfc_main\n'
   } else {
     content = noScriptContent
     ext = 'ts'
   }
 
-  return { content, ext }
+  return { error, content, ext }
 }

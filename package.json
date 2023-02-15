@@ -53,6 +53,7 @@
     "typescript"
   ],
   "dependencies": {
+    "@babel/parser": "^7.20.15",
     "@microsoft/api-extractor": "^7.33.5",
     "@rollup/pluginutils": "^5.0.2",
     "@rushstack/node-core-library": "^3.53.2",
@@ -60,9 +61,11 @@
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
     "kolorist": "^1.6.0",
+    "magic-string": "^0.29.0",
     "ts-morph": "17.0.1"
   },
   "devDependencies": {
+    "@babel/types": "^7.20.7",
     "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^17.1.0",
     "@types/debug": "^4.1.7",
