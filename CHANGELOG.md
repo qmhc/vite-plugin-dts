@@ -1,3 +1,14 @@
+# [2.0.0-beta.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.3...v2.0.0-beta.0) (2023-02-16)
+
+### Bug Fixes
+
+- override composite for root tsconfig ([df1d0f4](https://github.com/qmhc/vite-plugin-dts/commit/df1d0f42d0d9d9341d7766f5c147e7e3fa3733cf)), closes [#153](https://github.com/qmhc/vite-plugin-dts/issues/153)
+- **vue:** ignore css vars when compile ([6d2369a](https://github.com/qmhc/vite-plugin-dts/commit/6d2369afe31c18b3dff45296d74b90aba86bb656)), closes [#167](https://github.com/qmhc/vite-plugin-dts/issues/167)
+
+### Features
+
+- **vue:** accurate types inferring for exposed and props ([#173](https://github.com/qmhc/vite-plugin-dts/issues/173)) ([c25448c](https://github.com/qmhc/vite-plugin-dts/commit/c25448c90f3b3969d51dbfa31ad5dc3ce2a9a2aa))
+
 ## [1.7.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.2...v1.7.3) (2023-02-14)
 
 ### Bug Fixes
