@@ -3,6 +3,8 @@ import { parse as babelParse } from '@babel/parser'
 import MagicString from 'magic-string'
 import { transferSetupPosition } from './transform'
 
+import type { ParserPlugin } from '@babel/parser'
+import type { Expression, CallExpression } from '@babel/types'
 import type { SFCDescriptor, SFCScriptBlock } from 'vue/compiler-sfc'
 
 const noScriptContent = "import { defineComponent } from 'vue'\nexport default defineComponent({})"
@@ -92,15 +94,71 @@ function transformJsToTs(script: SFCScriptBlock | null) {
   return { ...script, lang }
 }
 
-function transformExposed(code: string, hasSetupScript: boolean) {
-  const scriptAst = babelParse(code, {
-    sourceType: 'module',
-    plugins: ['typescript', 'decorators-legacy', 'jsx']
-  }).program.body
-
+function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
+  const plugins: ParserPlugin[] = ['typescript', 'decorators-legacy', 'jsx']
+  const scriptAst = babelParse(code, { sourceType: 'module', plugins }).program.body
   const source = new MagicString(code)
 
-  for (const node of scriptAst!) {
+  let propsTypeName: string | undefined
+  let propsTypeLiteral: string | undefined
+
+  if (setupScript) {
+    const setupAst = babelParse(setupScript.content, { sourceType: 'module', plugins }).program.body
+
+    let defineProps: CallExpression | undefined
+
+    function processDefineProps(node: Expression) {
+      if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
+        if (node.callee.name === 'defineProps') {
+          defineProps = node
+
+          return true
+        } else if (node.callee.name === 'withDefaults') {
+          const propsDef = node.arguments[0]
+
+          if (
+            propsDef.type === 'CallExpression' &&
+            propsDef.callee.type === 'Identifier' &&
+            propsDef.callee.name === 'defineProps'
+          ) {
+            defineProps = propsDef
+
+            return true
+          }
+        }
+      }
+
+      return false
+    }
+
+    for (const node of setupAst) {
+      if (node.type === 'ExpressionStatement') {
+        processDefineProps(node.expression)
+      } else if (node.type === 'VariableDeclaration' && !node.declare) {
+        for (const decl of node.declarations) {
+          if (decl.init && processDefineProps(decl.init)) {
+            break
+          }
+        }
+      }
+
+      // record props type and provide to PropType<...>
+      if (defineProps) {
+        const type = defineProps.typeParameters?.params[0]
+
+        if (type && type.type === 'TSTypeReference' && type.typeName.type === 'Identifier') {
+          propsTypeName = type.typeName.name
+        } else if (type?.type === 'TSTypeLiteral') {
+          propsTypeName = '__DTS_Props__'
+          propsTypeLiteral = setupScript.content.substring(type.start!, type.end!)
+        }
+
+        break
+      }
+    }
+  }
+
+  for (const node of scriptAst) {
     if (node.type === 'ExportDefaultDeclaration') {
       let options
 
@@ -115,6 +173,40 @@ function transformExposed(code: string, hasSetupScript: boolean) {
 
       if (options) {
         for (const option of options) {
+          if (
+            propsTypeName &&
+            option.type === 'ObjectProperty' &&
+            option.key.type === 'Identifier' &&
+            option.key.name === 'props' &&
+            option.value.type === 'ObjectExpression'
+          ) {
+            // make prop type define with PropType<...>
+            for (const prop of option.value.properties) {
+              if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
+                if (prop.value.type === 'ObjectExpression') {
+                  for (const propDef of prop.value.properties) {
+                    if (
+                      propDef.type === 'ObjectProperty' &&
+                      propDef.key.type === 'Identifier' &&
+                      propDef.key.name === 'type'
+                    ) {
+                      source.prependLeft(
+                        propDef.end!,
+                        ` as __PropType<${propsTypeName}['${prop.key.name}']>`
+                      )
+                    }
+                  }
+                } else {
+                  source.prependLeft(
+                    prop.end!,
+                    ` as __PropType<${propsTypeName}['${prop.key.name}']>`
+                  )
+                }
+              }
+            }
+          }
+
+          // use exposed as return value
           if (
             option.type === 'ObjectMethod' &&
             option.key.type === 'Identifier' &&
@@ -144,7 +236,7 @@ function transformExposed(code: string, hasSetupScript: boolean) {
             const newReturned =
               exposed && exposed.type === 'ObjectExpression'
                 ? `return ${code.substring(exposed.start!, exposed.end!)}`
-                : hasSetupScript
+                : setupScript
                   ? 'return {}'
                   : ''
 
@@ -155,14 +247,20 @@ function transformExposed(code: string, hasSetupScript: boolean) {
                 source.appendRight(option.body.body.at(-1)!.end!, `\n${newReturned}\n`)
               }
             }
-
-            break
           }
         }
       }
 
       break
     }
+  }
+
+  if (propsTypeName) {
+    if (propsTypeLiteral) {
+      source.prepend(`\ntype ${propsTypeName} = ${propsTypeLiteral}\n\n`)
+    }
+
+    source.prepend("import type { PropType as __PropType } from 'vue'\n")
   }
 
   return source.toString()
@@ -188,7 +286,7 @@ export function compileVueCode(code: string) {
     )
 
     try {
-      content = transformExposed(compiled.content, !!scriptSetup)
+      content = preprocessVueCode(compiled.content, scriptSetup)
     } catch (e) {
       error = e
       content = compiled.content

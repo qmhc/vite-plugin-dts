@@ -1,10 +1,13 @@
 <script setup lang="ts">
 type Props = {
-  color: 'blue' | 'red' | 'purple'
+  color: 'blue' | 'red' | 'purple',
+  array?: { foo: number }[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  color: 'blue',
+  array: () => []
+})
 </script>
 
 <template>
