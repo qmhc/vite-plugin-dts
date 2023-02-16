@@ -280,7 +280,8 @@ export function compileVueCode(code: string) {
       {
         ...descriptor,
         script: transformJsToTs(script),
-        scriptSetup: transformJsToTs(scriptSetup)
+        scriptSetup: transformJsToTs(scriptSetup),
+        cssVars: []
       },
       { id: `${index++}` }
     )

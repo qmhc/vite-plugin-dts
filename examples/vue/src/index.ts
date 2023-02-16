@@ -13,6 +13,7 @@ import NoScript from '@/components/NoScript.vue'
 import OutsideProps from '@/components/outside-props'
 import NoDirectExport from '@/components/NoDirectExport.vue'
 import JsSetup from '../components/JsSetup.vue'
+import CssVar from '../components/CssVar.vue'
 
 export { default as App } from './App.vue'
 export { default as Setup } from '@/components/Setup.vue'
@@ -32,7 +33,8 @@ export {
   NoScript,
   OutsideProps,
   NoDirectExport,
-  JsSetup
+  JsSetup,
+  CssVar
 }
 
 export default DefaultImport
