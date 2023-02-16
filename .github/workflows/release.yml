@@ -21,4 +21,4 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           body: |
-            Please refer to [CHANGELOG.md](https://github.com/qmhc/vite-plugin-dts/tree/main/packages/core/CHANGELOG.md) for details.
+            Please refer to [CHANGELOG.md](https://github.com/qmhc/vite-plugin-dts/blob/main/CHANGELOG.md) for details.
