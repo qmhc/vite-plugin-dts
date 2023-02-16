@@ -1,9 +1,3 @@
-<template>
-  <div class="default-import">
-    {{ count }}
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 
@@ -23,3 +17,9 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <div class="default-import">
+    {{ count }}
+  </div>
+</template>

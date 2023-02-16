@@ -1,6 +1,5 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue'
-import HelloWorld from './HelloWorld.vue'
 
 const props = defineProps({
   count: {
@@ -17,6 +16,8 @@ const inc = () => {
   currentCount.value++
   emit('on-add', currentCount.value)
 }
+
+defineExpose({ inc })
 </script>
 
 <template>
@@ -26,5 +27,4 @@ const inc = () => {
   >
     {{ count }}
   </div>
-  <HelloWorld></HelloWorld>
 </template>
