@@ -198,14 +198,16 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           noEmitOnError,
           outDir: '.',
           // #27 declarationDir option will make no declaration file generated
-          declarationDir: null,
+          declarationDir: undefined,
           // compile vue setup script will generate expose parameter for setup function
           // although user never use it which will get an unexpected unused error
           noUnusedParameters: false,
           declaration: true,
           noEmit: false,
-          emitDeclarationOnly: true
-        }),
+          emitDeclarationOnly: true,
+          // #153 maybe a bug of ts-morph
+          composite: false
+        } as CompilerOptions),
         tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true,
         libFolderPath: libFolderPath ? ensureAbsolute(libFolderPath, root) : undefined
