@@ -1,3 +1,10 @@
+# [2.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.0...v2.0.0-beta.1) (2023-02-17)
+
+### Bug Fixes
+
+- **vue:** conversion error when using outside ts props ([25307cf](https://github.com/qmhc/vite-plugin-dts/commit/25307cf6ef89aa8501c8c35ff8ca519021adafea)), closes [#175](https://github.com/qmhc/vite-plugin-dts/issues/175)
+- **vue:** remove components option before inferring ([90f8ac1](https://github.com/qmhc/vite-plugin-dts/commit/90f8ac160412de418bc7dc31c97f4ca7daa524ca))
+
 # [2.0.0-beta.0](https://github.com/qmhc/vite-plugin-dts/compare/v1.7.3...v2.0.0-beta.0) (2023-02-16)
 
 ### Bug Fixes
