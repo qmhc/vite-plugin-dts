@@ -29,6 +29,7 @@
     "prettier": "pretty-quick --staged",
     "release": "tsx scripts/release.ts",
     "test": "vitest run",
+    "test:react": "pnpm -C examples/react build",
     "test:ts": "pnpm -C examples/ts build",
     "test:vue": "pnpm -C examples/vue build"
   },
