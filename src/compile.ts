@@ -206,6 +206,15 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
             }
           }
 
+          // remove components option
+          if (
+            option.type === 'ObjectProperty' &&
+            option.key.type === 'Identifier' &&
+            option.key.name === 'components'
+          ) {
+            source.remove(option.start!, option.end!)
+          }
+
           // use exposed as return value
           if (
             option.type === 'ObjectMethod' &&
