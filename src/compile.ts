@@ -192,14 +192,14 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
                     ) {
                       source.prependLeft(
                         propDef.end!,
-                        ` as __PropType<${propsTypeName}['${prop.key.name}']>`
+                        ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
                       )
                     }
                   }
                 } else {
                   source.prependLeft(
                     prop.end!,
-                    ` as __PropType<${propsTypeName}['${prop.key.name}']>`
+                    ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
                   )
                 }
               }
