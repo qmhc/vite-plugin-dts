@@ -4,7 +4,7 @@ import MagicString from 'magic-string'
 import { transferSetupPosition } from './transform'
 
 import type { ParserPlugin } from '@babel/parser'
-import type { Expression, CallExpression } from '@babel/types'
+import type { Node, Expression, CallExpression } from '@babel/types'
 import type { SFCDescriptor, SFCScriptBlock } from 'vue/compiler-sfc'
 
 const noScriptContent = "import { defineComponent } from 'vue'\nexport default defineComponent({})"
@@ -158,10 +158,39 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
     }
   }
 
-  for (const node of scriptAst) {
-    if (node.type === 'ExportDefaultDeclaration') {
-      let options
+  const declRecord = new Map<string, Node[]>()
 
+  let defaultExport
+  let options
+
+  for (const node of scriptAst) {
+    if (node.type === 'VariableDeclaration') {
+      for (const decl of node.declarations) {
+        if (decl.id.type === 'Identifier' && decl.init) {
+          let properties
+
+          if (decl.init.type === 'ObjectExpression') {
+            properties = decl.init.properties
+          } else if (
+            decl.init.type === 'CallExpression' &&
+            decl.init.arguments[0].type === 'ObjectExpression'
+          ) {
+            properties = decl.init.arguments[0].properties
+          }
+
+          if (!properties) continue
+
+          if (defaultExport && decl.id.name === defaultExport) {
+            options = properties
+            break
+          } else {
+            declRecord.set(decl.id.name, properties)
+          }
+        }
+      }
+    }
+
+    if (node.type === 'ExportDefaultDeclaration') {
       if (node.declaration.type === 'ObjectExpression') {
         options = node.declaration.properties
       } else if (
@@ -169,92 +198,98 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
         node.declaration.arguments[0].type === 'ObjectExpression'
       ) {
         options = node.declaration.arguments[0].properties
+      } else if (node.declaration.type === 'Identifier') {
+        if (declRecord.has(node.declaration.name)) {
+          options = declRecord.get(node.declaration.name)
+        } else {
+          defaultExport = node.declaration.name
+        }
       }
+    }
 
-      if (options) {
-        for (const option of options) {
-          if (
-            propsTypeName &&
-            option.type === 'ObjectProperty' &&
-            option.key.type === 'Identifier' &&
-            option.key.name === 'props' &&
-            option.value.type === 'ObjectExpression'
-          ) {
-            // make prop type define with PropType<...>
-            for (const prop of option.value.properties) {
-              if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
-                if (prop.value.type === 'ObjectExpression') {
-                  for (const propDef of prop.value.properties) {
-                    if (
-                      propDef.type === 'ObjectProperty' &&
-                      propDef.key.type === 'Identifier' &&
-                      propDef.key.name === 'type'
-                    ) {
-                      source.prependLeft(
-                        propDef.end!,
-                        ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
-                      )
-                    }
+    if (options) {
+      for (const option of options) {
+        if (
+          propsTypeName &&
+          option.type === 'ObjectProperty' &&
+          option.key.type === 'Identifier' &&
+          option.key.name === 'props' &&
+          option.value.type === 'ObjectExpression'
+        ) {
+          // make prop type define with PropType<...>
+          for (const prop of option.value.properties) {
+            if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
+              if (prop.value.type === 'ObjectExpression') {
+                for (const propDef of prop.value.properties) {
+                  if (
+                    propDef.type === 'ObjectProperty' &&
+                    propDef.key.type === 'Identifier' &&
+                    propDef.key.name === 'type'
+                  ) {
+                    source.prependLeft(
+                      propDef.end!,
+                      ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
+                    )
                   }
-                } else {
-                  source.prependLeft(
-                    prop.end!,
-                    ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
-                  )
                 }
+              } else {
+                source.prependLeft(
+                  prop.end!,
+                  ` as unknown as __PropType<${propsTypeName}['${prop.key.name}']>`
+                )
               }
             }
           }
+        }
 
-          // remove components option
-          if (
-            option.type === 'ObjectProperty' &&
-            option.key.type === 'Identifier' &&
-            option.key.name === 'components'
-          ) {
-            source.remove(option.start!, option.end!)
-          }
+        // remove components option
+        if (
+          option.type === 'ObjectProperty' &&
+          option.key.type === 'Identifier' &&
+          option.key.name === 'components'
+        ) {
+          source.remove(option.start!, option.end!)
+        }
 
-          // use exposed as return value
-          if (
-            option.type === 'ObjectMethod' &&
-            option.key.type === 'Identifier' &&
-            option.key.name === 'setup'
-          ) {
-            let exposed
-            let returned
+        // use exposed as return value
+        if (
+          option.type === 'ObjectMethod' &&
+          option.key.type === 'Identifier' &&
+          option.key.name === 'setup'
+        ) {
+          let exposed
+          let returned
 
-            for (const node of option.body.body) {
-              if (
-                !exposed &&
-                node.type === 'ExpressionStatement' &&
-                node.expression.type === 'CallExpression' &&
-                node.expression.callee.type === 'Identifier' &&
-                node.expression.callee.name === 'expose'
-              ) {
-                exposed = node.expression.arguments[0]
-                continue
-              }
-
-              if (node.type === 'ReturnStatement') {
-                returned = node
-                break
-              }
+          for (const node of option.body.body) {
+            if (
+              !exposed &&
+              node.type === 'ExpressionStatement' &&
+              node.expression.type === 'CallExpression' &&
+              node.expression.callee.type === 'Identifier' &&
+              node.expression.callee.name === 'expose'
+            ) {
+              exposed = node.expression.arguments[0]
+              continue
             }
 
-            const newReturned =
-              exposed && exposed.type === 'ObjectExpression'
-                ? `return ${code.substring(exposed.start!, exposed.end!)}`
-                : setupScript
-                  ? 'return {}'
-                  : ''
+            if (node.type === 'ReturnStatement') {
+              returned = node
+              break
+            }
+          }
 
-            if (newReturned) {
-              if (returned) {
-                source.overwrite(returned.start!, returned.end!, newReturned)
-              } else if (option.body.body.length) {
-                source.appendRight(option.body.body.at(-1)!.end!, `\n${newReturned}\n`)
-              }
+          const newReturned =
+            exposed && exposed.type === 'ObjectExpression'
+              ? `return ${code.substring(exposed.start!, exposed.end!)}`
+              : setupScript
+                ? 'return {}'
+                : ''
+
+          if (newReturned) {
+            if (returned) {
+              source.overwrite(returned.start!, returned.end!, newReturned)
+            } else if (option.body.body.length) {
+              source.appendRight(option.body.body.at(-1)!.end!, `\n${newReturned}\n`)
             }
           }
         }
