@@ -61,7 +61,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     rollupTypes = false,
     noEmitOnError = false,
     skipDiagnostics = false,
-    logDiagnostics = undefined,
     copyDtsFiles = true,
     logLevel = undefined,
     afterDiagnostic = noop,
@@ -166,16 +165,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       logger = logLevel
         ? createLogger(logLevel, { allowClearScreen: config.clearScreen })
         : config.logger
-
-      if (logDiagnostics != null) {
-        logger.warn(
-          yellow(
-            `\n${cyan(
-              '[vite:dts]'
-            )} 'logDiagnostics' has been deprecated, the original feature now following 'skipDiagnostics'.\n`
-          )
-        )
-      }
 
       if (!config.build.lib) {
         logger.warn(

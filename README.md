@@ -255,16 +255,6 @@ export interface PluginOptions {
   skipDiagnostics?: boolean
 
   /**
-   * Whether log diagnostic informations
-   *
-   * Not effective when `skipDiagnostics` is true
-   *
-   * @deprecated
-   * @default false
-   */
-  logDiagnostics?: boolean
-
-  /**
    * Customize typescript lib folder path
    *
    * Should pass a relative path to root or a absolute path

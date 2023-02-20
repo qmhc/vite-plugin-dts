@@ -254,16 +254,6 @@ export interface PluginOptions {
   skipDiagnostics?: boolean
 
   /**
-   * 是否打印类型诊断信息
-   *
-   * 当跳过类型诊断时该属性将不会生效
-   *
-   * @deprecated
-   * @default false
-   */
-  logDiagnostics?: boolean
-
-  /**
    * 定制 typescript 的 lib 文件夹路径
    *
    * 应传入一个 root 的相对路径或一个绝对路径
