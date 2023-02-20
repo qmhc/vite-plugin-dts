@@ -1,3 +1,14 @@
+# [2.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2023-02-20)
+
+### Bug Fixes
+
+- should re-transform when file changed in watch mode ([eafdd3c](https://github.com/qmhc/vite-plugin-dts/commit/eafdd3ce7d6757f93a378130b8e34f41e17e4004)), closes [#99](https://github.com/qmhc/vite-plugin-dts/issues/99)
+- **vue:** preprocess not direct exported component ([8bd769e](https://github.com/qmhc/vite-plugin-dts/commit/8bd769e013f845a8e486d354d9f8517bd7b02e72))
+
+### Features
+
+- support specify log level of plugin ([2c1aeb0](https://github.com/qmhc/vite-plugin-dts/commit/2c1aeb01637aa4511f4e4c26b891b6e7ea235d50)), closes [#177](https://github.com/qmhc/vite-plugin-dts/issues/177)
+
 # [2.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.0...v2.0.0-beta.1) (2023-02-17)
 
 ### Bug Fixes
