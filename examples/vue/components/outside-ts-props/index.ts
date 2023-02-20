@@ -1,3 +1,3 @@
-import OutsideProps from './OutsideProps.vue'
+import OutsideTsProps from './OutsideTsProps.vue'
 
-export default OutsideProps
+export default OutsideTsProps

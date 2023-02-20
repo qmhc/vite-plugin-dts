@@ -14,22 +14,22 @@ import type { ts } from 'ts-morph'
 
 export interface BundleOptions {
   root: string,
-  // tsConfigPath: string,
   compilerOptions: ts.CompilerOptions,
   outputDir: string,
   entryPath: string,
-  fileName: string
+  fileName: string,
+  libFolder?: string
 }
 
 const dtsRE = /\.d\.tsx?$/
 
 export function rollupDeclarationFiles({
   root,
-  // tsConfigPath,
+  compilerOptions,
   outputDir,
   entryPath,
   fileName,
-  compilerOptions
+  libFolder
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
   const packageJsonLookup = new PackageJsonLookup()
@@ -82,8 +82,9 @@ export function rollupDeclarationFiles({
   })
 
   const compilerState = CompilerState.create(extractorConfig, {
-    localBuild: true,
-    showVerboseMessages: false
+    localBuild: false,
+    showVerboseMessages: false,
+    typescriptCompilerFolder: libFolder ? resolve(libFolder, '..') : undefined
   } as IExtractorInvokeOptions)
 
   const sourceMapper = new SourceMapper()
