@@ -29,6 +29,7 @@ export default defineConfig({
   },
   plugins: [
     dts({
+      // logLevel: 'warn',
       libFolderPath: '../../node_modules/typescript/lib',
       outputDir: ['dist', 'types'],
       // include: ['src/index.ts'],

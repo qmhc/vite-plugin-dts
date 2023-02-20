@@ -111,6 +111,7 @@ const props = defineProps<{
 
 ```ts
 import type { ts, Diagnostic } from 'ts-morph'
+import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
   filePath?: string
@@ -121,7 +122,7 @@ export interface PluginOptions {
   /**
    * 执行的根目录
    *
-   * 默认基于 vite 配置的 root 选项
+   * 默认基于 vite 配置的 'root' 选项
    */
   root?: string
 
@@ -130,7 +131,7 @@ export interface PluginOptions {
    *
    * 可以指定一个数组来输出到多个目录中
    *
-   * 默认基于 vite 配置的输出目录
+   * 默认基于 vite 配置的 'build.outDir' 选项
    */
   outputDir?: string | string[]
 
@@ -189,14 +190,14 @@ export interface PluginOptions {
   /**
    * 手动设置包含路径的 glob
    *
-   * 默认基于 tsconfig.json 的 include 选项
+   * 默认基于 tsconfig.json 的 'include' 选项
    */
   include?: string | string[]
 
   /**
    * 手动设置排除路径的 glob
    *
-   * 默认基于 tsconfig.json 的 exclude 选线，未设置时为 'node_module/**'
+   * 默认基于 tsconfig.json 的 'exclude' 选线，未设置时为 'node_module/**'
    */
   exclude?: string | string[]
 
@@ -270,6 +271,13 @@ export interface PluginOptions {
    * @default undefined
    */
   libFolderPath?: string
+
+  /**
+   * 指定插件的输出等级
+   *
+   * 默认基于 vite 配置的 'logLevel' 选项
+   */
+  logLevel?: LogLevel
 
   /**
    * 获取诊断信息后的钩子

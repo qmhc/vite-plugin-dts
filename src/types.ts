@@ -1,4 +1,5 @@
 import type { ts, Diagnostic } from 'ts-morph'
+import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
   filePath?: string,
@@ -9,7 +10,7 @@ export interface PluginOptions {
   /**
    * Depends on the root directory
    *
-   * Defaults base on your vite config root options
+   * By Default it base on 'root' option of your vite config
    */
   root?: string,
 
@@ -18,7 +19,7 @@ export interface PluginOptions {
    *
    * Can be specified a array to output to multiple directories
    *
-   * Defaults base on your vite config output options
+   * By Default it base on 'build.outDir' option of your vite config
    */
   outputDir?: string | string[],
 
@@ -27,7 +28,7 @@ export interface PluginOptions {
    *
    * The output path of each file will be calculated base on it
    *
-   * Defaults is the smallest public path for all files
+   * By Default it is the smallest public path for all files
    */
   entryRoot?: string,
 
@@ -77,14 +78,14 @@ export interface PluginOptions {
   /**
    * Manual set include glob
    *
-   * Defaults base on your tsconfig.json include option
+   * By Default it base on 'include' option of the tsconfig.json
    */
   include?: string | string[],
 
   /**
    * Manual set exclude glob
    *
-   * Defaults base on your tsconfig.json exclude option, be 'node_module/**' when empty
+   * By Default it base on 'exclude' option of the tsconfig.json, be 'node_module/**' when empty
    */
   exclude?: string | string[],
 
@@ -158,6 +159,13 @@ export interface PluginOptions {
    * @default undefined
    */
   libFolderPath?: string,
+
+  /**
+   * Specify the log level of plugin
+   *
+   * By Default it base on 'logLevel' option of your vite config
+   */
+  logLevel?: LogLevel,
 
   /**
    * After emit diagnostic hook

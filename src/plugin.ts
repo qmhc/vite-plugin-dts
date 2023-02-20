@@ -5,7 +5,7 @@ import { cyan, yellow, red, green } from 'kolorist'
 import glob from 'fast-glob'
 import debug from 'debug'
 import { Project } from 'ts-morph'
-import { normalizePath } from 'vite'
+import { createLogger, normalizePath } from 'vite'
 import typescript from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
 import {
@@ -63,7 +63,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     skipDiagnostics = false,
     logDiagnostics = undefined,
     copyDtsFiles = true,
-    libFolderPath = undefined,
+    logLevel = undefined,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -85,7 +85,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let include: string[]
   let exclude: string[]
   let filter: (id: unknown) => boolean
-  let libFolder: string | undefined
+  let libFolderPath = options.libFolderPath
 
   const sourceDtsFiles = new Set<SourceFile>()
   const emittedFiles = new Map<string, string>()
@@ -163,7 +163,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     configResolved(config) {
       if (isBundle) return
 
-      logger = config.logger
+      logger = logLevel
+        ? createLogger(logLevel, { allowClearScreen: config.clearScreen })
+        : config.logger
 
       if (logDiagnostics != null) {
         logger.warn(
@@ -203,6 +205,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       root = ensureAbsolute(options.root ?? '', config.root)
       tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
+      libFolderPath = libFolderPath && ensureAbsolute(libFolderPath, root)
 
       outputDirs = options.outputDir
         ? ensureArray(options.outputDir).map(d => ensureAbsolute(d, root))
@@ -221,9 +224,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       setCompileRoot(root)
-      // compilerOptions.rootDir ||= root
-
-      libFolder = libFolderPath ? ensureAbsolute(libFolderPath, root) : undefined
 
       project = new Project({
         compilerOptions: mergeObjects(compilerOptions, {
@@ -243,7 +243,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         } as CompilerOptions),
         tsConfigFilePath: tsConfigPath,
         skipAddingFilesFromTsConfig: true,
-        libFolderPath: libFolder
+        libFolderPath
       })
 
       allowJs = project.getCompilerOptions().allowJs ?? false
@@ -544,7 +544,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 outputDir,
                 entryPath: path,
                 fileName: basename(path),
-                libFolder
+                libFolder: libFolderPath
               })
 
               const wroteFile = normalizePath(path)
@@ -560,7 +560,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               outputDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
-              libFolder
+              libFolder: libFolderPath
             })
 
             const wroteFile = normalizePath(typesPath)
