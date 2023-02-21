@@ -1,3 +1,13 @@
+# [2.0.0-beta.3](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2023-02-21)
+
+### Bug Fixes
+
+- support manually create dts for source file ([2174868](https://github.com/qmhc/vite-plugin-dts/commit/2174868158766fd16a72f9f44b979d2c62d8ab07)), closes [#178](https://github.com/qmhc/vite-plugin-dts/issues/178)
+
+### Features
+
+- support parse types entry from exports in package.json ([f033cf8](https://github.com/qmhc/vite-plugin-dts/commit/f033cf876b51d7e11f1aa562567f3fd1f97d04f5))
+
 # [2.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2023-02-20)
 
 ### Bug Fixes
