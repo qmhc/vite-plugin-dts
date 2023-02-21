@@ -1,4 +1,4 @@
-import { resolve, dirname, relative, basename } from 'node:path'
+import { resolve as _resolve, dirname, relative, basename } from 'node:path'
 import fs from 'fs-extra'
 import os from 'os'
 import { cyan, yellow, red, green } from 'kolorist'
@@ -46,6 +46,7 @@ const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
+const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
 const logPrefix = cyan('[vite:dts]')
 const bundleDebug = debug('vite-plugin-dts:bundle')
@@ -77,7 +78,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let aliases: Alias[]
   let entries: Record<string, string>
   let logger: Logger
-  let project: Project
+  let project: Project | undefined
   let tsConfigPath: string
   let outputDirs: string[]
   let isBundle = false
@@ -94,7 +95,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let transformError = false
 
   function internalTransform(code: string, id: string) {
-    if (!filter(id)) {
+    if (!project || !filter(id)) {
       return
     }
 
@@ -218,7 +219,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         compilerOptions: mergeObjects(compilerOptions, {
           rootDir: compilerOptions.rootDir || root,
           noEmitOnError,
-          outDir: '.',
+          outDir: outputDirs[0],
           // #27 declarationDir option will make no declaration file generated
           declarationDir: undefined,
           // compile vue setup script will generate expose parameter for setup function
@@ -328,7 +329,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
         files.forEach(file => {
           if (dtsRE.test(file)) {
-            sourceDtsFiles.add(project.addSourceFileAtPath(file))
+            sourceDtsFiles.add(project!.addSourceFileAtPath(file))
 
             if (!copyDtsFiles) {
               return
@@ -377,6 +378,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         bundleDebug('diagnostics')
       }
 
+      const outputDir = outputDirs[0]
       const dtsOutputFiles = Array.from(sourceDtsFiles).map(sourceFile => ({
         path: sourceFile.getFilePath(),
         content: sourceFile.getFullText()
@@ -390,7 +392,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             .getEmitOutput(sourceFile, true)
             .getOutputFiles()
             .map(outputFile => ({
-              path: normalizePath(resolve(root, outputFile.compilerObject.name)),
+              path: resolve(root, relative(outputDir, outputFile.compilerObject.name)),
               content: outputFile.getText()
             }))
         )
@@ -399,14 +401,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       bundleDebug('emit')
 
-      if (!entryRoot) {
-        entryRoot = queryPublicPath(outputFiles.map(file => file.path))
-      }
-
+      entryRoot = entryRoot || queryPublicPath(outputFiles.map(file => file.path))
       entryRoot = ensureAbsolute(entryRoot, root)
-
-      // const wroteFiles = new Set<string>()
-      const outputDir = outputDirs[0]
 
       await runParallel(os.cpus().length, outputFiles, async outputFile => {
         let filePath = outputFile.path
@@ -431,6 +427,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           outputDir,
           relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
         )
+        // filePath = cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
+        content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
 
         if (typeof beforeWriteFile === 'function') {
           const result = beforeWriteFile(filePath, content)
@@ -439,25 +437,31 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           if (result === false) return
 
           if (result && isNativeObj(result)) {
-            filePath = result.filePath ?? filePath
+            filePath = result.filePath || filePath
             content = result.content ?? content
           }
         }
 
-        await fs.mkdir(dirname(filePath), { recursive: true })
-        await fs.writeFile(
-          filePath,
-          cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content,
-          'utf-8'
-        )
+        filePath = normalizePath(filePath)
 
-        emittedFiles.set(
-          normalizePath(filePath),
-          cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
-        )
+        await fs.mkdir(dirname(filePath), { recursive: true })
+        await fs.writeFile(filePath, content, 'utf-8')
+
+        emittedFiles.set(filePath, content)
       })
 
       bundleDebug('output')
+
+      if (copyDtsFiles) {
+        await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
+          const filePath = resolve(outputDir, basename(path))
+
+          await fs.writeFile(filePath, content, 'utf-8')
+          emittedFiles.set(filePath, content)
+        })
+      }
+
+      bundleDebug('copy dts')
 
       if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
@@ -505,9 +509,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
+          filePath = normalizePath(filePath)
+
           if (result !== false) {
             await fs.writeFile(filePath, content, 'utf-8')
-            emittedFiles.set(normalizePath(filePath), content)
+            emittedFiles.set(filePath, content)
           }
         }
 
@@ -518,9 +524,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           const rollupFiles = new Set<string>()
 
-          for (const [filePath, content] of emittedFiles) {
-            project.createSourceFile(filePath, content, { overwrite: true })
-          }
+          // for (const [filePath, content] of emittedFiles) {
+          //   project.createSourceFile(filePath, content, { overwrite: true })
+          // }
 
           if (multiple) {
             for (const name of entryNames) {
@@ -536,10 +542,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 libFolder: libFolderPath
               })
 
-              const wroteFile = normalizePath(path)
-
-              emittedFiles.delete(wroteFile)
-              rollupFiles.add(wroteFile)
+              emittedFiles.delete(path)
+              rollupFiles.add(path)
             }
           } else {
             rollupDeclarationFiles({
@@ -552,10 +556,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               libFolder: libFolderPath
             })
 
-            const wroteFile = normalizePath(typesPath)
-
-            emittedFiles.delete(wroteFile)
-            rollupFiles.add(wroteFile)
+            emittedFiles.delete(typesPath)
+            rollupFiles.add(typesPath)
           }
 
           await runParallel(os.cpus().length, Array.from(emittedFiles.keys()), f => fs.unlink(f))
@@ -564,15 +566,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           for (const file of rollupFiles) {
             emittedFiles.set(file, await fs.readFile(file, 'utf-8'))
-          }
-
-          if (copyDtsFiles) {
-            await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
-              const filePath = resolve(outputDir, basename(path))
-
-              await fs.writeFile(filePath, content, 'utf-8')
-              emittedFiles.set(normalizePath(filePath), content)
-            })
           }
 
           bundleDebug('rollup')
@@ -587,7 +580,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           Array.from(emittedFiles),
           async ([wroteFile, content]) => {
             const relativePath = relative(outputDir, wroteFile)
-            // const content = await fs.readFile(wroteFile, 'utf-8')
 
             await Promise.all(
               dirs.map(async dir => {
