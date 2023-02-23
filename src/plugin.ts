@@ -268,7 +268,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           tsConfig.exclude = currentConfig.exclude
         }
 
-        currentConfigPath = currentConfig.extends
+        currentConfigPath =
+          currentConfig.extends && ensureAbsolute(currentConfig.extends, dirname(currentConfigPath))
       }
 
       include = ensureArray(options.include ?? tsConfig.include ?? '**/*').map(normalizeGlob)
