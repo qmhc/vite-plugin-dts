@@ -173,7 +173,7 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
             properties = decl.init.properties
           } else if (
             decl.init.type === 'CallExpression' &&
-            decl.init.arguments[0].type === 'ObjectExpression'
+            decl.init.arguments[0]?.type === 'ObjectExpression'
           ) {
             properties = decl.init.arguments[0].properties
           }
@@ -195,7 +195,7 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
         options = node.declaration.properties
       } else if (
         node.declaration.type === 'CallExpression' &&
-        node.declaration.arguments[0].type === 'ObjectExpression'
+        node.declaration.arguments[0]?.type === 'ObjectExpression'
       ) {
         options = node.declaration.arguments[0].properties
       } else if (node.declaration.type === 'Identifier') {
