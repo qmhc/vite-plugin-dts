@@ -30,6 +30,7 @@ export default defineConfig({
   plugins: [
     dts({
       // logLevel: 'warn',
+      copyDtsFiles: true,
       libFolderPath: '../../node_modules/typescript/lib',
       outputDir: ['dist', 'types'],
       // include: ['src/index.ts'],
@@ -37,7 +38,7 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       skipDiagnostics: false,
-      rollupTypes: true,
+      // rollupTypes: true,
       insertTypesEntry: true
     }),
     vue(),

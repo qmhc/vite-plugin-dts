@@ -88,6 +88,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let libFolderPath = options.libFolderPath
 
   const sourceDtsFiles = new Set<SourceFile>()
+  const includedFiles = new Set<string>()
   const emittedFiles = new Map<string, string>()
 
   let hasJsVue = false
@@ -276,7 +277,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       compilerOptions = tsConfig.compilerOptions
     },
 
-    buildStart(inputOptions) {
+    async buildStart(inputOptions) {
       if (Array.isArray(inputOptions.input)) {
         entries = inputOptions.input.reduce((prev, current) => {
           prev[basename(current)] = current
@@ -285,6 +286,52 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         }, {} as Record<string, string>)
       } else {
         entries = { ...inputOptions.input }
+      }
+
+      bundleDebug('parse entries')
+
+      sourceDtsFiles.clear()
+      includedFiles.clear()
+
+      if (project && include && include.length) {
+        const files = await glob(include, {
+          cwd: root,
+          absolute: true,
+          ignore: exclude
+        })
+
+        for (const file of files) {
+          this.addWatchFile(file)
+
+          if (dtsRE.test(file)) {
+            sourceDtsFiles.add(project.addSourceFileAtPath(file))
+
+            if (!copyDtsFiles) {
+              continue
+            }
+
+            includedFiles.add(file)
+            continue
+          }
+
+          includedFiles.add(`${file.replace(tjsRE, '')}.d.${extPrefix(file)}ts`)
+        }
+
+        if (hasJsVue) {
+          if (!allowJs) {
+            logger.warn(
+              yellow(
+                `${cyan(
+                  '[vite:dts]'
+                )} Some js files are referenced, but you may not enable the 'allowJs' option.`
+              )
+            )
+          }
+
+          project.compilerOptions.set({ allowJs: true })
+        }
+
+        bundleDebug('collect files')
       }
     },
 
@@ -314,50 +361,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       isBundle = true
 
-      sourceDtsFiles.clear()
       emittedFiles.clear()
 
       const startTime = Date.now()
-      const includedFileSet = new Set<string>()
-
-      if (include && include.length) {
-        const files = await glob(include, {
-          cwd: root,
-          absolute: true,
-          ignore: exclude
-        })
-
-        files.forEach(file => {
-          if (dtsRE.test(file)) {
-            sourceDtsFiles.add(project!.addSourceFileAtPath(file))
-
-            if (!copyDtsFiles) {
-              return
-            }
-
-            includedFileSet.add(file)
-            return
-          }
-
-          includedFileSet.add(`${file.replace(tjsRE, '')}.d.${extPrefix(file)}ts`)
-        })
-
-        if (hasJsVue) {
-          if (!allowJs) {
-            logger.warn(
-              yellow(
-                `${cyan(
-                  '[vite:dts]'
-                )} Some js files are referenced, but you may not enable the 'allowJs' option.`
-              )
-            )
-          }
-
-          project.compilerOptions.set({ allowJs: true })
-        }
-
-        bundleDebug('collect files')
-      }
 
       project.resolveSourceFileDependencies()
       bundleDebug('resolve')
@@ -411,7 +417,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const isMapFile = filePath.endsWith('.map')
 
         if (
-          !includedFileSet.has(isMapFile ? filePath.slice(0, -4) : filePath) ||
+          !includedFiles.has(isMapFile ? filePath.slice(0, -4) : filePath) ||
           (clearPureImport && content === noneExport)
         ) {
           return
@@ -450,17 +456,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       })
 
       bundleDebug('output')
-
-      if (copyDtsFiles) {
-        await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
-          const filePath = resolve(outputDir, relative(entryRoot, path))
-
-          await fs.writeFile(filePath, content, 'utf-8')
-          emittedFiles.set(filePath, content)
-        })
-      }
-
-      bundleDebug('copy dts')
 
       if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
