@@ -248,7 +248,8 @@ function preprocessVueCode(code: string, setupScript: SFCScriptBlock | null) {
           option.key.type === 'Identifier' &&
           option.key.name === 'components'
         ) {
-          source.remove(option.start!, option.end!)
+          // source.remove(option.start!, option.end!)
+          source.overwrite(option.value.start!, option.value.end!, 'undefined')
         }
 
         // use exposed as return value
