@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.3...v2.0.0) (2023-02-23)
+
+### Bug Fixes
+
+- ensure watch all the files defined in include ([42a755c](https://github.com/qmhc/vite-plugin-dts/commit/42a755cf502cdfa8dc9dab0f600e8cc2a46eec18)), closes [#151](https://github.com/qmhc/vite-plugin-dts/issues/151)
+- incorrect path resolve when copy dts source files ([434f69e](https://github.com/qmhc/vite-plugin-dts/commit/434f69e9629db5b2e74e609ffbc5f9cd436c1177)), closes [#179](https://github.com/qmhc/vite-plugin-dts/issues/179)
+- **react:** unlimited init order when using with react plugin ([92b82ff](https://github.com/qmhc/vite-plugin-dts/commit/92b82ff47e0480c86c76e298feaa7cea8e06f7fa)), closes [#148](https://github.com/qmhc/vite-plugin-dts/issues/148)
+
+### BREAKING CHANGES
+
+- `copyDtsFiles` option now default to false.
+
 # [2.0.0-beta.3](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2023-02-21)
 
 ### Bug Fixes
