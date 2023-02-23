@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0...v2.0.1) (2023-02-23)
+
+### Bug Fixes
+
+- **vue:** correctly remove components for normal script ([6dbd9af](https://github.com/qmhc/vite-plugin-dts/commit/6dbd9af3bbd8175ef8a1cee4054ba38f330eef0c))
+- **vue:** error when parse no argument function ([4db63b4](https://github.com/qmhc/vite-plugin-dts/commit/4db63b4b1b48686146f07e7e69dcbd4a82b33efb))
+
 # [2.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.0-beta.3...v2.0.0) (2023-02-23)
 
 ### Bug Fixes
