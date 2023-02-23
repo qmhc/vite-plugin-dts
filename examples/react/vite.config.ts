@@ -21,6 +21,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    react(),
     dts({
       libFolderPath: '../../node_modules/typescript/lib',
       outputDir: ['dist', 'types'],
@@ -31,8 +32,7 @@ export default defineConfig({
       skipDiagnostics: false,
       rollupTypes: true,
       insertTypesEntry: true
-    }),
-    react()
+    })
   ]
 })
 

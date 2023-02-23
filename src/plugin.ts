@@ -95,13 +95,15 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let allowJs = false
   let transformError = false
 
-  function internalTransform(code: string, id: string) {
+  async function internalTransform(id: string) {
     if (!project || !filter(id)) {
       return
     }
 
+    // some plugins (e.g. @vitejs/plugin-react) sorted before dts plugin may change
+    // source code when building, so we need to read the original content via the id
     if (vueRE.test(id)) {
-      const { error, content, ext } = compileVueCode(code)
+      const { error, content, ext } = compileVueCode(await fs.readFile(id, 'utf-8'))
 
       if (!transformError && error) {
         logger.error(
@@ -121,7 +123,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         project.createSourceFile(`${id}.${ext || 'js'}`, content, { overwrite: true })
       }
     } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
-      project.createSourceFile(id, code, { overwrite: true })
+      project.createSourceFile(id, await fs.readFile(id, 'utf-8'), { overwrite: true })
     }
   }
 
@@ -335,8 +337,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
     },
 
-    transform(code, id) {
-      internalTransform(code, id)
+    async transform(_, id) {
+      await internalTransform(id)
       return null
     },
 
@@ -348,7 +350,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           const sourceFile = project.getSourceFile(normalizePath(id))
 
           sourceFile && project.removeSourceFile(sourceFile)
-          internalTransform(await fs.readFile(id, 'utf-8'), id)
+          await internalTransform(id)
         }
       }
     },
