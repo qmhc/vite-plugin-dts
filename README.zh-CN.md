@@ -231,7 +231,8 @@ export interface PluginOptions {
   /**
    * 是否将源码里的 .d.ts 文件复制到 outputDir
    *
-   * @default true
+   * @default false
+   * @remarks 在 2.0 之前它默认为 true
    */
   copyDtsFiles?: boolean
 
@@ -250,6 +251,7 @@ export interface PluginOptions {
    * 但对于出现错误的源文件，将无法生成相应的类型文件
    *
    * @default false
+   * @remarks 在 1.7 之前它默认为 true
    */
   skipDiagnostics?: boolean
 

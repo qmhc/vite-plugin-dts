@@ -232,7 +232,8 @@ export interface PluginOptions {
   /**
    * Whether copy .d.ts source files into outputDir
    *
-   * @default true
+   * @default false
+   * @remarks Before 2.0 it defaults to true
    */
   copyDtsFiles?: boolean
 
@@ -251,6 +252,7 @@ export interface PluginOptions {
    * But for the source files with type errors will not be emitted
    *
    * @default false
+   * @remarks Before 1.7 it defaults to true
    */
   skipDiagnostics?: boolean
 

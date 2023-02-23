@@ -28,7 +28,7 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       skipDiagnostics: false,
-      rollupTypes: true,
+      // rollupTypes: true,
       insertTypesEntry: true
     })
   ]

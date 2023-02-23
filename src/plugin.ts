@@ -62,7 +62,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     rollupTypes = false,
     noEmitOnError = false,
     skipDiagnostics = false,
-    copyDtsFiles = true,
+    copyDtsFiles = false,
     logLevel = undefined,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
@@ -427,7 +427,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           outputDir,
           relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
         )
-        // filePath = cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
         content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
 
         if (typeof beforeWriteFile === 'function') {
@@ -454,7 +453,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (copyDtsFiles) {
         await runParallel(os.cpus().length, dtsOutputFiles, async ({ path, content }) => {
-          const filePath = resolve(outputDir, basename(path))
+          const filePath = resolve(outputDir, relative(entryRoot, path))
 
           await fs.writeFile(filePath, content, 'utf-8')
           emittedFiles.set(filePath, content)
