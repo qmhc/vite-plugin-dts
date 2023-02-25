@@ -91,7 +91,7 @@ If your project doesn't use type diagnostic tools, you can set `skipDiagnostics:
 
 This is usually caused by using `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
 
-Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
+Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
 
 ### Take errors that unable to infer types from packages which under `node_modules`
 
