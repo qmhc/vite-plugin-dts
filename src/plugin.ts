@@ -60,6 +60,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     clearPureImport = true,
     insertTypesEntry = false,
     rollupTypes = false,
+    bundledPackages = [],
     noEmitOnError = false,
     skipDiagnostics = false,
     copyDtsFiles = false,
@@ -540,7 +541,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 outputDir,
                 entryPath: path,
                 fileName: basename(path),
-                libFolder: libFolderPath
+                libFolder: libFolderPath,
+                bundledPackages
               })
 
               emittedFiles.delete(path)
@@ -554,7 +556,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               outputDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
-              libFolder: libFolderPath
+              libFolder: libFolderPath,
+              bundledPackages
             })
 
             emittedFiles.delete(typesPath)
