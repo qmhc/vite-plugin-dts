@@ -1,3 +1,9 @@
+# [2.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.2...v2.1.0) (2023-03-08)
+
+### Features
+
+- add bundledPackages configuration ([#186](https://github.com/qmhc/vite-plugin-dts/issues/186)) ([8997680](https://github.com/qmhc/vite-plugin-dts/commit/8997680776d8f35ae5248cc73b2d6a734e5dbc4a))
+
 ## [2.0.2](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.1...v2.0.2) (2023-02-23)
 
 ### Bug Fixes
