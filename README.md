@@ -83,19 +83,19 @@ Here are some FAQ's and solutions.
 
 ### Missing some declaration files after build (before `1.7.0`)
 
-By default `skipDiagnostics` option is `true`, which means that type diagnostic will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). If there are some files with type errors which interrupt the build process, these files will not be emitted (declaration files won't be generated).
+By default, the `skipDiagnostics` option is set to `true` which means type diagnostic will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). If there are some files with type errors which interrupt the build process, these files will not be emitted (declaration files won't be generated).
 
-If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on the diagnostic and log features of this plugin. It will help you check the type errors during build and log error information to the terminal.
+If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. It will help you check the type errors during build and log error information to the terminal.
 
-### Take type error when using both `script` and `setup-script` in vue component
+### Type error when using both `script` and `setup-script` in Vue component
 
-This is usually caused by using `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
+This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
 
-Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue), you should remove the `defineComponent` which in `script` and export a native object directly.
+Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue). You should remove the `defineComponent` which in `script` and export a native object directly.
 
-### Take errors that unable to infer types from packages which under `node_modules`
+### Type errors that are unable to infer types from packages in `node_modules`
 
-This is a exist issue when TypeScript inferring types from packages which under `node_modules` through soft links (pnpm), you can refer to this [issue](https://github.com/microsoft/TypeScript/issues/42873). Currently has a workaround that add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
+This is an existing issue when TypeScript infers types from packages located in `node_modules` through soft links (pnpm). Please refer to [this TypeScript issue](https://github.com/microsoft/TypeScript/issues/42873). The current workaround is to add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
 
 ```json
 {
@@ -123,25 +123,25 @@ export interface PluginOptions {
   /**
    * Depends on the root directory
    *
-   * By Default it base on 'root' option of your vite config
+   * Defaults to 'root' property in your vite config
    */
   root?: string
 
   /**
    * Declaration files output directory
    *
-   * Can be specified a array to output to multiple directories
+   * Supports arrays to output to multiple directories
    *
-   * By Default it base on 'build.outDir' option of your vite config
+   * Defaults to 'build.outDir' property in your vite config
    */
   outputDir?: string | string[]
 
   /**
-   * Manually set the root path of the entry files
+   * Manually sets the root path of entry files
    *
-   * The output path of each file will be calculated base on it
+   * The output path of each file will be calculated based on it
    *
-   * By Default it is the smallest public path for all files
+   * Defaults to the shortest public path for all files
    */
   entryRoot?: string
 
@@ -155,7 +155,7 @@ export interface PluginOptions {
   /**
    * Project init tsconfig.json file path by ts-morph
    *
-   * Plugin also resolve include and exclude files from tsconfig.json
+   * Plugin also resolves include and exclude files from tsconfig.json
    *
    * @default 'tsconfig.json'
    */
@@ -164,21 +164,21 @@ export interface PluginOptions {
   /**
    * Set which paths should exclude when transform aliases
    *
-   * If it's regexp, it will test the original import path directly
+   * If a regular expression, it will test the original import path directly
    *
    * @default []
    */
   aliasesExclude?: (string | RegExp)[]
 
   /**
-   * Whether transform file name '.vue.d.ts' to '.d.ts'
+   * Whether tp transform file name '.vue.d.ts' to '.d.ts'
    *
    * @default false
    */
   cleanVueFileName?: boolean
 
   /**
-   * Whether transform dynamic import to static
+   * Whether to transform dynamic imports to static
    *
    * Force true when `rollupTypes` is effective
    *
@@ -189,16 +189,16 @@ export interface PluginOptions {
   staticImport?: boolean
 
   /**
-   * Manual set include glob
+   * Specify a glob of files to include
    *
-   * By Default it base on 'include' option of the tsconfig.json
+   * Defaults to 'include' property of the tsconfig.json
    */
   include?: string | string[]
 
   /**
-   * Manual set exclude glob
+   * Specify a glob of files to exclude
    *
-   * By Default it base on 'exclude' option of the tsconfig.json, be 'node_module/**' when empty
+   * Defaults to 'exclude' property of tsconfig.json and 'node_module/**' when empty
    */
   exclude?: string | string[]
 
@@ -210,11 +210,11 @@ export interface PluginOptions {
   clearPureImport?: boolean
 
   /**
-   * Whether generate types entry file
+   * Whether to generate types entry file
    *
-   * When true will from package.json types field if exists or `${outputDir}/index.d.ts`
+   * When set to true, will add package.json `types` property to `${outputDir}/index.d.ts`
    *
-   * Force true when `rollupTypes` is effective
+   * Force true when `rollupTypes` is set
    *
    * @default false
    */
@@ -230,36 +230,36 @@ export interface PluginOptions {
   rollupTypes?: boolean
 
   /**
-   * Whether copy .d.ts source files into outputDir
+   * Whether to copy .d.ts source files to outputDir
    *
    * @default false
-   * @remarks Before 2.0 it defaults to true
+   * @remarks Prior to 2.0, the default was true
    */
   copyDtsFiles?: boolean
 
   /**
-   * Whether emit nothing when has any diagnostic
+   * Whether to emit nothing when there is a diagnostic
    *
    * @default false
    */
   noEmitOnError?: boolean
 
   /**
-   * Whether skip typescript diagnostics
+   * Whether to skip Typescript diagnostics
    *
-   * Skip type diagnostics means that type errors will not interrupt the build process
+   * Skip type diagnostics means type errors will not interrupt the build process
    *
-   * But for the source files with type errors will not be emitted
+   * But source files with type errors will not be emitted
    *
    * @default false
-   * @remarks Before 1.7 it defaults to true
+   * @remarks Before 1.7, default was true
    */
   skipDiagnostics?: boolean
 
   /**
-   * Customize typescript lib folder path
+   * Customize Typescript lib folder path
    *
-   * Should pass a relative path to root or a absolute path
+   * SRelative path to root or an absolute path
    *
    * @default undefined
    */
@@ -268,7 +268,7 @@ export interface PluginOptions {
   /**
    * Specify the log level of plugin
    *
-   * By Default it base on 'logLevel' option of your vite config
+   * Defaults to base 'logLevel' property of your vite config
    */
   logLevel?: LogLevel
 
@@ -305,7 +305,7 @@ export interface PluginOptions {
 
 ## Contributors
 
-Thanks for all their contributions!
+Thanks for all the contributions!
 
 <a href="https://github.com/qmhc/vite-plugin-dts/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=qmhc/vite-plugin-dts" />
