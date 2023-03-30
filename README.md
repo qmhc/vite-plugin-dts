@@ -259,7 +259,7 @@ export interface PluginOptions {
   /**
    * Customize Typescript lib folder path
    *
-   * SRelative path to root or an absolute path
+   * Relative path to root or an absolute path
    *
    * @default undefined
    */
