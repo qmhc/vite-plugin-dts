@@ -1,3 +1,9 @@
+# [2.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.2.0) (2023-04-03)
+
+### Features
+
+- compatible with svelte ([#197](https://github.com/qmhc/vite-plugin-dts/issues/197)) ([5d38517](https://github.com/qmhc/vite-plugin-dts/commit/5d38517ee16fdfc2009725b9146bfe38c49d1709))
+
 # [2.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.2...v2.1.0) (2023-03-08)
 
 ### Features
