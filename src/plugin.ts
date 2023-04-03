@@ -45,7 +45,7 @@ const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const fullRelativeRE = /^\.\.?\//
 const defaultIndex = 'index.d.ts'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-const noop = () => { }
+const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
@@ -127,7 +127,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
       project.createSourceFile(id, await fs.readFile(id, 'utf-8'), { overwrite: true })
     } else if (svelteRE.test(id)) {
-      const content = 'export { SvelteComponentTyped as default } from \'svelte/internal\';'
+      const content = "export { SvelteComponentTyped as default } from 'svelte/internal';"
       project.createSourceFile(`${id}.ts`, content, { overwrite: true })
     }
   }
