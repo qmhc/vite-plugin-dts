@@ -18,7 +18,8 @@ export interface BundleOptions {
   outputDir: string,
   entryPath: string,
   fileName: string,
-  libFolder?: string
+  libFolder?: string,
+  bundledPackages?: string[]
 }
 
 const dtsRE = /\.d\.tsx?$/
@@ -29,7 +30,8 @@ export function rollupDeclarationFiles({
   outputDir,
   entryPath,
   fileName,
-  libFolder
+  libFolder,
+  bundledPackages
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
   const packageJsonLookup = new PackageJsonLookup()
@@ -43,6 +45,7 @@ export function rollupDeclarationFiles({
     configObject: {
       projectFolder: root,
       mainEntryPointFilePath: entryPath,
+      bundledPackages,
       compiler: {
         // tsconfigFilePath: tsConfigPath,
         overrideTsconfig: {

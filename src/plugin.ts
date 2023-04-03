@@ -34,6 +34,7 @@ import type { PluginOptions } from './types'
 
 const noneExport = 'export {};\n'
 const vueRE = /\.vue$/
+const svelteRE = /\.svelte$/
 const tsRE = /\.(m|c)?tsx?$/
 const jsRE = /\.(m|c)?jsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
@@ -60,6 +61,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     clearPureImport = true,
     insertTypesEntry = false,
     rollupTypes = false,
+    bundledPackages = [],
     noEmitOnError = false,
     skipDiagnostics = false,
     copyDtsFiles = false,
@@ -124,6 +126,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
     } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
       project.createSourceFile(id, await fs.readFile(id, 'utf-8'), { overwrite: true })
+    } else if (svelteRE.test(id)) {
+      const content = "export { SvelteComponentTyped as default } from 'svelte/internal';"
+      project.createSourceFile(`${id}.ts`, content, { overwrite: true })
     }
   }
 
@@ -175,7 +180,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           yellow(
             `\n${cyan(
               '[vite:dts]'
-            )} You building not a library that may not need to generate declaration files.\n`
+            )} You are building a library that may not need to generate declaration files.\n`
           )
         )
 
@@ -209,7 +214,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           red(
             `\n${cyan(
               '[vite:dts]'
-            )} Can not resolve declaration directory, please check your vite config and plugin options.\n`
+            )} Can not resolve declaration directory. Please check your vite config and plugin options.\n`
           )
         )
 
@@ -540,7 +545,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 outputDir,
                 entryPath: path,
                 fileName: basename(path),
-                libFolder: libFolderPath
+                libFolder: libFolderPath,
+                bundledPackages
               })
 
               emittedFiles.delete(path)
@@ -554,7 +560,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               outputDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
-              libFolder: libFolderPath
+              libFolder: libFolderPath,
+              bundledPackages
             })
 
             emittedFiles.delete(typesPath)

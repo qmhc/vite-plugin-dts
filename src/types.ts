@@ -117,6 +117,15 @@ export interface PluginOptions {
   rollupTypes?: boolean,
 
   /**
+   * Bundled packages for rollup types
+   *
+   * See https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+   *
+   * @default []
+   */
+  bundledPackages?: string[],
+
+  /**
    * Whether copy .d.ts source files into outputDir
    *
    * @default false
