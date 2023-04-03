@@ -176,7 +176,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           yellow(
             `\n${cyan(
               '[vite:dts]'
-            )} You building not a library that may not need to generate declaration files.\n`
+            )} You are building a library that may not need to generate declaration files.\n`
           )
         )
 
@@ -210,7 +210,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           red(
             `\n${cyan(
               '[vite:dts]'
-            )} Can not resolve declaration directory, please check your vite config and plugin options.\n`
+            )} Can not resolve declaration directory. Please check your vite config and plugin options.\n`
           )
         )
 
