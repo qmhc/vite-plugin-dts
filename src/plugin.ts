@@ -6,7 +6,6 @@ import glob from 'fast-glob'
 import debug from 'debug'
 import { Project } from 'ts-morph'
 import { createLogger, normalizePath } from 'vite'
-import typescript from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
 import {
   normalizeGlob,
@@ -25,7 +24,8 @@ import {
   ensureArray,
   runParallel,
   queryPublicPath,
-  removeDirIfEmpty
+  removeDirIfEmpty,
+  getTsConfig
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
@@ -246,36 +246,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       allowJs = project.getCompilerOptions().allowJs ?? false
 
-      const tsConfig: {
-        compilerOptions: CompilerOptions,
-        include?: string[],
-        exclude?: string[]
-      } = { compilerOptions: {} }
-      const readFile = project.getFileSystem().readFileSync
-
-      let currentConfigPath: string | undefined = tsConfigPath
-
-      // #95 Should parse include or exclude from the base config when they are missing from
-      // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
-      // should get them from the parent config.
-      while (currentConfigPath) {
-        const currentConfig: any =
-          typescript.readConfigFile(currentConfigPath, readFile).config ?? {}
-
-        // #171 Need to collect the full `compilerOptions` for `@microsoft/api-extractor`
-        Object.assign(tsConfig.compilerOptions, currentConfig.compilerOptions || {})
-
-        if (!tsConfig.include) {
-          tsConfig.include = currentConfig.include
-        }
-
-        if (!tsConfig.exclude) {
-          tsConfig.exclude = currentConfig.exclude
-        }
-
-        currentConfigPath =
-          currentConfig.extends && ensureAbsolute(currentConfig.extends, dirname(currentConfigPath))
-      }
+      const tsConfig = getTsConfig(tsConfigPath, project)
 
       include = ensureArray(options.include ?? tsConfig.include ?? '**/*').map(normalizeGlob)
       exclude = ensureArray(options.exclude ?? tsConfig.exclude ?? 'node_modules/**').map(
