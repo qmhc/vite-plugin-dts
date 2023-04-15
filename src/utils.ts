@@ -1,7 +1,8 @@
 import { resolve, isAbsolute, dirname, normalize, sep } from 'node:path'
 import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
 import typescript from 'typescript'
-import type { CompilerOptions, Project } from 'ts-morph'
+
+import type { CompilerOptions, FileSystemHost } from 'ts-morph'
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
@@ -178,9 +179,7 @@ export function removeDirIfEmpty(dir: string) {
   return onlyHasDir
 }
 
-export function getTsConfig(tsConfigPath: string, project: Project) {
-  const readFile = project.getFileSystem().readFileSync
-
+export function getTsConfig(tsConfigPath: string, readFileSync: FileSystemHost['readFileSync']) {
   // #95 Should parse include or exclude from the base config when they are missing from
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
   // should get them from the parent config.
@@ -189,12 +188,14 @@ export function getTsConfig(tsConfigPath: string, project: Project) {
     include?: string[],
     exclude?: string[],
     extends?: string | string[]
-  } = { compilerOptions: {}, ...(typescript.readConfigFile(tsConfigPath, readFile).config ?? {}) }
+  } = {
+    compilerOptions: {},
+    ...(typescript.readConfigFile(tsConfigPath, readFileSync).config ?? {})
+  }
 
   if (tsConfig.extends) {
-    const extendsConfigs = tsConfig.extends instanceof Array ? tsConfig.extends : [tsConfig.extends]
-    extendsConfigs.forEach((configPath: string) => {
-      const config = getTsConfig(ensureAbsolute(configPath, dirname(tsConfigPath)), project)
+    ensureArray(tsConfig.extends).forEach((configPath: string) => {
+      const config = getTsConfig(ensureAbsolute(configPath, dirname(tsConfigPath)), readFileSync)
 
       // #171 Need to collect the full `compilerOptions` for `@microsoft/api-extractor`
       Object.assign(tsConfig.compilerOptions, config.compilerOptions)

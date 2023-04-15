@@ -246,7 +246,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       allowJs = project.getCompilerOptions().allowJs ?? false
 
-      const tsConfig = getTsConfig(tsConfigPath, project)
+      const tsConfig = getTsConfig(tsConfigPath, project.getFileSystem().readFileSync)
 
       include = ensureArray(options.include ?? tsConfig.include ?? '**/*').map(normalizeGlob)
       exclude = ensureArray(options.exclude ?? tsConfig.exclude ?? 'node_modules/**').map(
