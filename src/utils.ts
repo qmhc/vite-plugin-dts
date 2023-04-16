@@ -2,7 +2,7 @@ import { resolve, isAbsolute, dirname, normalize, sep } from 'node:path'
 import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
 import typescript from 'typescript'
 
-import type { CompilerOptions, FileSystemHost } from 'ts-morph'
+import type { CompilerOptions } from 'ts-morph'
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
@@ -179,7 +179,10 @@ export function removeDirIfEmpty(dir: string) {
   return onlyHasDir
 }
 
-export function getTsConfig(tsConfigPath: string, readFileSync: FileSystemHost['readFileSync']) {
+export function getTsConfig(
+  tsConfigPath: string,
+  readFileSync: (filePath: string, encoding?: string | undefined) => string
+) {
   // #95 Should parse include or exclude from the base config when they are missing from
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
   // should get them from the parent config.
