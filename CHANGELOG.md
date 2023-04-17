@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.3.0) (2023-04-17)
+
+### Features
+
+- compatible with svelte ([#197](https://github.com/qmhc/vite-plugin-dts/issues/197)) ([5d38517](https://github.com/qmhc/vite-plugin-dts/commit/5d38517ee16fdfc2009725b9146bfe38c49d1709))
+- supports multiple extends in tsconfig.json ([#202](https://github.com/qmhc/vite-plugin-dts/issues/202)) ([9fdac66](https://github.com/qmhc/vite-plugin-dts/commit/9fdac66c0cfd827791208a31fbbefd1fad4ac2bf)), closes [#200](https://github.com/qmhc/vite-plugin-dts/issues/200)
+
 # [2.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.2.0) (2023-04-03)
 
 ### Features
