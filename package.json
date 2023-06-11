@@ -1,20 +1,9 @@
 {
-  "name": "vite-plugin-dts",
-  "version": "2.3.0",
+  "name": "dts-plugin-mono",
   "type": "module",
   "license": "MIT",
   "author": "qmhc",
   "packageManager": "pnpm@7.1.0",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
-    }
-  },
   "scripts": {
     "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
@@ -42,28 +31,6 @@
   },
   "bugs": {
     "url": "https://github.com/qmhc/vite-plugin-dts/issues"
-  },
-  "files": [
-    "dist"
-  ],
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "ts",
-    "dts",
-    "typescript"
-  ],
-  "dependencies": {
-    "@babel/parser": "^7.21.4",
-    "@microsoft/api-extractor": "^7.34.4",
-    "@rollup/pluginutils": "^5.0.2",
-    "@rushstack/node-core-library": "^3.55.2",
-    "debug": "^4.3.4",
-    "fast-glob": "^3.2.12",
-    "fs-extra": "^10.1.0",
-    "kolorist": "^1.7.0",
-    "magic-string": "^0.29.0",
-    "ts-morph": "18.0.0"
   },
   "devDependencies": {
     "@babel/types": "^7.21.4",
@@ -103,8 +70,5 @@
     "vite": "^3.2.5",
     "vitest": "^0.24.5",
     "vue": "3.2.41"
-  },
-  "peerDependencies": {
-    "vite": ">=2.9.0"
   }
 }

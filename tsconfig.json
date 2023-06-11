@@ -17,8 +17,8 @@
     ]
   },
   "include": [
+    "packages",
     "scripts",
-    "src",
     "tests"
   ],
   "exclude": [

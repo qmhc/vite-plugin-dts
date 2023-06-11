@@ -11,7 +11,7 @@ import {
   ensureAbsolute,
   ensureArray,
   queryPublicPath
-} from '../src/utils'
+} from '../packages/vite-plugin/src/utils'
 
 describe('utils tests', () => {
   it('test: isNativeObj', () => {

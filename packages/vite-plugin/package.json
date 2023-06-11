@@ -1,0 +1,47 @@
+{
+  "name": "vite-plugin-dts",
+  "version": "0.0.0",
+  "type": "module",
+  "license": "MIT",
+  "author": "qmhc",
+  "scripts": {},
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^14.18.0 || >=16.0.0"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "ts",
+    "dts",
+    "typescript"
+  ],
+  "dependencies": {
+    "@babel/parser": "^7.21.4",
+    "@microsoft/api-extractor": "^7.34.4",
+    "@rollup/pluginutils": "^5.0.2",
+    "@rushstack/node-core-library": "^3.55.2",
+    "debug": "^4.3.4",
+    "fast-glob": "^3.2.12",
+    "fs-extra": "^10.1.0",
+    "kolorist": "^1.7.0",
+    "magic-string": "^0.29.0",
+    "ts-morph": "18.0.0"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "vite": ">=2.9.0"
+  }
+}
