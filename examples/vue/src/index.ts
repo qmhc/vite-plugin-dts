@@ -41,4 +41,4 @@ export {
 
 export default DefaultImport
 
-export const dtsTypeTest: GlobalType = 1
+// export const dtsTypeTest: GlobalType = 1

@@ -1,4 +1,4 @@
-import type { ts, Diagnostic } from 'ts-morph'
+import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
@@ -21,7 +21,7 @@ export interface PluginOptions {
    *
    * By Default it base on 'build.outDir' option of your vite config
    */
-  outputDir?: string | string[],
+  outDir?: string | string[],
 
   /**
    * Manually set the root path of the entry files
@@ -175,7 +175,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
+  afterDiagnostic?: (diagnostics: ts.Diagnostic[]) => void | Promise<void>,
 
   /**
    * Before declaration file be writed hook

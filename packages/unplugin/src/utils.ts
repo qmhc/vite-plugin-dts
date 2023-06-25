@@ -1,8 +1,21 @@
-import { resolve, isAbsolute, dirname, normalize, sep } from 'node:path'
+import { resolve, isAbsolute, dirname, normalize, sep, posix } from 'node:path'
 import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
+import { platform } from 'os'
 import typescript from 'typescript'
 
 import type { CompilerOptions } from 'typescript'
+
+const windowsSlashRE = /\\/g
+
+export function slash(p: string): string {
+  return p.replace(windowsSlashRE, '/')
+}
+
+export const isWindows = platform() === 'win32'
+
+export function normalizePath(id: string): string {
+  return posix.normalize(isWindows ? slash(id) : id)
+}
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
