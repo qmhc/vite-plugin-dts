@@ -1,9 +1,8 @@
 import { resolve as _resolve, dirname, relative, basename } from 'node:path'
 import { existsSync } from 'node:fs'
 import { writeFile, mkdir, readFile, unlink } from 'node:fs/promises'
-import { cpus } from 'os'
+import { cpus } from 'node:os'
 import ts from 'typescript'
-import { createLogger } from 'vite'
 import { createFilter } from '@rollup/pluginutils'
 import { createParsedCommandLine } from '@vue/language-core'
 import { createProgram } from 'vue-tsc'
@@ -129,9 +128,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
     },
 
-    configResolved(config) {
+    async configResolved(config) {
       logger = logLevel
-        ? createLogger(logLevel, { allowClearScreen: config.clearScreen })
+        ? (await import('vite')).createLogger(logLevel, { allowClearScreen: config.clearScreen })
         : config.logger
 
       root = ensureAbsolute(options.root ?? '', config.root)

@@ -1,6 +1,6 @@
 import { resolve, isAbsolute, dirname, normalize, sep, posix } from 'node:path'
 import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
-import { platform } from 'os'
+import { platform } from 'node:os'
 import typescript from 'typescript'
 
 import type { CompilerOptions } from 'typescript'

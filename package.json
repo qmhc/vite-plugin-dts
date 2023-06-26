@@ -100,5 +100,9 @@
   },
   "peerDependencies": {
     "typescript": "*"
+  },
+  "optionalDependencies": {
+    "rollup": "*",
+    "vite": "*"
   }
 }
