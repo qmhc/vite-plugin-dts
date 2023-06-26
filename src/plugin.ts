@@ -3,26 +3,33 @@ import { existsSync } from 'node:fs'
 import { writeFile, mkdir, readFile, unlink } from 'node:fs/promises'
 import { cpus } from 'os'
 import ts from 'typescript'
-import { createUnplugin } from 'unplugin'
+import { createLogger } from 'vite'
 import { createFilter } from '@rollup/pluginutils'
 import { createParsedCommandLine } from '@vue/language-core'
 import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, yellow, green } from 'kolorist'
-import { normalizeGlob, removePureImport, transformDynamicImport } from './transform'
+import { rollupDeclarationFiles } from './rollup'
+import {
+  normalizeGlob,
+  removePureImport,
+  transformAliasImport,
+  transformDynamicImport
+} from './transform'
 import {
   ensureAbsolute,
   ensureArray,
   isNativeObj,
+  isRegExp,
   normalizePath,
   queryPublicPath,
   removeDirIfEmpty,
   runParallel
 } from './utils'
 
+import type { Alias, Logger } from 'vite'
 import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
-import { rollupDeclarationFiles } from './bundle'
 
 const noneExport = 'export {};\n'
 // const vueRE = /\.vue$/
@@ -33,6 +40,7 @@ const tjsRE = /\.(m|c)?(t|j)sx?$/
 const mtjsRE = /\.m(t|j)sx?$/
 const ctjsRE = /\.c(t|j)sx?$/
 const fullRelativeRE = /^\.\.?\//
+const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const defaultIndex = 'index.d.ts'
 
 const logPrefix = cyan('[vite:dts]')
@@ -46,7 +54,8 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   checkJs: false,
   skipLibCheck: true,
   preserveSymlinks: false,
-  noEmitOnError: undefined
+  noEmitOnError: undefined,
+  target: ts.ScriptTarget.ESNext
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -54,7 +63,7 @@ const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
-export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
+export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
     tsConfigFilePath = '',
     staticImport = false,
@@ -63,21 +72,28 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
     insertTypesEntry = false,
     rollupTypes = false,
     bundledPackages = [],
+    aliasesExclude = [],
+    logLevel = undefined,
+    copyDtsFiles = false,
     beforeWriteFile = noop
   } = options
 
   let compilerOptions = options.compilerOptions ?? {}
+  let rawCompilerOptions: ts.CompilerOptions
+
   let root = ensureAbsolute(options.root ?? '', process.cwd())
   let entryRoot = options.entryRoot ?? ''
   let entries: Record<string, string>
   let include: string[]
   let exclude: string[]
   let outDirs: string[]
+  let aliases: Alias[]
   let libName: string
   let indexName: string
   let libFolderPath = options.libFolderPath
+  let logger: Logger
+  let bundled = false
 
-  let host: ts.CompilerHost
   let program: Program
 
   function parseTsConfig(
@@ -121,59 +137,121 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
   return {
     name: 'unplugin-dts',
 
-    vite: {
-      configResolved(config) {
-        root = ensureAbsolute(options.root ?? '', config.root)
+    apply: 'build',
 
-        if (config.build.lib) {
-          const input =
-            typeof config.build.lib.entry === 'string'
-              ? [config.build.lib.entry]
-              : config.build.lib.entry
+    enforce: 'pre',
 
-          if (Array.isArray(input)) {
-            entries = input.reduce((prev, current) => {
-              prev[basename(current)] = current
-              return prev
-            }, {} as Record<string, string>)
-          } else {
-            entries = { ...input }
-          }
+    config(config) {
+      const aliasOptions = config?.resolve?.alias ?? []
 
-          const filename = config.build.lib.fileName ?? defaultIndex
-          const entry =
-            typeof config.build.lib.entry === 'string'
-              ? config.build.lib.entry
-              : Object.values(config.build.lib.entry)[0]
+      if (isNativeObj(aliasOptions)) {
+        aliases = Object.entries(aliasOptions).map(([key, value]) => {
+          return { find: key, replacement: value }
+        })
+      } else {
+        aliases = ensureArray(aliasOptions)
+      }
 
-          libName = config.build.lib.name || '_default'
-          indexName = typeof filename === 'string' ? filename : filename('es', entry)
-
-          if (!dtsRE.test(indexName)) {
-            indexName = `${indexName.replace(tjsRE, '')}.d.${extPrefix(indexName)}ts`
-          }
-        } else {
-          console.warn(
-            yellow(
-              `\n${cyan(
-                '[vite:dts]'
-              )} You are building a library that may not need to generate declaration files.\n`
+      if (aliasesExclude.length > 0) {
+        aliases = aliases.filter(
+          ({ find }) =>
+            !aliasesExclude.some(
+              alias =>
+                alias &&
+                (isRegExp(find)
+                  ? find.toString() === alias.toString()
+                  : isRegExp(alias)
+                    ? find.match(alias)?.[0]
+                    : find === alias)
             )
+        )
+      }
+    },
+
+    configResolved(config) {
+      logger = logLevel
+        ? createLogger(logLevel, { allowClearScreen: config.clearScreen })
+        : config.logger
+
+      root = ensureAbsolute(options.root ?? '', config.root)
+
+      if (config.build.lib) {
+        const input =
+          typeof config.build.lib.entry === 'string'
+            ? [config.build.lib.entry]
+            : config.build.lib.entry
+
+        if (Array.isArray(input)) {
+          entries = input.reduce((prev, current) => {
+            prev[basename(current)] = current
+            return prev
+          }, {} as Record<string, string>)
+        } else {
+          entries = { ...input }
+        }
+
+        const filename = config.build.lib.fileName ?? defaultIndex
+        const entry =
+          typeof config.build.lib.entry === 'string'
+            ? config.build.lib.entry
+            : Object.values(config.build.lib.entry)[0]
+
+        libName = config.build.lib.name || '_default'
+        indexName = typeof filename === 'string' ? filename : filename('es', entry)
+
+        if (!dtsRE.test(indexName)) {
+          indexName = `${indexName.replace(tjsRE, '')}.d.${extPrefix(indexName)}ts`
+        }
+      } else {
+        logger.warn(
+          yellow(
+            `\n${cyan(
+              '[vite:dts]'
+            )} You are building a library that may not need to generate declaration files.\n`
           )
+        )
 
-          libName = '_default'
-          indexName = defaultIndex
-        }
+        libName = '_default'
+        indexName = defaultIndex
+      }
 
-        if (!options.outDir) {
-          outDirs = [ensureAbsolute(config.build.outDir, root)]
-        }
+      if (!options.outDir) {
+        outDirs = [ensureAbsolute(config.build.outDir, root)]
+      }
 
-        bundleDebug('parse vite config')
+      bundleDebug('parse vite config')
+    },
+
+    options(options) {
+      if (entries) return
+
+      const input = typeof options.input === 'string' ? [options.input] : options.input
+
+      if (Array.isArray(input)) {
+        entries = input.reduce((prev, current) => {
+          prev[basename(current)] = current
+          return prev
+        }, {} as Record<string, string>)
+      } else {
+        entries = { ...input }
+      }
+
+      libName = '_default'
+      indexName = defaultIndex
+
+      bundleDebug('parse options')
+    },
+
+    async watchChange(id) {
+      if (watchExtensionRE.test(id)) {
+        bundled = false
+        program?.getSourceFile(normalizePath(id))
       }
     },
 
     async buildStart() {
+      if (program) return
+
       const config = parseTsConfig(root, tsConfigFilePath)
 
       if (!outDirs) {
@@ -187,30 +265,37 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
         normalizeGlob
       )
       compilerOptions = { ...config.options, outDir: outDirs[0] }
+      rawCompilerOptions = config.raw?.compilerOptions || {}
 
-      host = ts.createCompilerHost(compilerOptions, true)
+      const host = ts.createCompilerHost(compilerOptions, true)
+
       program = createProgram({
-        rootNames: Object.values(entries),
-        options: compilerOptions,
-        host
+        host,
+        rootNames: Object.values(entries).concat(
+          config.fileNames?.filter(name => dtsRE.test(name)) || []
+        ),
+        options: compilerOptions
       })
 
+      libName = libName || '_default'
       indexName = indexName || defaultIndex
       libFolderPath = libFolderPath && ensureAbsolute(libFolderPath, root)
 
       const diagnostics = program.getDeclarationDiagnostics()
 
       if (diagnostics?.length) {
-        console.error(ts.formatDiagnostics(diagnostics, host))
+        logger.error(ts.formatDiagnostics(diagnostics, host))
       }
 
       bundleDebug('create ts program')
     },
 
     async writeBundle() {
-      if (!outDirs || !program) return
+      if (!outDirs || !program || bundled) return
 
-      console.info(green(`\n${logPrefix} Start generate declaration files...`))
+      logger.info(green(`\n${logPrefix} Start generate declaration files...`))
+
+      bundled = true
 
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
@@ -224,12 +309,23 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
         .map(sourceFile => {
           if (!filter(sourceFile.fileName)) return []
 
-          return service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(outputFile => {
-            return {
-              path: resolve(root, relative(outDir, outputFile.name)),
-              content: outputFile.text
-            }
-          })
+          const output: { path: string, content: string }[] = []
+
+          if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
+            output.push({
+              path: sourceFile.fileName,
+              content: sourceFile.getFullText()
+            })
+          }
+
+          return output.concat(
+            service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(outputFile => {
+              return {
+                path: resolve(root, relative(outDir, outputFile.name)),
+                content: outputFile.text
+              }
+            })
+          )
         })
         .flat()
 
@@ -243,6 +339,7 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
 
         if (!isMapFile && content && content !== noneExport) {
           content = clearPureImport ? removePureImport(content) : content
+          content = transformAliasImport(path, content, aliases, aliasesExclude)
           content = staticImport || rollupTypes ? transformDynamicImport(content) : content
         }
 
@@ -338,7 +435,7 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
         bundleDebug('insert index')
 
         if (rollupTypes) {
-          console.info(green(`${logPrefix} Start rollup declaration files...`))
+          logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
           const rollupFiles = new Set<string>()
 
@@ -349,7 +446,7 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
               rollupDeclarationFiles({
                 root,
                 // tsConfigPath,
-                compilerOptions,
+                compilerOptions: rawCompilerOptions,
                 outDir,
                 entryPath: path,
                 fileName: basename(path),
@@ -364,7 +461,7 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
             rollupDeclarationFiles({
               root,
               // tsConfigPath,
-              compilerOptions,
+              compilerOptions: rawCompilerOptions,
               outDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
@@ -410,7 +507,7 @@ export const dtsPlugin = createUnplugin((options: PluginOptions = {}) => {
       }
 
       bundleDebug('finish')
-      console.info(green(`${logPrefix} Declaration files built.\n`))
+      logger.info(green(`${logPrefix} Declaration files built.\n`))
     }
   }
-})
+}

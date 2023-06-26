@@ -3,6 +3,34 @@ lockfileVersion: '6.0'
 importers:
 
   .:
+    dependencies:
+      '@microsoft/api-extractor':
+        specifier: ^7.34.4
+        version: 7.34.4(@types/node@18.15.11)
+      '@rollup/pluginutils':
+        specifier: ^5.0.2
+        version: 5.0.2(rollup@3.20.2)
+      '@rushstack/node-core-library':
+        specifier: ^3.55.2
+        version: 3.55.2(@types/node@18.15.11)
+      '@vue/language-core':
+        specifier: ^1.8.1
+        version: 1.8.1(typescript@5.0.4)
+      debug:
+        specifier: ^4.3.4
+        version: 4.3.4
+      fast-glob:
+        specifier: ^3.2.12
+        version: 3.2.12
+      kolorist:
+        specifier: ^1.7.0
+        version: 1.7.0
+      unplugin:
+        specifier: ^1.3.1
+        version: 1.3.1
+      vue-tsc:
+        specifier: ^1.8.1
+        version: 1.8.1(typescript@5.0.4)
     devDependencies:
       '@babel/types':
         specifier: ^7.21.4
@@ -142,7 +170,7 @@ importers:
         version: 3.2.3(@types/node@18.15.11)
       vite-plugin-dts:
         specifier: workspace:*
-        version: link:../../packages/vite-plugin
+        version: link:../..
 
   examples/ts:
     devDependencies:
@@ -154,7 +182,7 @@ importers:
         version: 3.2.3(@types/node@18.15.11)
       vite-plugin-dts:
         specifier: workspace:*
-        version: link:../../packages/vite-plugin
+        version: link:../..
 
   examples/vue:
     dependencies:
@@ -176,73 +204,7 @@ importers:
         version: 3.2.3(@types/node@18.15.11)
       vite-plugin-dts:
         specifier: workspace:*
-        version: link:../../packages/vite-plugin
-
-  packages/unplugin:
-    dependencies:
-      '@microsoft/api-extractor':
-        specifier: ^7.34.4
-        version: 7.34.4(@types/node@18.15.11)
-      '@rollup/pluginutils':
-        specifier: ^5.0.2
-        version: 5.0.2(rollup@3.20.2)
-      '@rushstack/node-core-library':
-        specifier: ^3.55.2
-        version: 3.55.2(@types/node@18.15.11)
-      '@vue/language-core':
-        specifier: ^1.8.1
-        version: 1.8.1(typescript@5.0.4)
-      debug:
-        specifier: ^4.3.4
-        version: 4.3.4
-      fast-glob:
-        specifier: ^3.2.12
-        version: 3.2.12
-      kolorist:
-        specifier: ^1.7.0
-        version: 1.7.0
-      unplugin:
-        specifier: ^1.3.1
-        version: 1.3.1
-      vue-tsc:
-        specifier: ^1.8.1
-        version: 1.8.1(typescript@5.0.4)
-
-  packages/vite-plugin:
-    dependencies:
-      '@babel/parser':
-        specifier: ^7.21.4
-        version: 7.21.4
-      '@microsoft/api-extractor':
-        specifier: ^7.34.4
-        version: 7.34.4(@types/node@18.15.11)
-      '@rollup/pluginutils':
-        specifier: ^5.0.2
-        version: 5.0.2(rollup@3.20.2)
-      '@rushstack/node-core-library':
-        specifier: ^3.55.2
-        version: 3.55.2(@types/node@18.15.11)
-      debug:
-        specifier: ^4.3.4
-        version: 4.3.4
-      fast-glob:
-        specifier: ^3.2.12
-        version: 3.2.12
-      fs-extra:
-        specifier: ^10.1.0
-        version: 10.1.0
-      kolorist:
-        specifier: ^1.7.0
-        version: 1.7.0
-      magic-string:
-        specifier: ^0.29.0
-        version: 0.29.0
-      ts-morph:
-        specifier: 18.0.0
-        version: 18.0.0
-      vite:
-        specifier: '>=2.9.0'
-        version: 3.2.5(@types/node@18.15.11)
+        version: link:../..
 
 packages:
 
@@ -974,6 +936,7 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@esbuild/android-arm@0.17.16:
@@ -1081,6 +1044,7 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /@esbuild/linux-loong64@0.17.16:
@@ -1300,6 +1264,7 @@ packages:
 
   /@jridgewell/sourcemap-codec@1.4.15:
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
+    dev: true
 
   /@jridgewell/trace-mapping@0.3.18:
     resolution: {integrity: sha512-w+niJYzMHdd7USdiH2U6869nqhD2nbfZXND5Yp93qIbEmnDNk7PD48o+YchRVpzMU7M6jVCbenTR7PA1FLQ9pA==}
@@ -1498,15 +1463,6 @@ packages:
       argparse: 1.0.10
       colors: 1.2.5
       string-argv: 0.3.1
-    dev: false
-
-  /@ts-morph/common@0.19.0:
-    resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==}
-    dependencies:
-      fast-glob: 3.2.12
-      minimatch: 7.4.6
-      mkdirp: 2.1.6
-      path-browserify: 1.0.1
     dev: false
 
   /@tsconfig/node10@1.0.9:
@@ -1937,7 +1893,7 @@ packages:
       '@vue/compiler-dom': 3.3.4
       '@vue/reactivity': 3.3.4
       '@vue/shared': 3.3.4
-      minimatch: 9.0.1
+      minimatch: 9.0.2
       muggle-string: 0.3.1
       typescript: 5.0.4
       vue-template-compiler: 2.7.14
@@ -2407,10 +2363,6 @@ packages:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
     dev: true
-
-  /code-block-writer@12.0.0:
-    resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
-    dev: false
 
   /color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -2942,6 +2894,7 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-android-arm64@0.14.54:
@@ -2968,6 +2921,7 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-darwin-64@0.14.54:
@@ -2994,6 +2948,7 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-darwin-arm64@0.14.54:
@@ -3020,6 +2975,7 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-freebsd-64@0.14.54:
@@ -3046,6 +3002,7 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-freebsd-arm64@0.14.54:
@@ -3072,6 +3029,7 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-32@0.14.54:
@@ -3098,6 +3056,7 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-64@0.14.54:
@@ -3124,6 +3083,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-arm64@0.14.54:
@@ -3150,6 +3110,7 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-arm@0.14.54:
@@ -3176,6 +3137,7 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-mips64le@0.14.54:
@@ -3202,6 +3164,7 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-ppc64le@0.14.54:
@@ -3228,6 +3191,7 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-riscv64@0.14.54:
@@ -3254,6 +3218,7 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-linux-s390x@0.14.54:
@@ -3280,6 +3245,7 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-netbsd-64@0.14.54:
@@ -3306,6 +3272,7 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-openbsd-64@0.14.54:
@@ -3332,6 +3299,7 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-sunos-64@0.14.54:
@@ -3358,6 +3326,7 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-32@0.14.54:
@@ -3384,6 +3353,7 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-64@0.14.54:
@@ -3410,6 +3380,7 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild-windows-arm64@0.14.54:
@@ -3436,6 +3407,7 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+    dev: true
     optional: true
 
   /esbuild@0.14.54:
@@ -3525,6 +3497,7 @@ packages:
       esbuild-windows-32: 0.15.18
       esbuild-windows-64: 0.15.18
       esbuild-windows-arm64: 0.15.18
+    dev: true
 
   /esbuild@0.17.16:
     resolution: {integrity: sha512-aeSuUKr9aFVY9Dc8ETVELGgkj4urg5isYx8pLf4wlGgB0vTFjxJQdHnNH6Shmx4vYYrOTLCHtRI5i1XZ9l2Zcg==}
@@ -4032,6 +4005,7 @@ packages:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0
       universalify: 2.0.0
+    dev: true
 
   /fs-extra@11.1.1:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
@@ -4720,6 +4694,7 @@ packages:
       universalify: 2.0.0
     optionalDependencies:
       graceful-fs: 4.2.11
+    dev: true
 
   /jsonparse@1.3.1:
     resolution: {integrity: sha512-POQXvpdL69+CluYsillJ7SUhKvytYjW9vG/GKpnf+xP8UWgYEM/RaMzHHofbALDiKbbP1W8UEYmgGl39WkPZsg==}
@@ -4945,13 +4920,6 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /magic-string@0.29.0:
-    resolution: {integrity: sha512-WcfidHrDjMY+eLjlU+8OvwREqHwpgCeKVBUpQ3OhYYuvfaYCUgcbuBzappNzZvg/v8onU3oQj+BYpkOJe9Iw4Q==}
-    engines: {node: '>=12'}
-    dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.15
-    dev: false
-
   /magic-string@0.30.0:
     resolution: {integrity: sha512-LA+31JYDJLs82r2ScLrlz1GjSgu66ZV518eyWT+S8VhyQn/JL0u9MeBOvQMGYiPk1DBiSN9DDMOcXvigJZaViQ==}
     engines: {node: '>=12'}
@@ -5033,15 +5001,8 @@ packages:
       brace-expansion: 2.0.1
     dev: true
 
-  /minimatch@7.4.6:
-    resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
-    engines: {node: '>=10'}
-    dependencies:
-      brace-expansion: 2.0.1
-    dev: false
-
-  /minimatch@9.0.1:
-    resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
+  /minimatch@9.0.2:
+    resolution: {integrity: sha512-PZOT9g5v2ojiTL7r1xF6plNHLtOeTpSlDI007As2NlA2aYBMfVom17yqa6QzhmDP8QOhn7LjHTg7DFCVSSa6yg==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       brace-expansion: 2.0.1
@@ -5065,12 +5026,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dev: true
-
-  /mkdirp@2.1.6:
-    resolution: {integrity: sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dev: false
 
   /mkdist@0.3.13(typescript@4.9.5):
     resolution: {integrity: sha512-+eCPpkr8l2X630y5PIlkts2tzYEsb+aGIgXdrQv9ZGtWE2bLlD6kVIFfI6FJwFpjjw4dPPyorxQc6Uhm/oXlvg==}
@@ -5358,10 +5313,6 @@ packages:
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
     dev: true
-
-  /path-browserify@1.0.1:
-    resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
-    dev: false
 
   /path-exists@3.0.0:
     resolution: {integrity: sha512-bpC7GYwiDYQ4wYLe+FA8lhRjhQCMcQGuSgGGqDkg/QerRWw9CmGRT0iSOVRSZJ29NMLZgIzqaljJ63oaL4NIJQ==}
@@ -5759,6 +5710,7 @@ packages:
     hasBin: true
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /rollup@3.20.2:
     resolution: {integrity: sha512-3zwkBQl7Ai7MFYQE0y1MeQ15+9jsi7XxfrqwTb/9EK8D9C9+//EBR4M+CuA1KODRaNbFez/lWxA5vhEGZp4MUg==}
@@ -6144,13 +6096,6 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /ts-morph@18.0.0:
-    resolution: {integrity: sha512-Kg5u0mk19PIIe4islUI/HWRvm9bC1lHejK4S0oh1zaZ77TMZAEmQC0sHQYiu2RgCQFZKXz1fMVi/7nOOeirznA==}
-    dependencies:
-      '@ts-morph/common': 0.19.0
-      code-block-writer: 12.0.0
-    dev: false
-
   /ts-node@10.9.1(@types/node@18.15.11)(typescript@5.0.4):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
@@ -6350,6 +6295,7 @@ packages:
   /universalify@2.0.0:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
+    dev: true
 
   /unplugin@1.3.1:
     resolution: {integrity: sha512-h4uUTIvFBQRxUKS2Wjys6ivoeofGhxzTe2sRWlooyjHXVttcVfV/JiavNd3d4+jty0SVV0dxGw9AkY9MwiaCEw==}
@@ -6490,6 +6436,7 @@ packages:
       rollup: 2.79.1
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /vitest@0.24.5:
     resolution: {integrity: sha512-zw6JhPUHtLILQDe5Q39b/SzoITkG+R7hcFjuthp4xsi6zpmfQPOZcHodZ+3bqoWl4EdGK/p1fuMiEwdxgbGLOA==}
