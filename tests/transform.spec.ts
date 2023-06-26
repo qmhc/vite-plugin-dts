@@ -5,7 +5,7 @@ import {
   transformDynamicImport,
   transformAliasImport,
   removePureImport
-} from '../packages/vite-plugin/src/transform'
+} from '../src/transform'
 
 import type { Alias } from 'vite'
 
