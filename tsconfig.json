@@ -17,10 +17,10 @@
     ]
   },
   "include": [
-    "packages",
+    "src",
     "scripts",
     "tests"
-, "src"  ],
+  ],
   "exclude": [
     "node_modules"
   ]

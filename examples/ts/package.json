@@ -7,8 +7,7 @@
     "build": "cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "devDependencies": {
-    "tslib": "^2.4.1",
-    "vite": "^3.2.1",
-    "vite-plugin-dts": "workspace:*"
+    "tslib": "^2.5.3",
+    "vite": "^4.3.9"
   }
 }

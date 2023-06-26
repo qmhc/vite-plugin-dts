@@ -20,6 +20,7 @@ import {
   ensureAbsolute,
   ensureArray,
   isNativeObj,
+  isPromise,
   isRegExp,
   normalizePath,
   queryPublicPath,
@@ -31,10 +32,7 @@ import type { Alias, Logger } from 'vite'
 import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
 
-const noneExport = 'export {};\n'
-// const vueRE = /\.vue$/
 const tsRE = /\.(m|c)?tsx?$/
-// const jsRE = /\.(m|c)?jsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
 const tjsRE = /\.(m|c)?(t|j)sx?$/
 const mtjsRE = /\.m(t|j)sx?$/
@@ -65,7 +63,7 @@ const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
-    tsConfigFilePath = '',
+    tsconfigPath,
     staticImport = false,
     clearPureImport = true,
     cleanVueFileName = false,
@@ -73,12 +71,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     rollupTypes = false,
     bundledPackages = [],
     aliasesExclude = [],
-    logLevel = undefined,
+    logLevel,
     copyDtsFiles = false,
-    beforeWriteFile = noop
+    afterDiagnostic = noop,
+    beforeWriteFile = noop,
+    afterBuild = noop
   } = options
 
-  let compilerOptions = options.compilerOptions ?? {}
+  let compilerOptions: ts.CompilerOptions
   let rawCompilerOptions: ts.CompilerOptions
 
   let root = ensureAbsolute(options.root ?? '', process.cwd())
@@ -90,52 +90,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let aliases: Alias[]
   let libName: string
   let indexName: string
-  let libFolderPath = options.libFolderPath
   let logger: Logger
   let bundled = false
 
   let program: Program
 
-  function parseTsConfig(
-    root: string,
-    path?: string,
-    override = fixedCompilerOptions
-  ): {
-    include?: string[],
-    exclude?: string[],
-    fileNames?: string[],
-    raw?: any,
-    options: ts.CompilerOptions
-  } {
-    path = path ? ensureAbsolute(path, root) : ts.findConfigFile(root, ts.sys.fileExists)
-
-    if (!path) {
-      return { options: override }
-    }
-
-    // const { config, error } = ts.readConfigFile(path, ts.sys.readFile)
-
-    // if (error) {
-    //   return { options: override }
-    // }
-
-    // const content = ts.parseJsonConfigFileContent(config, ts.sys, root)
-    const content = createParsedCommandLine(ts as any, ts.sys, path)
-
-    return {
-      include: content.raw.include,
-      exclude: content.raw.exclude,
-      fileNames: content.fileNames,
-      raw: content.raw,
-      options: {
-        ...content.options,
-        ...fixedCompilerOptions
-      }
-    }
-  }
-
   return {
-    name: 'unplugin-dts',
+    name: 'vite:dts',
 
     apply: 'build',
 
@@ -236,13 +197,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         entries = { ...input }
       }
 
+      logger = logger || console
       libName = '_default'
       indexName = defaultIndex
 
       bundleDebug('parse options')
     },
 
-    async watchChange(id) {
+    watchChange(id) {
       if (watchExtensionRE.test(id)) {
         bundled = false
         program?.getSourceFile(normalizePath(id))
@@ -252,7 +214,31 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     async buildStart() {
       if (program) return
 
-      const config = parseTsConfig(root, tsConfigFilePath)
+      const configPath = tsconfigPath
+        ? ensureAbsolute(tsconfigPath, root)
+        : ts.findConfigFile(root, ts.sys.fileExists)
+
+      const content = configPath && createParsedCommandLine(ts as any, ts.sys, configPath)
+
+      const config: {
+        include?: string[],
+        exclude?: string[],
+        fileNames?: string[],
+        raw?: any,
+        options: ts.CompilerOptions
+      } = content
+        ? {
+            include: content.raw.include,
+            exclude: content.raw.exclude,
+            fileNames: content.fileNames,
+            raw: content.raw,
+            options: {
+              ...content.options,
+              ...(options.compilerOptions || {}),
+              ...fixedCompilerOptions
+            } as ts.CompilerOptions
+          }
+        : { options: { ...(options.compilerOptions || {}), ...fixedCompilerOptions } }
 
       if (!outDirs) {
         outDirs = options.outDir
@@ -279,12 +265,17 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       libName = libName || '_default'
       indexName = indexName || defaultIndex
-      libFolderPath = libFolderPath && ensureAbsolute(libFolderPath, root)
 
       const diagnostics = program.getDeclarationDiagnostics()
 
       if (diagnostics?.length) {
         logger.error(ts.formatDiagnostics(diagnostics, host))
+      }
+
+      if (typeof afterDiagnostic === 'function') {
+        const result = afterDiagnostic(diagnostics)
+
+        isPromise(result) && (await result)
       }
 
       bundleDebug('create ts program')
@@ -337,7 +328,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       await runParallel(cpus().length, outputFiles, async ({ path, content }) => {
         const isMapFile = path.endsWith('.map')
 
-        if (!isMapFile && content && content !== noneExport) {
+        if (!isMapFile && content) {
           content = clearPureImport ? removePureImport(content) : content
           content = transformAliasImport(path, content, aliases, aliasesExclude)
           content = staticImport || rollupTypes ? transformDynamicImport(content) : content
@@ -413,7 +404,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
-          let result: ReturnType<typeof beforeWriteFile>
+          let result: ReturnType<typeof beforeWriteFile> | undefined
 
           if (typeof beforeWriteFile === 'function') {
             result = beforeWriteFile(path, content)
@@ -437,6 +428,18 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (rollupTypes) {
           logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
+          let libFolder: string | undefined = resolve(root, 'node_modules/typescript')
+
+          if (!existsSync(libFolder)) {
+            if (root !== entryRoot) {
+              libFolder = resolve(entryRoot, 'node_modules/typescript')
+
+              if (!existsSync(libFolder)) libFolder = undefined
+            }
+
+            libFolder = undefined
+          }
+
           const rollupFiles = new Set<string>()
 
           if (multiple) {
@@ -445,12 +448,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
               rollupDeclarationFiles({
                 root,
-                // tsConfigPath,
                 compilerOptions: rawCompilerOptions,
                 outDir,
                 entryPath: path,
                 fileName: basename(path),
-                libFolder: libFolderPath,
+                libFolder,
                 bundledPackages
               })
 
@@ -460,12 +462,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           } else {
             rollupDeclarationFiles({
               root,
-              // tsConfigPath,
               compilerOptions: rawCompilerOptions,
               outDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
-              libFolder: libFolderPath,
+              libFolder,
               bundledPackages
             })
 
@@ -504,6 +505,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             })
           )
         })
+      }
+
+      if (typeof afterBuild === 'function') {
+        const result = afterBuild()
+
+        isPromise(result) && (await result)
       }
 
       bundleDebug('finish')

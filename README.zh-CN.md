@@ -1,7 +1,7 @@
 <h1 align="center">vite-plugin-dts</h1>
 
 <p align="center">
-  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 vite 插件。
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Vite 插件。
 </p>
 
 <p align="center">
@@ -10,13 +10,7 @@
   </a>
 </p>
 
-<p align="center">
-  <strong>中文</strong> | <a href="./README.md">English</a>
-</p>
-
-<p align="center"><strong>注意：</strong>从 1.7.0 开始 <code>skipDiagnostics</code> 选项默认为 <code>false</code>。</p>
-
-<br />
+**中文** | [English](./README.md)
 
 ## 安装
 
@@ -86,7 +80,7 @@ const props = defineProps<{
 
 如果您的项目没有依赖外部的类型检查工具，这时候可以您可以设置 `skipDiagnostics: false` 和 `logDiagnostics: true` 来打开插件的诊断与输出功能，这将帮助您检查打包过程中出现的类型错误并将错误信息输出至终端。
 
-### Vue 组件中同时使用了 `script` 和 `setup-script` 后出现类型错误
+### Vue 组件中同时使用了 `script` 和 `setup-script` 后出现类型错误（`3.0.0` 之前）
 
 这通常是由于分别在 `script` 和 `setup-script` 中同时使用了 `defineComponent` 方法导致的。 `vue/compiler-sfc` 为这类文件编译时会将 `script` 中的默认导出结果合并到 `setup-script` 的 `defineComponent` 的参数定义中，而 `defineComponent` 的参数类型与结果类型并不兼容，这一行为将会导致类型错误。
 
@@ -110,7 +104,7 @@ const props = defineProps<{
 ## 选项
 
 ```ts
-import type { ts, Diagnostic } from 'ts-morph'
+import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
@@ -120,23 +114,23 @@ interface TransformWriteFile {
 
 export interface PluginOptions {
   /**
-   * 执行的根目录
+   * 指定根目录
    *
-   * 默认基于 vite 配置的 'root' 选项
+   * 默认基于 Vite 配置的 'root'，使用 Rollup 时基于 `process.cwd()`
    */
   root?: string
 
   /**
-   * 声明文件的输出目录
+   * 指定输出目录
    *
    * 可以指定一个数组来输出到多个目录中
    *
-   * 默认基于 vite 配置的 'build.outDir' 选项
+   * 默认基于 Vite 配置的 'build.outDir'，使用 Rollup 时基于 tsconfig.json 的 `outDir`
    */
-  outputDir?: string | string[]
+  outDir?: string | string[]
 
   /**
-   * 用于手动设置入口文件的根路径
+   * 用于手动设置入口文件的根路径，通常用在 monorepo
    *
    * 在计算每个文件的输出路径时将基于该路径
    *
@@ -145,25 +139,23 @@ export interface PluginOptions {
   entryRoot?: string
 
   /**
-   * 提供给 ts-morph Project 初始化的 compilerOptions 选项
+   * 指定一个用于覆写的 CompilerOptions
    *
    * @default null
    */
   compilerOptions?: ts.CompilerOptions | null
 
   /**
-   * 提供给 ts-morph Project 初始化的 tsconfig.json 路径
+   * 指定 tsconfig.json 的路径
    *
-   * 插件也会读取 tsconfig.json 的 incldue 和 exclude 选项来解析文件
+   * 插件也会解析 tsconfig.json 的 include 和 exclude 选项
    *
-   * @default 'tsconfig.json'
+   * 未指定时插件默认从根目录寻找配置
    */
-  tsConfigFilePath?: string
+  tsconfigPath?: string
 
   /**
    * 设置在转换别名时哪些路径需要排除
-   *
-   * 如果为正则，会直接使用 test 和原始路径进行比较
    *
    * @default []
    */
@@ -179,9 +171,9 @@ export interface PluginOptions {
   /**
    * 是否将动态引入转换为静态
    *
-   * 当开启打包类型文件时强制为 true
+   * 开启 `rollupTypes` 时强制为 `true`
    *
-   * 例如将 'import('vue').DefineComponent' 转换为 'import { DefineComponent } from "vue"'
+   * 例如将 `import('vue').DefineComponent` 转换为 `import { DefineComponent } from 'vue'`
    *
    * @default false
    */
@@ -190,19 +182,19 @@ export interface PluginOptions {
   /**
    * 手动设置包含路径的 glob
    *
-   * 默认基于 tsconfig.json 的 'include' 选项
+   * 默认基于 tsconfig.json 的 `include` 选项
    */
   include?: string | string[]
 
   /**
    * 手动设置排除路径的 glob
    *
-   * 默认基于 tsconfig.json 的 'exclude' 选线，未设置时为 'node_module/**'
+   * 默认基于 tsconfig.json 的 `exclude` 选线，未设置时为 `'node_module/**'`
    */
   exclude?: string | string[]
 
   /**
-   * 如果文件内容仅包含 'export {}' 则跳过生成
+   * 是否移除那些 `import 'xxx'`
    *
    * @default true
    */
@@ -211,9 +203,9 @@ export interface PluginOptions {
   /**
    * 是否生成类型声明入口
    *
-   * 当为 true 时会基于 package.json 的 types 字段生成，或者 `${outputDir}/index.d.ts`
+   * 当为 `true` 时会基于 package.json 的 types 字段生成，或者 `${outDir}/index.d.ts`
    *
-   * 当开启打包类型文件时强制为 true
+   * 当开启打包类型文件时强制为 `true`
    *
    * @default false
    */
@@ -229,7 +221,15 @@ export interface PluginOptions {
   rollupTypes?: boolean
 
   /**
-   * 是否将源码里的 .d.ts 文件复制到 outputDir
+   * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
+   *
+   * @default []
+   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+   */
+  bundledPackages?: string[]
+
+  /**
+   * 是否将源码里的 .d.ts 文件复制到 `outDir`
    *
    * @default false
    * @remarks 在 2.0 之前它默认为 true
@@ -237,37 +237,9 @@ export interface PluginOptions {
   copyDtsFiles?: boolean
 
   /**
-   * 出现类型诊断信息时不生成类型文件
-   *
-   * @default false
-   */
-  noEmitOnError?: boolean
-
-  /**
-   * 是否跳过类型诊断
-   *
-   * 跳过类型诊断意味着出现错误时不会中断打包进程的执行
-   *
-   * 但对于出现错误的源文件，将无法生成相应的类型文件
-   *
-   * @default false
-   * @remarks 在 1.7 之前它默认为 true
-   */
-  skipDiagnostics?: boolean
-
-  /**
-   * 定制 typescript 的 lib 文件夹路径
-   *
-   * 应传入一个 root 的相对路径或一个绝对路径
-   *
-   * @default undefined
-   */
-  libFolderPath?: string
-
-  /**
    * 指定插件的输出等级
    *
-   * 默认基于 vite 配置的 'logLevel' 选项
+   * 默认基于 Vite 配置的 'logLevel' 选项
    */
   logLevel?: LogLevel
 
@@ -285,7 +257,7 @@ export interface PluginOptions {
    *
    * 可以在钩子里转换文件路径和文件内容
    *
-   * 当返回 false 时会跳过该文件
+   * 当返回 `false` 时会跳过该文件
    *
    * @default () => {}
    */
@@ -319,6 +291,10 @@ pnpm run test:ts
 ```
 
 然后检查 `examples/ts/types` 目录。
+
+`examples` 目录下同样有 Vue 和 React 的案例。
+
+一个使用该插件的真实项目：[Vexip UI](https://github.com/vexip-ui/vexip-ui)。
 
 ## 授权
 

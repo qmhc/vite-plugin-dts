@@ -1,7 +1,7 @@
 <h1 align="center">vite-plugin-dts</h1>
 
 <p align="center">
-  A vite plugin that generates declaration files (<code>*.d.ts</code>) from <code>.ts(x)</code> or <code>.vue</code> source files when using vite in <a href="https://vitejs.dev/guide/build.html#library-mode">library mode</a>.
+  A Vite plugin that generates declaration files (<code>*.d.ts</code>) from <code>.ts(x)</code> or <code>.vue</code> source files when using Vite in <a href="https://vitejs.dev/guide/build.html#library-mode">library mode</a>.
 </p>
 
 <p align="center">
@@ -10,13 +10,7 @@
   </a>
 </p>
 
-<p align="center">
-  <strong>English</strong> | <a href="./README.zh-CN.md">中文</a>
-</p>
-
-<p align="center"><strong>Notice: </strong><code>skipDiagnostics</code> option default to <code>false</code> since 1.7.0.</p>
-
-<br />
+**English** | [中文](./README.zh-CN.md)
 
 ## Install
 
@@ -87,7 +81,7 @@ By default, the `skipDiagnostics` option is set to `true` which means type diagn
 
 If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. It will help you check the type errors during build and log error information to the terminal.
 
-### Type error when using both `script` and `setup-script` in Vue component
+### Type error when using both `script` and `setup-script` in Vue component (before `3.0.0`)
 
 This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
 
@@ -111,7 +105,7 @@ This is an existing issue when TypeScript infers types from packages located in 
 ## Options
 
 ```ts
-import type { ts, Diagnostic } from 'ts-morph'
+import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
@@ -121,107 +115,105 @@ interface TransformWriteFile {
 
 export interface PluginOptions {
   /**
-   * Depends on the root directory
+   * Specify root directory
    *
-   * Defaults to 'root' property in your vite config
+   * By Default it base on 'root' of your Vite config, or `process.cwd()` if using Rollup
    */
   root?: string
 
   /**
-   * Declaration files output directory
+   * Specify declaration files output directory
    *
-   * Supports arrays to output to multiple directories
+   * Can be specified a array to output to multiple directories
    *
-   * Defaults to 'build.outDir' property in your vite config
+   * By Default it base on 'build.outDir' of your Vite config, or `outDir` of tsconfig.json if using Rollup
    */
-  outputDir?: string | string[]
+  outDir?: string | string[]
 
   /**
-   * Manually sets the root path of entry files
+   * Manually set the root path of the entry files, useful in monorepo
    *
-   * The output path of each file will be calculated based on it
+   * The output path of each file will be calculated base on it
    *
-   * Defaults to the shortest public path for all files
+   * By Default it is the smallest public path for all files
    */
   entryRoot?: string
 
   /**
-   * Project init compilerOptions using by ts-morph
+   * Specify a CompilerOptions to override
    *
    * @default null
    */
   compilerOptions?: ts.CompilerOptions | null
 
   /**
-   * Project init tsconfig.json file path by ts-morph
+   * Specify tsconfig.json path
    *
-   * Plugin also resolves include and exclude files from tsconfig.json
+   * Plugin also resolve include and exclude files from tsconfig.json
    *
-   * @default 'tsconfig.json'
+   * By default plugin will find config form root if not specify
    */
-  tsConfigFilePath?: string
+  tsconfigPath?: string
 
   /**
    * Set which paths should exclude when transform aliases
-   *
-   * If a regular expression, it will test the original import path directly
    *
    * @default []
    */
   aliasesExclude?: (string | RegExp)[]
 
   /**
-   * Whether tp transform file name '.vue.d.ts' to '.d.ts'
+   * Whether transform file name '.vue.d.ts' to '.d.ts'
    *
    * @default false
    */
   cleanVueFileName?: boolean
 
   /**
-   * Whether to transform dynamic imports to static
+   * Whether transform dynamic import to static
    *
-   * Force true when `rollupTypes` is effective
+   * Force `true` when `rollupTypes` is effective
    *
-   * eg. 'import('vue').DefineComponent' to 'import { DefineComponent } from "vue"'
+   * eg. `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`
    *
    * @default false
    */
   staticImport?: boolean
 
   /**
-   * Specify a glob of files to include
+   * Manual set include glob
    *
-   * Defaults to 'include' property of the tsconfig.json
+   * By Default it base on 'include' option of the tsconfig.json
    */
   include?: string | string[]
 
   /**
-   * Specify a glob of files to exclude
+   * Manual set exclude glob
    *
-   * Defaults to 'exclude' property of tsconfig.json and 'node_module/**' when empty
+   * By Default it base on 'exclude' option of the tsconfig.json, be 'node_module/**' when empty
    */
   exclude?: string | string[]
 
   /**
-   * Do not emit if content of file only includes 'export {}'
+   * Whether remove those `import 'xxx'`
    *
    * @default true
    */
   clearPureImport?: boolean
 
   /**
-   * Whether to generate types entry file
+   * Whether generate types entry file
    *
-   * When set to true, will add package.json `types` property to `${outputDir}/index.d.ts`
+   * When `true` will from package.json types field if exists or `${outDir}/index.d.ts`
    *
-   * Force true when `rollupTypes` is set
+   * Force `true` when `rollupTypes` is effective
    *
    * @default false
    */
   insertTypesEntry?: boolean
 
   /**
-   * Set to rollup declaration files after emit
+   * Set whether rollup declaration files after emit
    *
    * Power by `@microsoft/api-extractor`, it will start a new program which takes some time
    *
@@ -230,70 +222,50 @@ export interface PluginOptions {
   rollupTypes?: boolean
 
   /**
-   * Whether to copy .d.ts source files to outputDir
+   * Bundled packages for `@microsoft/api-extractor`
+   *
+   * @default []
+   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+   */
+  bundledPackages?: string[]
+
+  /**
+   * Whether copy .d.ts source files into `outDir`
    *
    * @default false
-   * @remarks Prior to 2.0, the default was true
+   * @remarks Before 2.0 it defaults to true
    */
   copyDtsFiles?: boolean
 
   /**
-   * Whether to emit nothing when there is a diagnostic
-   *
-   * @default false
-   */
-  noEmitOnError?: boolean
-
-  /**
-   * Whether to skip Typescript diagnostics
-   *
-   * Skip type diagnostics means type errors will not interrupt the build process
-   *
-   * But source files with type errors will not be emitted
-   *
-   * @default false
-   * @remarks Before 1.7, default was true
-   */
-  skipDiagnostics?: boolean
-
-  /**
-   * Customize Typescript lib folder path
-   *
-   * Relative path to root or an absolute path
-   *
-   * @default undefined
-   */
-  libFolderPath?: string
-
-  /**
    * Specify the log level of plugin
    *
-   * Defaults to base 'logLevel' property of your vite config
+   * By Default it base on 'logLevel' option of your Vite config
    */
   logLevel?: LogLevel
 
   /**
-   * After emit diagnostic hook
+   * Hook after diagnostic emitted
    *
    * According to the length to judge whether there is any type error
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => void | Promise<void>
 
   /**
-   * Before declaration file be writed hook
+   * Hook before each declaration file is written
    *
-   * You can transform declaration file-path and content through it
+   * You can transform declaration file's path and content through it
    *
-   * The file will be skipped when return exact false
+   * The file will be skipped when return exact `false`
    *
    * @default () => {}
    */
   beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
 
   /**
-   * After build hook
+   * Hook after built
    *
    * It wil be called after all declaration files are written
    *
@@ -320,6 +292,10 @@ pnpm run test:ts
 ```
 
 Then check `examples/ts/types`.
+
+Also Vue and React cases under `examples`.
+
+A real project using this plugin: [Vexip UI](https://github.com/vexip-ui/vexip-ui).
 
 ## License
 
