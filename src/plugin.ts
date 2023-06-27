@@ -266,6 +266,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       libName = libName || '_default'
       indexName = indexName || defaultIndex
 
+      entryRoot = entryRoot || queryPublicPath(rootNames)
+      entryRoot = ensureAbsolute(entryRoot, root)
+
       const diagnostics = program.getDeclarationDiagnostics()
 
       if (diagnostics?.length) {
@@ -287,7 +290,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     transform(_, id) {
-      if (!program || !filter(id) || id.includes('.vue?vue') || (!tsRE.test(id) && !vueRE.test(id))) { return }
+      if (
+        !program ||
+        !filter(id) ||
+        id.includes('.vue?vue') ||
+        (!tsRE.test(id) && !vueRE.test(id))
+      ) {
+        return
+      }
 
       id = normalizePath(id)
       rootFiles.delete(id)
@@ -308,7 +318,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const service = program.__vue.languageService
 
       for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-        outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
+        outputFiles.set(normalizePath(outputFile.name), outputFile.text)
       }
 
       const dtsId = id.replace(tjsRE, '.d.ts')
@@ -316,7 +326,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       dtsSourceFile &&
         filter(dtsSourceFile.fileName) &&
-        outputFiles.set(dtsSourceFile.fileName, dtsSourceFile.getFullText())
+        outputFiles.set(
+          resolve(outDir, relative(entryRoot, dtsSourceFile.fileName)),
+          dtsSourceFile.getFullText()
+        )
     },
 
     watchChange(id) {
@@ -350,12 +363,15 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (!filter(sourceFile.fileName)) continue
 
         if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
-          outputFiles.set(sourceFile.fileName, sourceFile.getFullText())
+          outputFiles.set(
+            resolve(outDir, relative(entryRoot, sourceFile.fileName)),
+            sourceFile.getFullText()
+          )
         }
 
         if (rootFiles.has(sourceFile.fileName)) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
+            outputFiles.set(normalizePath(outputFile.name), outputFile.text)
           }
 
           rootFiles.delete(sourceFile.fileName)
@@ -363,9 +379,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       bundleDebug('emit output patch')
-
-      entryRoot = entryRoot || queryPublicPath(Array.from(outputFiles.keys()))
-      entryRoot = ensureAbsolute(entryRoot, root)
 
       await runParallel(
         cpus().length,
@@ -375,14 +388,16 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           if (!isMapFile && content) {
             content = clearPureImport ? removePureImport(content) : content
-            content = transformAliasImport(path, content, aliases, aliasesExclude)
+            content = transformAliasImport(
+              resolve(entryRoot, relative(outDir, path)),
+              content,
+              aliases,
+              aliasesExclude
+            )
             content = staticImport || rollupTypes ? transformDynamicImport(content) : content
           }
 
-          path = resolve(
-            outDir,
-            relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
-          )
+          path = cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path
           content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
 
           if (typeof beforeWriteFile === 'function') {
