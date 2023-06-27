@@ -30,8 +30,7 @@ export default defineConfig({
   plugins: [
     dts({
       copyDtsFiles: true,
-      // libFolderPath: '../../node_modules/typescript/lib',
-      // outputDir: ['dist', 'types'],
+      outDir: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       staticImport: true,

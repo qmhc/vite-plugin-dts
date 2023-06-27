@@ -31,6 +31,7 @@ import type { Alias, Logger } from 'vite'
 import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
 
+const vueRE = /\.vue$/
 const tsRE = /\.(m|c)?tsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
 const tjsRE = /\.(m|c)?(t|j)sx?$/
@@ -77,22 +78,28 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     afterBuild = noop
   } = options
 
+  let root = ensureAbsolute(options.root ?? '', process.cwd())
+  let entryRoot = options.entryRoot ?? ''
+
   let compilerOptions: ts.CompilerOptions
   let rawCompilerOptions: ts.CompilerOptions
 
-  let root = ensureAbsolute(options.root ?? '', process.cwd())
-  let entryRoot = options.entryRoot ?? ''
+  let outDirs: string[]
   let entries: Record<string, string>
   let include: string[]
   let exclude: string[]
-  let outDirs: string[]
   let aliases: Alias[]
   let libName: string
   let indexName: string
   let logger: Logger
+  let host: ts.CompilerHost | undefined
+  let program: Program | undefined
+  let filter: ReturnType<typeof createFilter>
+
   let bundled = false
 
-  let program: Program
+  const rootFiles = new Set<string>()
+  const outputFiles = new Map<string, string>()
 
   return {
     name: 'vite:dts',
@@ -203,33 +210,28 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       bundleDebug('parse options')
     },
 
-    watchChange(id) {
-      if (watchExtensionRE.test(id)) {
-        bundled = false
-        program?.getSourceFile(normalizePath(id))
-      }
-    },
-
     async buildStart() {
       if (program) return
+
+      bundleDebug('begin buildStart')
 
       const configPath = tsconfigPath
         ? ensureAbsolute(tsconfigPath, root)
         : ts.findConfigFile(root, ts.sys.fileExists)
 
-      const content = configPath && createParsedCommandLine(ts as any, ts.sys, configPath)
+      const content = configPath
+        ? createParsedCommandLine(ts as any, ts.sys, configPath)
+        : undefined
 
       const config: {
         include?: string[],
         exclude?: string[],
-        fileNames?: string[],
         raw?: any,
         options: ts.CompilerOptions
       } = content
         ? {
             include: content.raw.include,
             exclude: content.raw.exclude,
-            fileNames: content.fileNames,
             raw: content.raw,
             options: {
               ...content.options,
@@ -252,15 +254,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       compilerOptions = { ...config.options, outDir: outDirs[0] }
       rawCompilerOptions = config.raw?.compilerOptions || {}
 
-      const host = ts.createCompilerHost(compilerOptions, true)
+      filter = createFilter(include, exclude, { resolve: root })
 
-      program = createProgram({
-        host,
-        rootNames: Object.values(entries).concat(
-          config.fileNames?.filter(name => dtsRE.test(name)) || []
-        ),
-        options: compilerOptions
-      })
+      const rootNames = Object.values(entries)
+        .concat(content?.fileNames.filter(filter) || [])
+        .map(normalizePath)
+
+      host = ts.createCompilerHost(compilerOptions, true)
+      program = createProgram({ host, rootNames, options: compilerOptions })
 
       libName = libName || '_default'
       indexName = indexName || defaultIndex
@@ -277,90 +278,136 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         isPromise(result) && (await result)
       }
 
+      rootNames.forEach(file => {
+        this.addWatchFile(file)
+        rootFiles.add(file)
+      })
+
       bundleDebug('create ts program')
     },
 
-    async writeBundle() {
-      if (!outDirs || !program || bundled) return
+    transform(_, id) {
+      if (!program || !filter(id) || id.includes('.vue?vue') || (!tsRE.test(id) && !vueRE.test(id))) { return }
 
-      logger.info(green(`\n${logPrefix} Start generate declaration files...`))
+      id = normalizePath(id)
+      rootFiles.delete(id)
+
+      let sourceFile = program.getSourceFile(normalizePath(id))
+
+      if (!sourceFile && vueRE.test(id)) {
+        sourceFile =
+          program.getSourceFile(id + '.ts') ||
+          program.getSourceFile(id + '.js') ||
+          program.getSourceFile(id + '.tsx') ||
+          program.getSourceFile(id + '.jsx')
+      }
+
+      if (!sourceFile) return
+
+      const outDir = outDirs[0]
+      const service = program.__vue.languageService
+
+      for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+        outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
+      }
+
+      const dtsId = id.replace(tjsRE, '.d.ts')
+      const dtsSourceFile = program.getSourceFile(dtsId)
+
+      dtsSourceFile &&
+        filter(dtsSourceFile.fileName) &&
+        outputFiles.set(dtsSourceFile.fileName, dtsSourceFile.getFullText())
+    },
+
+    watchChange(id) {
+      if (host && program && watchExtensionRE.test(id)) {
+        const sourceFile = host.getSourceFile(normalizePath(id), ts.ScriptTarget.ESNext)
+
+        if (sourceFile && filter(sourceFile.fileName)) {
+          !vueRE.test(id) && rootFiles.add(sourceFile.fileName)
+          program.__vue.projectVersion++
+          bundled = false
+        }
+      }
+    },
+
+    async writeBundle() {
+      if (!program || bundled) return
 
       bundled = true
+      bundleDebug('begin writeBundle')
+      logger.info(green(`\n${logPrefix} Start generate declaration files...`))
+
+      const startTime = Date.now()
 
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
 
-      const filter = createFilter(include, exclude, { resolve: root })
-
       const service = program.__vue.languageService
       const sourceFiles = program.getSourceFiles()
 
-      const outputFiles = sourceFiles
-        .map(sourceFile => {
-          if (!filter(sourceFile.fileName)) return []
+      for (const sourceFile of sourceFiles) {
+        if (!filter(sourceFile.fileName)) continue
 
-          const output: { path: string, content: string }[] = []
+        if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
+          outputFiles.set(sourceFile.fileName, sourceFile.getFullText())
+        }
 
-          if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
-            output.push({
-              path: sourceFile.fileName,
-              content: sourceFile.getFullText()
-            })
+        if (rootFiles.has(sourceFile.fileName)) {
+          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+            outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
           }
 
-          return output.concat(
-            service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(outputFile => {
-              return {
-                path: resolve(root, relative(outDir, outputFile.name)),
-                content: outputFile.text
-              }
-            })
-          )
-        })
-        .flat()
+          rootFiles.delete(sourceFile.fileName)
+        }
+      }
 
-      bundleDebug('emit output')
+      bundleDebug('emit output patch')
 
-      entryRoot = entryRoot || queryPublicPath(outputFiles.map(file => file.path))
+      entryRoot = entryRoot || queryPublicPath(Array.from(outputFiles.keys()))
       entryRoot = ensureAbsolute(entryRoot, root)
 
-      await runParallel(cpus().length, outputFiles, async ({ path, content }) => {
-        const isMapFile = path.endsWith('.map')
+      await runParallel(
+        cpus().length,
+        Array.from(outputFiles.entries()),
+        async ([path, content]) => {
+          const isMapFile = path.endsWith('.map')
 
-        if (!isMapFile && content) {
-          content = clearPureImport ? removePureImport(content) : content
-          content = transformAliasImport(path, content, aliases, aliasesExclude)
-          content = staticImport || rollupTypes ? transformDynamicImport(content) : content
-        }
-
-        path = resolve(
-          outDir,
-          relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
-        )
-        content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
-
-        if (typeof beforeWriteFile === 'function') {
-          const result = beforeWriteFile(path, content)
-
-          // #110 skip if return false
-          if (result === false) return
-
-          if (result && isNativeObj(result)) {
-            path = result.filePath || path
-            content = result.content ?? content
+          if (!isMapFile && content) {
+            content = clearPureImport ? removePureImport(content) : content
+            content = transformAliasImport(path, content, aliases, aliasesExclude)
+            content = staticImport || rollupTypes ? transformDynamicImport(content) : content
           }
+
+          path = resolve(
+            outDir,
+            relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
+          )
+          content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
+
+          if (typeof beforeWriteFile === 'function') {
+            const result = beforeWriteFile(path, content)
+
+            // #110 skip if return false
+            if (result === false) return
+
+            if (result && isNativeObj(result)) {
+              path = result.filePath || path
+              content = result.content ?? content
+            }
+          }
+
+          path = normalizePath(path)
+          const dir = dirname(path)
+
+          if (!existsSync(dir)) {
+            await mkdir(dir, { recursive: true })
+          }
+
+          await writeFile(path, content, 'utf-8')
+          emittedFiles.set(path, content)
         }
-
-        path = normalizePath(path)
-        const dir = dirname(path)
-
-        if (!existsSync(dir)) {
-          await mkdir(dir, { recursive: true })
-        }
-
-        await writeFile(path, content, 'utf-8')
-        emittedFiles.set(path, content)
-      })
+      )
 
       bundleDebug('write output')
 
@@ -513,7 +560,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       bundleDebug('finish')
-      logger.info(green(`${logPrefix} Declaration files built.\n`))
+      logger.info(green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`))
     }
   }
 }
