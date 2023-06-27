@@ -17,6 +17,7 @@ export function isRegExp(value: unknown): value is RegExp {
 export function isPromise(value: unknown): value is Promise<any> {
   return (
     !!value &&
+    (typeof (value as any) === 'function' || isNativeObj(value)) &&
     typeof (value as any).then === 'function' &&
     typeof (value as any).catch === 'function'
   )
@@ -27,7 +28,7 @@ export function mergeObjects<T extends Record<string, unknown>, U extends Record
   targetObj: U
 ) {
   const loop: Array<{
-    source: Record<string, any>,
+    source: Record<string, any>
     target: Record<string, any>
     // merged: Record<string, any>
   }> = [
@@ -187,9 +188,9 @@ export function getTsConfig(
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
   // should get them from the parent config.
   const tsConfig: {
-    compilerOptions: CompilerOptions,
-    include?: string[],
-    exclude?: string[],
+    compilerOptions: CompilerOptions
+    include?: string[]
+    exclude?: string[]
     extends?: string | string[]
   } = {
     compilerOptions: {},
