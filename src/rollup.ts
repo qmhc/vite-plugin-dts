@@ -10,12 +10,12 @@ import {
 import { PackageJsonLookup } from '@rushstack/node-core-library'
 
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
-import type { ts } from 'ts-morph'
+import type ts from 'typescript'
 
 export interface BundleOptions {
   root: string,
   compilerOptions: ts.CompilerOptions,
-  outputDir: string,
+  outDir: string,
   entryPath: string,
   fileName: string,
   libFolder?: string,
@@ -27,7 +27,7 @@ const dtsRE = /\.d\.tsx?$/
 export function rollupDeclarationFiles({
   root,
   compilerOptions,
-  outputDir,
+  outDir,
   entryPath,
   fileName,
   libFolder,
@@ -50,7 +50,10 @@ export function rollupDeclarationFiles({
         // tsconfigFilePath: tsConfigPath,
         overrideTsconfig: {
           $schema: 'http://json.schemastore.org/tsconfig',
-          compilerOptions
+          compilerOptions: {
+            ...compilerOptions,
+            target: 'ESNext'
+          }
         }
       },
       apiReport: {
@@ -62,7 +65,7 @@ export function rollupDeclarationFiles({
       },
       dtsRollup: {
         enabled: true,
-        publicTrimmedFilePath: resolve(outputDir, fileName)
+        publicTrimmedFilePath: resolve(outDir, fileName)
       },
       tsdocMetadata: {
         enabled: false

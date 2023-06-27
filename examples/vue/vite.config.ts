@@ -29,16 +29,12 @@ export default defineConfig({
   },
   plugins: [
     dts({
-      // logLevel: 'warn',
       copyDtsFiles: true,
-      libFolderPath: '../../node_modules/typescript/lib',
-      outputDir: ['dist', 'types'],
+      outDir: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
-      // aliasesExclude: [/^@components/],
       staticImport: true,
-      skipDiagnostics: false,
-      // rollupTypes: true,
+      rollupTypes: true,
       insertTypesEntry: true
     }),
     vue(),

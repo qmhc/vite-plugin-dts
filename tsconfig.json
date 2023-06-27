@@ -17,8 +17,8 @@
     ]
   },
   "include": [
-    "scripts",
     "src",
+    "scripts",
     "tests"
   ],
   "exclude": [

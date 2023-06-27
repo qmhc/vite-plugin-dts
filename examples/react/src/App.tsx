@@ -1,4 +1,4 @@
-import HelloWorld from './components/HelloWrold'
+import HelloWorld from './components/HelloWorld'
 
 function App() {
   return (

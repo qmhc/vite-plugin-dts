@@ -25,5 +25,5 @@
     },
     "lib": ["esnext", "dom"]
   },
-  "include": ["src", "components", "*.d.ts", "../ts/src/test.ts"]
+  "include": ["src", "components", "*.d.ts"]
 }

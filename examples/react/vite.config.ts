@@ -23,13 +23,11 @@ export default defineConfig({
   plugins: [
     react(),
     dts({
-      libFolderPath: '../../node_modules/typescript/lib',
-      outputDir: ['dist', 'types'],
+      outDir: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],
       staticImport: true,
-      skipDiagnostics: false,
       rollupTypes: true,
       insertTypesEntry: true
     })

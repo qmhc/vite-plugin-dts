@@ -1,4 +1,4 @@
-import type { ts, Diagnostic } from 'ts-morph'
+import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
 interface TransformWriteFile {
@@ -8,23 +8,23 @@ interface TransformWriteFile {
 
 export interface PluginOptions {
   /**
-   * Depends on the root directory
+   * Specify root directory
    *
-   * By Default it base on 'root' option of your vite config
+   * By Default it base on 'root' of your Vite config, or `process.cwd()` if using Rollup
    */
   root?: string,
 
   /**
-   * Declaration files output directory
+   * Specify declaration files output directory
    *
    * Can be specified a array to output to multiple directories
    *
-   * By Default it base on 'build.outDir' option of your vite config
+   * By Default it base on 'build.outDir' of your Vite config, or `outDir` of tsconfig.json if using Rollup
    */
-  outputDir?: string | string[],
+  outDir?: string | string[],
 
   /**
-   * Manually set the root path of the entry files
+   * Manually set the root path of the entry files, useful in monorepo
    *
    * The output path of each file will be calculated base on it
    *
@@ -33,20 +33,20 @@ export interface PluginOptions {
   entryRoot?: string,
 
   /**
-   * Project init compilerOptions using by ts-morph
+   * Specify a CompilerOptions to override
    *
    * @default null
    */
   compilerOptions?: ts.CompilerOptions | null,
 
   /**
-   * Project init tsconfig.json file path by ts-morph
+   * Specify tsconfig.json path
    *
    * Plugin also resolve include and exclude files from tsconfig.json
    *
-   * @default 'tsconfig.json'
+   * By default plugin will find config form root if not specify
    */
-  tsConfigFilePath?: string,
+  tsconfigPath?: string,
 
   /**
    * Set which paths should exclude when transform aliases
@@ -67,9 +67,9 @@ export interface PluginOptions {
   /**
    * Whether transform dynamic import to static
    *
-   * Force true when `rollupTypes` is effective
+   * Force `true` when `rollupTypes` is effective
    *
-   * eg. 'import('vue').DefineComponent' to 'import { DefineComponent } from "vue"'
+   * eg. `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`
    *
    * @default false
    */
@@ -78,19 +78,19 @@ export interface PluginOptions {
   /**
    * Manual set include glob
    *
-   * By Default it base on 'include' option of the tsconfig.json
+   * By Default it base on `include` option of the tsconfig.json
    */
   include?: string | string[],
 
   /**
    * Manual set exclude glob
    *
-   * By Default it base on 'exclude' option of the tsconfig.json, be 'node_module/**' when empty
+   * By Default it base on `exclude` option of the tsconfig.json, be `'node_module/**'` when empty
    */
   exclude?: string | string[],
 
   /**
-   * Do not emit if content of file only includes 'export {}'
+   * Whether remove those `import 'xxx'`
    *
    * @default true
    */
@@ -99,16 +99,16 @@ export interface PluginOptions {
   /**
    * Whether generate types entry file
    *
-   * When true will from package.json types field if exists or `${outputDir}/index.d.ts`
+   * When `true` will from package.json types field if exists or `` `${outDir}/index.d.ts` ``
    *
-   * Force true when `rollupTypes` is effective
+   * Force `true` when `rollupTypes` is effective
    *
    * @default false
    */
   insertTypesEntry?: boolean,
 
   /**
-   * Set to rollup declaration files after emit
+   * Set whether rollup declaration files after emit
    *
    * Power by `@microsoft/api-extractor`, it will start a new program which takes some time
    *
@@ -117,16 +117,15 @@ export interface PluginOptions {
   rollupTypes?: boolean,
 
   /**
-   * Bundled packages for rollup types
-   *
-   * See https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+   * Bundled packages for `@microsoft/api-extractor`
    *
    * @default []
+   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
    */
   bundledPackages?: string[],
 
   /**
-   * Whether copy .d.ts source files into outputDir
+   * Whether copy .d.ts source files into `outDir`
    *
    * @default false
    * @remarks Before 2.0 it defaults to true
@@ -134,62 +133,34 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
-   * Whether emit nothing when has any diagnostic
-   *
-   * @default false
-   */
-  noEmitOnError?: boolean,
-
-  /**
-   * Whether skip typescript diagnostics
-   *
-   * Skip type diagnostics means that type errors will not interrupt the build process
-   *
-   * But for the source files with type errors will not be emitted
-   *
-   * @default false
-   * @remarks Before 1.7 it defaults to true
-   */
-  skipDiagnostics?: boolean,
-
-  /**
-   * Customize typescript lib folder path
-   *
-   * Should pass a relative path to root or a absolute path
-   *
-   * @default undefined
-   */
-  libFolderPath?: string,
-
-  /**
    * Specify the log level of plugin
    *
-   * By Default it base on 'logLevel' option of your vite config
+   * By Default it base on 'logLevel' option of your Vite config
    */
   logLevel?: LogLevel,
 
   /**
-   * After emit diagnostic hook
+   * Hook after diagnostic emitted
    *
    * According to the length to judge whether there is any type error
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>,
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => void | Promise<void>,
 
   /**
-   * Before declaration file be writed hook
+   * Hook before each declaration file is written
    *
-   * You can transform declaration file-path and content through it
+   * You can transform declaration file's path and content through it
    *
-   * The file will be skipped when return exact false
+   * The file will be skipped when return exact `false`
    *
    * @default () => {}
    */
   beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile,
 
   /**
-   * After build hook
+   * Hook after built
    *
    * It wil be called after all declaration files are written
    *

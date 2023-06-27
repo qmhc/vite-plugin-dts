@@ -1,136 +1,105 @@
 import { resolve as _resolve, dirname, relative, basename } from 'node:path'
-import fs from 'fs-extra'
-import os from 'os'
-import { cyan, yellow, red, green } from 'kolorist'
-import glob from 'fast-glob'
-import debug from 'debug'
-import { Project } from 'ts-morph'
-import { createLogger, normalizePath } from 'vite'
+import { existsSync } from 'node:fs'
+import { writeFile, mkdir, readFile, unlink } from 'node:fs/promises'
+import { cpus } from 'node:os'
+import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
-import {
-  normalizeGlob,
-  transformDynamicImport,
-  transformAliasImport,
-  removePureImport
-} from './transform'
-import { setCompileRoot, compileVueCode } from './compile'
+import { createParsedCommandLine } from '@vue/language-core'
+import { createProgram } from 'vue-tsc'
+import debug from 'debug'
+import { cyan, yellow, green } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
 import {
+  normalizeGlob,
+  removePureImport,
+  transformAliasImport,
+  transformDynamicImport
+} from './transform'
+import {
+  ensureAbsolute,
+  ensureArray,
   isNativeObj,
   isPromise,
   isRegExp,
-  mergeObjects,
-  ensureAbsolute,
-  ensureArray,
-  runParallel,
+  normalizePath,
   queryPublicPath,
   removeDirIfEmpty,
-  getTsConfig
+  runParallel
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
-import type { SourceFile, CompilerOptions } from 'ts-morph'
+import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
 
-const noneExport = 'export {};\n'
 const vueRE = /\.vue$/
-const svelteRE = /\.svelte$/
 const tsRE = /\.(m|c)?tsx?$/
-const jsRE = /\.(m|c)?jsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
 const tjsRE = /\.(m|c)?(t|j)sx?$/
 const mtjsRE = /\.m(t|j)sx?$/
 const ctjsRE = /\.c(t|j)sx?$/
-const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const fullRelativeRE = /^\.\.?\//
+const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const defaultIndex = 'index.d.ts'
+
+const logPrefix = cyan('[vite:dts]')
+const bundleDebug = debug('vite-plugin-dts:bundle')
+
+const fixedCompilerOptions: ts.CompilerOptions = {
+  noEmit: false,
+  declaration: true,
+  emitDeclarationOnly: true,
+  noUnusedParameters: false,
+  checkJs: false,
+  skipLibCheck: true,
+  preserveSymlinks: false,
+  noEmitOnError: undefined,
+  target: ts.ScriptTarget.ESNext
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
-const logPrefix = cyan('[vite:dts]')
-const bundleDebug = debug('vite-plugin-dts:bundle')
-
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
-    tsConfigFilePath = 'tsconfig.json',
-    aliasesExclude = [],
-    cleanVueFileName = false,
+    tsconfigPath,
     staticImport = false,
     clearPureImport = true,
+    cleanVueFileName = false,
     insertTypesEntry = false,
     rollupTypes = false,
     bundledPackages = [],
-    noEmitOnError = false,
-    skipDiagnostics = false,
+    aliasesExclude = [],
+    logLevel,
     copyDtsFiles = false,
-    logLevel = undefined,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
   } = options
 
-  let compilerOptions = options.compilerOptions ?? {}
-
-  let root: string
+  let root = ensureAbsolute(options.root ?? '', process.cwd())
   let entryRoot = options.entryRoot ?? ''
-  let libName: string
-  let indexName: string
-  let aliases: Alias[]
+
+  let compilerOptions: ts.CompilerOptions
+  let rawCompilerOptions: ts.CompilerOptions
+
+  let outDirs: string[]
   let entries: Record<string, string>
-  let logger: Logger
-  let project: Project | undefined
-  let tsConfigPath: string
-  let outputDirs: string[]
-  let isBundle = false
   let include: string[]
   let exclude: string[]
-  let filter: (id: unknown) => boolean
-  let libFolderPath = options.libFolderPath
+  let aliases: Alias[]
+  let libName: string
+  let indexName: string
+  let logger: Logger
+  let host: ts.CompilerHost | undefined
+  let program: Program | undefined
+  let filter: ReturnType<typeof createFilter>
 
-  const sourceDtsFiles = new Set<SourceFile>()
-  const includedFiles = new Set<string>()
-  const emittedFiles = new Map<string, string>()
+  let bundled = false
 
-  let hasJsVue = false
-  let allowJs = false
-  let transformError = false
-
-  async function internalTransform(id: string) {
-    if (!project || !filter(id)) {
-      return
-    }
-
-    // some plugins (e.g. @vitejs/plugin-react) sorted before dts plugin may change
-    // source code when building, so we need to read the original content via the id
-    if (vueRE.test(id)) {
-      const { error, content, ext } = compileVueCode(await fs.readFile(id, 'utf-8'))
-
-      if (!transformError && error) {
-        logger.error(
-          red(
-            `\n${cyan(
-              '[vite:dts]'
-            )} A error occurred when transform code, maybe there are some inertnal bugs.\n`
-          )
-        )
-
-        transformError = true
-      }
-
-      if (content) {
-        if (ext === 'js' || ext === 'jsx') hasJsVue = true
-
-        project.createSourceFile(`${id}.${ext || 'js'}`, content, { overwrite: true })
-      }
-    } else if (!id.includes('.vue?vue') && (tsRE.test(id) || (allowJs && jsRE.test(id)))) {
-      project.createSourceFile(id, await fs.readFile(id, 'utf-8'), { overwrite: true })
-    } else if (svelteRE.test(id)) {
-      const content = "export { SvelteComponentTyped as default } from 'svelte/internal';"
-      project.createSourceFile(`${id}.ts`, content, { overwrite: true })
-    }
-  }
+  const rootFiles = new Set<string>()
+  const outputFiles = new Map<string, string>()
 
   return {
     name: 'vite:dts',
@@ -140,8 +109,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     enforce: 'pre',
 
     config(config) {
-      if (isBundle) return
-
       const aliasOptions = config?.resolve?.alias ?? []
 
       if (isNativeObj(aliasOptions)) {
@@ -168,25 +135,28 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
     },
 
-    configResolved(config) {
-      if (isBundle) return
-
+    async configResolved(config) {
       logger = logLevel
-        ? createLogger(logLevel, { allowClearScreen: config.clearScreen })
+        ? (await import('vite')).createLogger(logLevel, { allowClearScreen: config.clearScreen })
         : config.logger
 
-      if (!config.build.lib) {
-        logger.warn(
-          yellow(
-            `\n${cyan(
-              '[vite:dts]'
-            )} You are building a library that may not need to generate declaration files.\n`
-          )
-        )
+      root = ensureAbsolute(options.root ?? '', config.root)
 
-        libName = '_default'
-        indexName = defaultIndex
-      } else {
+      if (config.build.lib) {
+        const input =
+          typeof config.build.lib.entry === 'string'
+            ? [config.build.lib.entry]
+            : config.build.lib.entry
+
+        if (Array.isArray(input)) {
+          entries = input.reduce((prev, current) => {
+            prev[basename(current)] = current
+            return prev
+          }, {} as Record<string, string>)
+        } else {
+          entries = { ...input }
+        }
+
         const filename = config.build.lib.fileName ?? defaultIndex
         const entry =
           typeof config.build.lib.entry === 'string'
@@ -199,246 +169,251 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (!dtsRE.test(indexName)) {
           indexName = `${indexName.replace(tjsRE, '')}.d.${extPrefix(indexName)}ts`
         }
-      }
-
-      root = ensureAbsolute(options.root ?? '', config.root)
-      tsConfigPath = ensureAbsolute(tsConfigFilePath, root)
-      libFolderPath = libFolderPath && ensureAbsolute(libFolderPath, root)
-
-      outputDirs = options.outputDir
-        ? ensureArray(options.outputDir).map(d => ensureAbsolute(d, root))
-        : [ensureAbsolute(config.build.outDir, root)]
-
-      if (!outputDirs[0]) {
-        logger.error(
-          red(
+      } else {
+        logger.warn(
+          yellow(
             `\n${cyan(
               '[vite:dts]'
-            )} Can not resolve declaration directory. Please check your vite config and plugin options.\n`
+            )} You are building a library that may not need to generate declaration files.\n`
           )
         )
 
-        return
+        libName = '_default'
+        indexName = defaultIndex
       }
 
-      setCompileRoot(root)
+      if (!options.outDir) {
+        outDirs = [ensureAbsolute(config.build.outDir, root)]
+      }
 
-      project = new Project({
-        compilerOptions: mergeObjects(compilerOptions, {
-          rootDir: compilerOptions.rootDir || root,
-          noEmitOnError,
-          outDir: outputDirs[0],
-          // #27 declarationDir option will make no declaration file generated
-          declarationDir: undefined,
-          // compile vue setup script will generate expose parameter for setup function
-          // although user never use it which will get an unexpected unused error
-          noUnusedParameters: false,
-          declaration: true,
-          noEmit: false,
-          emitDeclarationOnly: true,
-          // #153 maybe a bug of ts-morph
-          composite: false
-        } as CompilerOptions),
-        tsConfigFilePath: tsConfigPath,
-        skipAddingFilesFromTsConfig: true,
-        libFolderPath
-      })
-
-      allowJs = project.getCompilerOptions().allowJs ?? false
-
-      const tsConfig = getTsConfig(tsConfigPath, project.getFileSystem().readFileSync)
-
-      include = ensureArray(options.include ?? tsConfig.include ?? '**/*').map(normalizeGlob)
-      exclude = ensureArray(options.exclude ?? tsConfig.exclude ?? 'node_modules/**').map(
-        normalizeGlob
-      )
-      filter = createFilter(include, exclude, { resolve: root })
-      compilerOptions = tsConfig.compilerOptions
+      bundleDebug('parse vite config')
     },
 
-    async buildStart(inputOptions) {
-      if (Array.isArray(inputOptions.input)) {
-        entries = inputOptions.input.reduce((prev, current) => {
-          prev[basename(current)] = current
+    options(options) {
+      if (entries) return
 
+      const input = typeof options.input === 'string' ? [options.input] : options.input
+
+      if (Array.isArray(input)) {
+        entries = input.reduce((prev, current) => {
+          prev[basename(current)] = current
           return prev
         }, {} as Record<string, string>)
       } else {
-        entries = { ...inputOptions.input }
+        entries = { ...input }
       }
 
-      bundleDebug('parse entries')
+      logger = logger || console
+      libName = '_default'
+      indexName = defaultIndex
 
-      sourceDtsFiles.clear()
-      includedFiles.clear()
+      bundleDebug('parse options')
+    },
 
-      if (project && include && include.length) {
-        const files = await glob(include, {
-          cwd: root,
-          absolute: true,
-          ignore: exclude
-        })
+    async buildStart() {
+      if (program) return
 
-        for (const file of files) {
-          this.addWatchFile(file)
+      bundleDebug('begin buildStart')
 
-          if (dtsRE.test(file)) {
-            sourceDtsFiles.add(project.addSourceFileAtPath(file))
+      const configPath = tsconfigPath
+        ? ensureAbsolute(tsconfigPath, root)
+        : ts.findConfigFile(root, ts.sys.fileExists)
 
-            if (!copyDtsFiles) {
-              continue
-            }
+      const content = configPath
+        ? createParsedCommandLine(ts as any, ts.sys, configPath)
+        : undefined
 
-            includedFiles.add(file)
-            continue
+      const config: {
+        include?: string[],
+        exclude?: string[],
+        raw?: any,
+        options: ts.CompilerOptions
+      } = content
+        ? {
+            include: content.raw.include,
+            exclude: content.raw.exclude,
+            raw: content.raw,
+            options: {
+              ...content.options,
+              ...(options.compilerOptions || {}),
+              ...fixedCompilerOptions
+            } as ts.CompilerOptions
           }
+        : { options: { ...(options.compilerOptions || {}), ...fixedCompilerOptions } }
 
-          includedFiles.add(`${file.replace(tjsRE, '')}.d.${extPrefix(file)}ts`)
+      if (!outDirs) {
+        outDirs = options.outDir
+          ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
+          : [ensureAbsolute(config.raw?.compilerOptions?.outDir || 'dist', root)]
+      }
+
+      include = ensureArray(options.include ?? config.include ?? '**/*').map(normalizeGlob)
+      exclude = ensureArray(options.exclude ?? config.exclude ?? 'node_modules/**').map(
+        normalizeGlob
+      )
+      compilerOptions = { ...config.options, outDir: outDirs[0] }
+      rawCompilerOptions = config.raw?.compilerOptions || {}
+
+      filter = createFilter(include, exclude, { resolve: root })
+
+      const rootNames = Object.values(entries)
+        .concat(content?.fileNames.filter(filter) || [])
+        .map(normalizePath)
+
+      host = ts.createCompilerHost(compilerOptions, true)
+      program = createProgram({ host, rootNames, options: compilerOptions })
+
+      libName = libName || '_default'
+      indexName = indexName || defaultIndex
+
+      const diagnostics = program.getDeclarationDiagnostics()
+
+      if (diagnostics?.length) {
+        logger.error(ts.formatDiagnostics(diagnostics, host))
+      }
+
+      if (typeof afterDiagnostic === 'function') {
+        const result = afterDiagnostic(diagnostics)
+
+        isPromise(result) && (await result)
+      }
+
+      rootNames.forEach(file => {
+        this.addWatchFile(file)
+        rootFiles.add(file)
+      })
+
+      bundleDebug('create ts program')
+    },
+
+    transform(_, id) {
+      if (!program || !filter(id) || id.includes('.vue?vue') || (!tsRE.test(id) && !vueRE.test(id))) { return }
+
+      id = normalizePath(id)
+      rootFiles.delete(id)
+
+      let sourceFile = program.getSourceFile(normalizePath(id))
+
+      if (!sourceFile && vueRE.test(id)) {
+        sourceFile =
+          program.getSourceFile(id + '.ts') ||
+          program.getSourceFile(id + '.js') ||
+          program.getSourceFile(id + '.tsx') ||
+          program.getSourceFile(id + '.jsx')
+      }
+
+      if (!sourceFile) return
+
+      const outDir = outDirs[0]
+      const service = program.__vue.languageService
+
+      for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+        outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
+      }
+
+      const dtsId = id.replace(tjsRE, '.d.ts')
+      const dtsSourceFile = program.getSourceFile(dtsId)
+
+      dtsSourceFile &&
+        filter(dtsSourceFile.fileName) &&
+        outputFiles.set(dtsSourceFile.fileName, dtsSourceFile.getFullText())
+    },
+
+    watchChange(id) {
+      if (host && program && watchExtensionRE.test(id)) {
+        const sourceFile = host.getSourceFile(normalizePath(id), ts.ScriptTarget.ESNext)
+
+        if (sourceFile && filter(sourceFile.fileName)) {
+          !vueRE.test(id) && rootFiles.add(sourceFile.fileName)
+          program.__vue.projectVersion++
+          bundled = false
         }
-
-        if (hasJsVue) {
-          if (!allowJs) {
-            logger.warn(
-              yellow(
-                `${cyan(
-                  '[vite:dts]'
-                )} Some js files are referenced, but you may not enable the 'allowJs' option.`
-              )
-            )
-          }
-
-          project.compilerOptions.set({ allowJs: true })
-        }
-
-        bundleDebug('collect files')
       }
     },
 
-    async transform(_, id) {
-      await internalTransform(id)
-      return null
-    },
+    async writeBundle() {
+      if (!program || bundled) return
 
-    async watchChange(id) {
-      if (watchExtensionRE.test(id)) {
-        isBundle = false
-
-        if (project) {
-          const sourceFile = project.getSourceFile(normalizePath(id))
-
-          sourceFile && project.removeSourceFile(sourceFile)
-          await internalTransform(id)
-        }
-      }
-    },
-
-    async closeBundle() {
-      if (!outputDirs || !project || isBundle) return
-
+      bundled = true
+      bundleDebug('begin writeBundle')
       logger.info(green(`\n${logPrefix} Start generate declaration files...`))
-      bundleDebug('start')
-
-      isBundle = true
-
-      emittedFiles.clear()
 
       const startTime = Date.now()
 
-      project.resolveSourceFileDependencies()
-      bundleDebug('resolve')
+      const outDir = outDirs[0]
+      const emittedFiles = new Map<string, string>()
 
-      if (!skipDiagnostics) {
-        const diagnostics = project.getPreEmitDiagnostics()
+      const service = program.__vue.languageService
+      const sourceFiles = program.getSourceFiles()
 
-        if (diagnostics?.length) {
-          logger.warn(project.formatDiagnosticsWithColorAndContext(diagnostics))
+      for (const sourceFile of sourceFiles) {
+        if (!filter(sourceFile.fileName)) continue
+
+        if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
+          outputFiles.set(sourceFile.fileName, sourceFile.getFullText())
         }
 
-        if (typeof afterDiagnostic === 'function') {
-          const result = afterDiagnostic(diagnostics)
+        if (rootFiles.has(sourceFile.fileName)) {
+          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+            outputFiles.set(resolve(root, relative(outDir, outputFile.name)), outputFile.text)
+          }
 
-          isPromise(result) && (await result)
+          rootFiles.delete(sourceFile.fileName)
         }
-
-        bundleDebug('diagnostics')
       }
 
-      const outputDir = outputDirs[0]
-      const dtsOutputFiles = Array.from(sourceDtsFiles).map(sourceFile => ({
-        path: sourceFile.getFilePath(),
-        content: sourceFile.getFullText()
-      }))
+      bundleDebug('emit output patch')
 
-      const service = project.getLanguageService()
-      const outputFiles = project
-        .getSourceFiles()
-        .map(sourceFile =>
-          service
-            .getEmitOutput(sourceFile, true)
-            .getOutputFiles()
-            .map(outputFile => ({
-              path: resolve(root, relative(outputDir, outputFile.compilerObject.name)),
-              content: outputFile.getText()
-            }))
-        )
-        .flat()
-        .concat(dtsOutputFiles)
-
-      bundleDebug('emit')
-
-      entryRoot = entryRoot || queryPublicPath(outputFiles.map(file => file.path))
+      entryRoot = entryRoot || queryPublicPath(Array.from(outputFiles.keys()))
       entryRoot = ensureAbsolute(entryRoot, root)
 
-      await runParallel(os.cpus().length, outputFiles, async outputFile => {
-        let filePath = outputFile.path
-        let content = outputFile.content
+      await runParallel(
+        cpus().length,
+        Array.from(outputFiles.entries()),
+        async ([path, content]) => {
+          const isMapFile = path.endsWith('.map')
 
-        const isMapFile = filePath.endsWith('.map')
-
-        if (
-          !includedFiles.has(isMapFile ? filePath.slice(0, -4) : filePath) ||
-          (clearPureImport && content === noneExport)
-        ) {
-          return
-        }
-
-        if (!isMapFile && content && content !== noneExport) {
-          content = clearPureImport ? removePureImport(content) : content
-          content = transformAliasImport(filePath, content, aliases, aliasesExclude)
-          content = staticImport || rollupTypes ? transformDynamicImport(content) : content
-        }
-
-        filePath = resolve(
-          outputDir,
-          relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
-        )
-        content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
-
-        if (typeof beforeWriteFile === 'function') {
-          const result = beforeWriteFile(filePath, content)
-
-          // #110 skip if return false
-          if (result === false) return
-
-          if (result && isNativeObj(result)) {
-            filePath = result.filePath || filePath
-            content = result.content ?? content
+          if (!isMapFile && content) {
+            content = clearPureImport ? removePureImport(content) : content
+            content = transformAliasImport(path, content, aliases, aliasesExclude)
+            content = staticImport || rollupTypes ? transformDynamicImport(content) : content
           }
+
+          path = resolve(
+            outDir,
+            relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
+          )
+          content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
+
+          if (typeof beforeWriteFile === 'function') {
+            const result = beforeWriteFile(path, content)
+
+            // #110 skip if return false
+            if (result === false) return
+
+            if (result && isNativeObj(result)) {
+              path = result.filePath || path
+              content = result.content ?? content
+            }
+          }
+
+          path = normalizePath(path)
+          const dir = dirname(path)
+
+          if (!existsSync(dir)) {
+            await mkdir(dir, { recursive: true })
+          }
+
+          await writeFile(path, content, 'utf-8')
+          emittedFiles.set(path, content)
         }
+      )
 
-        filePath = normalizePath(filePath)
-
-        await fs.mkdir(dirname(filePath), { recursive: true })
-        await fs.writeFile(filePath, content, 'utf-8')
-
-        emittedFiles.set(filePath, content)
-      })
-
-      bundleDebug('output')
+      bundleDebug('write output')
 
       if (insertTypesEntry || rollupTypes) {
         const pkgPath = resolve(root, 'package.json')
-        const pkg = fs.existsSync(pkgPath) ? JSON.parse(await fs.readFile(pkgPath, 'utf-8')) : {}
+        const pkg = existsSync(pkgPath) ? JSON.parse(await readFile(pkgPath, 'utf-8')) : {}
         const entryNames = Object.keys(entries)
         const types =
           pkg.types ||
@@ -448,49 +423,49 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           (pkg.exports?.['.'] || pkg.exports?.['./'])?.types
         const multiple = entryNames.length > 1
 
-        const typesPath = types ? resolve(root, types) : resolve(outputDir, indexName)
+        const typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
 
         for (const name of entryNames) {
-          let filePath = multiple ? resolve(outputDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
+          let path = multiple ? resolve(outDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
 
-          if (fs.existsSync(filePath)) continue
+          if (existsSync(path)) continue
 
           const index = resolve(
-            outputDir,
+            outDir,
             relative(entryRoot, `${entries[name].replace(tsRE, '')}.d.ts`)
           )
 
-          let fromPath = normalizePath(relative(dirname(filePath), index))
+          let fromPath = normalizePath(relative(dirname(path), index))
 
           fromPath = fromPath.replace(dtsRE, '')
           fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
 
           let content = `export * from '${fromPath}'\n`
 
-          if (fs.existsSync(index)) {
-            const entryCodes = await fs.readFile(index, 'utf-8')
+          if (existsSync(index)) {
+            const entryCodes = await readFile(index, 'utf-8')
 
             if (entryCodes.includes('export default')) {
               content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
             }
           }
 
-          let result: ReturnType<typeof beforeWriteFile>
+          let result: ReturnType<typeof beforeWriteFile> | undefined
 
           if (typeof beforeWriteFile === 'function') {
-            result = beforeWriteFile(filePath, content)
+            result = beforeWriteFile(path, content)
 
             if (result && isNativeObj(result)) {
-              filePath = result.filePath ?? filePath
+              path = result.filePath ?? path
               content = result.content ?? content
             }
           }
 
-          filePath = normalizePath(filePath)
+          path = normalizePath(path)
 
           if (result !== false) {
-            await fs.writeFile(filePath, content, 'utf-8')
-            emittedFiles.set(filePath, content)
+            await writeFile(path, content, 'utf-8')
+            emittedFiles.set(path, content)
           }
         }
 
@@ -499,24 +474,31 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (rollupTypes) {
           logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
-          const rollupFiles = new Set<string>()
+          let libFolder: string | undefined = resolve(root, 'node_modules/typescript')
 
-          // for (const [filePath, content] of emittedFiles) {
-          //   project.createSourceFile(filePath, content, { overwrite: true })
-          // }
+          if (!existsSync(libFolder)) {
+            if (root !== entryRoot) {
+              libFolder = resolve(entryRoot, 'node_modules/typescript')
+
+              if (!existsSync(libFolder)) libFolder = undefined
+            }
+
+            libFolder = undefined
+          }
+
+          const rollupFiles = new Set<string>()
 
           if (multiple) {
             for (const name of entryNames) {
-              const path = resolve(outputDir, `${name.replace(tsRE, '')}.d.ts`)
+              const path = resolve(outDir, `${name.replace(tsRE, '')}.d.ts`)
 
               rollupDeclarationFiles({
                 root,
-                // tsConfigPath,
-                compilerOptions,
-                outputDir,
+                compilerOptions: rawCompilerOptions,
+                outDir,
                 entryPath: path,
                 fileName: basename(path),
-                libFolder: libFolderPath,
+                libFolder,
                 bundledPackages
               })
 
@@ -526,12 +508,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           } else {
             rollupDeclarationFiles({
               root,
-              // tsConfigPath,
-              compilerOptions,
-              outputDir,
+              compilerOptions: rawCompilerOptions,
+              outDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
-              libFolder: libFolderPath,
+              libFolder,
               bundledPackages
             })
 
@@ -539,37 +520,37 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             rollupFiles.add(typesPath)
           }
 
-          await runParallel(os.cpus().length, Array.from(emittedFiles.keys()), f => fs.unlink(f))
-          removeDirIfEmpty(outputDir)
+          await runParallel(cpus().length, Array.from(emittedFiles.keys()), f => unlink(f))
+          removeDirIfEmpty(outDir)
           emittedFiles.clear()
 
           for (const file of rollupFiles) {
-            emittedFiles.set(file, await fs.readFile(file, 'utf-8'))
+            emittedFiles.set(file, await readFile(file, 'utf-8'))
           }
 
-          bundleDebug('rollup')
+          bundleDebug('rollup output')
         }
       }
 
-      if (outputDirs.length > 1) {
-        const dirs = outputDirs.slice(1)
+      if (outDirs.length > 1) {
+        const dirs = outDirs.slice(1)
 
-        await runParallel(
-          os.cpus().length,
-          Array.from(emittedFiles),
-          async ([wroteFile, content]) => {
-            const relativePath = relative(outputDir, wroteFile)
+        await runParallel(cpus().length, Array.from(emittedFiles), async ([wroteFile, content]) => {
+          const relativePath = relative(outDir, wroteFile)
 
-            await Promise.all(
-              dirs.map(async dir => {
-                const filePath = resolve(dir, relativePath)
+          await Promise.all(
+            dirs.map(async dir => {
+              const path = resolve(dir, relativePath)
+              const dirPath = dirname(path)
 
-                await fs.mkdir(dirname(filePath), { recursive: true })
-                await fs.writeFile(filePath, content, 'utf-8')
-              })
-            )
-          }
-        )
+              if (!existsSync(dirPath)) {
+                await mkdir(dirPath, { recursive: true })
+              }
+
+              await writeFile(path, content, 'utf-8')
+            })
+          )
+        })
       }
 
       if (typeof afterBuild === 'function') {
@@ -579,7 +560,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       bundleDebug('finish')
-
       logger.info(green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`))
     }
   }

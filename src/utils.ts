@@ -1,8 +1,21 @@
-import { resolve, isAbsolute, dirname, normalize, sep } from 'node:path'
+import { resolve, isAbsolute, dirname, normalize, sep, posix } from 'node:path'
 import { existsSync, readdirSync, lstatSync, rmdirSync } from 'node:fs'
+import { platform } from 'node:os'
 import typescript from 'typescript'
 
-import type { CompilerOptions } from 'ts-morph'
+import type { CompilerOptions } from 'typescript'
+
+const windowsSlashRE = /\\/g
+
+export function slash(p: string): string {
+  return p.replace(windowsSlashRE, '/')
+}
+
+export const isWindows = platform() === 'win32'
+
+export function normalizePath(id: string): string {
+  return posix.normalize(isWindows ? slash(id) : id)
+}
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
   value: T
@@ -181,7 +194,7 @@ export function removeDirIfEmpty(dir: string) {
 
 export function getTsConfig(
   tsConfigPath: string,
-  readFileSync: (filePath: string, encoding?: string | undefined) => string
+  readFileSync: (filePath: string, encoding?: string | undefined) => string | undefined
 ) {
   // #95 Should parse include or exclude from the base config when they are missing from
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,

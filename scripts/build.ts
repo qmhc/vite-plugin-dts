@@ -1,5 +1,5 @@
 import path from 'node:path'
-import fs from 'fs-extra'
+import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { execa } from 'execa'
 
@@ -20,7 +20,7 @@ async function main() {
 async function patchCommomJs() {
   const indexPath = path.resolve(root, '../dist/index.cjs')
 
-  let indexCodes = await fs.readFile(indexPath, 'utf-8')
+  let indexCodes = await readFile(indexPath, 'utf-8')
 
   const moduleExportsLine = `module.exports = __toCommonJS(src_exports);`
 
@@ -32,7 +32,7 @@ async function patchCommomJs() {
       `module.exports = ${name};\n${name}['default'] = ${name};`
     )
 
-    await fs.writeFile(indexPath, indexCodes)
+    await writeFile(indexPath, indexCodes)
   }
 }
 
@@ -48,10 +48,10 @@ const require = __cjs_mod__.createRequire(import.meta.url);
 async function patchESModule() {
   const indexPath = path.resolve(root, '../dist/index.mjs')
 
-  let indexCodes = await fs.readFile(indexPath, 'utf-8')
+  let indexCodes = await readFile(indexPath, 'utf-8')
   indexCodes = cjsBridge + indexCodes
 
-  await fs.writeFile(indexPath, indexCodes)
+  await writeFile(indexPath, indexCodes)
 }
 
 main().catch(error => {

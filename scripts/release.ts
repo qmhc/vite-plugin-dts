@@ -1,5 +1,5 @@
 import path from 'node:path'
-import fs from 'fs-extra'
+import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import minimist from 'minimist'
 import { execa } from 'execa'
@@ -40,7 +40,7 @@ main()
 
 async function main() {
   const pkg = JSON.parse(
-    fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8')
+    await readFile(path.join(rootDir, 'package.json'), 'utf-8')
   )
   const currentVersion = pkg.version
 
@@ -101,7 +101,7 @@ async function main() {
   logStep('Updating version...')
 
   pkg.version = version
-  await fs.writeFile(path.resolve(rootDir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
+  await writeFile(path.resolve(rootDir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
 
   // 构建库
   logStep(`Building package...`)
