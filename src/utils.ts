@@ -30,9 +30,8 @@ export function isRegExp(value: unknown): value is RegExp {
 export function isPromise(value: unknown): value is Promise<any> {
   return (
     !!value &&
-    (typeof (value as any) === 'function' || isNativeObj(value)) &&
-    typeof (value as any).then === 'function' &&
-    typeof (value as any).catch === 'function'
+    (typeof value === 'function' || typeof value === 'object') &&
+    typeof (value as any).then === 'function'
   )
 }
 

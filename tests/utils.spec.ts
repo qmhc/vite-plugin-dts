@@ -37,7 +37,7 @@ describe('utils tests', () => {
         })
       )
     ).toBe(true)
-    expect(isPromise({ then: () => {} })).toBe(false)
+    expect(isPromise({ then: () => {} })).toBe(true)
     expect(isPromise({ catch: () => {} })).toBe(false)
     expect(isPromise({ then: () => {}, catch: () => {} })).toBe(true)
   })
