@@ -1,8 +1,14 @@
-# [3.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v2.3.0...v3.0.0-beta.1) (2023-06-26)
+# [3.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v2.3.0...v3.0.0-beta.2) (2023-06-27)
 
 ### Features
 
-- transfer to volar ([9f3f22f](https://github.com/qmhc/vite-plugin-dts/commit/9f3f22fd398dd6a1ddb063f5e9e8b387528700ca))
+- transfer to use Volar, support Rollup, improve watch mode ([#226](https://github.com/qmhc/vite-plugin-dts/issues/226)) ([bb7949c](https://github.com/qmhc/vite-plugin-dts/commit/bb7949c841141b2305640d953be4dddf45ce7d1a))
+
+### BREAKING CHANGES
+
+- Deprecated options: `noEmitOnError`, `skipDiagnostics`
+  and `libFolderPath`. Rename options: `outputDir` -> `outDir`,
+  `tsConfigFilePath` -> `tsconfigPath`.
 
 # [2.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.3.0) (2023-04-17)
 
@@ -531,18 +537,24 @@
 - add outputDir option ([f289723](https://github.com/qmhc/vite-plugin-dts/commit/f289723672279795c0b96aaac3abf83dd8913b20))
 - add transform dynamic import to static ([b2f0c0a](https://github.com/qmhc/vite-plugin-dts/commit/b2f0c0aa6eea5b48703248eca3294c5d845404ba))
 
+# [3.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v2.3.0...v3.0.0-beta.1) (2023-06-27)
+
+### Features
+
+- transfer to use Volar, support Rollup, improve watch mode ([#226](https://github.com/qmhc/vite-plugin-dts/issues/226)) ([bb7949c](https://github.com/qmhc/vite-plugin-dts/commit/bb7949c841141b2305640d953be4dddf45ce7d1a))
+
+### BREAKING CHANGES
+
+- Deprecated options: `noEmitOnError`, `skipDiagnostics`
+  and `libFolderPath`. Rename options: `outputDir` -> `outDir`,
+  `tsConfigFilePath` -> `tsconfigPath`.
+
 # [2.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.3.0) (2023-04-17)
 
 ### Features
 
 - compatible with svelte ([#197](https://github.com/qmhc/vite-plugin-dts/issues/197)) ([5d38517](https://github.com/qmhc/vite-plugin-dts/commit/5d38517ee16fdfc2009725b9146bfe38c49d1709))
 - supports multiple extends in tsconfig.json ([#202](https://github.com/qmhc/vite-plugin-dts/issues/202)) ([9fdac66](https://github.com/qmhc/vite-plugin-dts/commit/9fdac66c0cfd827791208a31fbbefd1fad4ac2bf)), closes [#200](https://github.com/qmhc/vite-plugin-dts/issues/200)
-
-# [2.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.1.0...v2.2.0) (2023-04-03)
-
-### Features
-
-- compatible with svelte ([#197](https://github.com/qmhc/vite-plugin-dts/issues/197)) ([5d38517](https://github.com/qmhc/vite-plugin-dts/commit/5d38517ee16fdfc2009725b9146bfe38c49d1709))
 
 # [2.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v2.0.2...v2.1.0) (2023-03-08)
 
@@ -871,8 +883,6 @@
 
 ## [0.9.1](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.3...v0.9.1) (2021-10-18)
 
-# [0.9.0](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.3...v0.9.0) (2021-10-18)
-
 ### Bug Fixes
 
 - watch mode not update ts/js files ([32a5699](https://github.com/qmhc/vite-plugin-dts/commit/32a5699a9b4f5a24b2a2a870ced43850a0573f82))
@@ -881,7 +891,7 @@
 
 - add afterBuild hook option ([#34](https://github.com/qmhc/vite-plugin-dts/issues/34)) ([e836689](https://github.com/qmhc/vite-plugin-dts/commit/e83668988dab189d185ed9637032f7f80ba1e4db))
 - afterDiagnostic and afterBuild support async ([c92d548](https://github.com/qmhc/vite-plugin-dts/commit/c92d54826b81f50fbb38fa909df730b323b75b24))
-- skip diagnostic by default (add skipDiagnostics option) ([8ca3ed3](https://github.com/qmhc/vite-plugin-dts/commit/8ca3ed30dfcc23c2dd9822fe6ef460a6c832dfe2))
+- skip dependencies by default ([8ca3ed3](https://github.com/qmhc/vite-plugin-dts/commit/8ca3ed30dfcc23c2dd9822fe6ef460a6c832dfe2))
 
 ## [0.8.3](https://github.com/qmhc/vite-plugin-dts/compare/v0.8.2...v0.8.3) (2021-10-11)
 
@@ -986,6 +996,7 @@
 - more accurate normalize glob ([1d65c47](https://github.com/qmhc/vite-plugin-dts/commit/1d65c47811344a6b566a8dcf22cd22d9298d5a02))
 - set rootDir if not set in compilerOptions ([a1d83d2](https://github.com/qmhc/vite-plugin-dts/commit/a1d83d2aa56a32ebef11b9d98fa508a6d9fbd412)), closes [#3](https://github.com/qmhc/vite-plugin-dts/issues/3)
 - transform alias include dynamic imports ([a6919b4](https://github.com/qmhc/vite-plugin-dts/commit/a6919b4760cf5cbefbdad1ac674b8a8275dc27dd))
+- transform alias include dynamic imports ([3a5511e](https://github.com/qmhc/vite-plugin-dts/commit/3a5511e3e0b961d7f4ac393da623502a186a0538))
 
 ## [0.4.1](https://github.com/qmhc/vite-plugin-dts/compare/v0.4.0...v0.4.1) (2021-06-08)
 
@@ -1005,9 +1016,9 @@
 
 ### BREAKING CHANGES
 
-- Deprecated include and exclude options, it will be resolved through tsconfig.json now.
+- Deprecated include and exclude options
 
-## [0.3.5](https://github.com/qmhc/vite-plugin-dts/compare/v0.3.4...v0.3.5) (2021-06-07)
+## [0.3.5](https://github.com/qmhc/vite-plugin-dts/compare/v0.3.4...v0.3.5) (2021-06-08)
 
 ### Bug Fixes
 
@@ -1057,7 +1068,7 @@
 
 - projectOptions no longer supported, the project init should be up to the plugin.
 
-# 0.2.0 (2021-06-05)
+# [0.2.0](https://github.com/qmhc/vite-plugin-dts/compare/b2f0c0aa6eea5b48703248eca3294c5d845404ba...v0.2.0) (2021-06-05)
 
 ### Features
 
