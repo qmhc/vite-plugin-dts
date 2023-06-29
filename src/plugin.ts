@@ -79,6 +79,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   } = options
 
   let root = ensureAbsolute(options.root ?? '', process.cwd())
+  let publicRoot = ''
   let entryRoot = options.entryRoot ?? ''
 
   let compilerOptions: ts.CompilerOptions
@@ -223,36 +224,24 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         ? createParsedCommandLine(ts as any, ts.sys, configPath)
         : undefined
 
-      const config: {
-        include?: string[],
-        exclude?: string[],
-        raw?: any,
-        options: ts.CompilerOptions
-      } = content
-        ? {
-            include: content.raw.include,
-            exclude: content.raw.exclude,
-            raw: content.raw,
-            options: {
-              ...content.options,
-              ...(options.compilerOptions || {}),
-              ...fixedCompilerOptions
-            } as ts.CompilerOptions
-          }
-        : { options: { ...(options.compilerOptions || {}), ...fixedCompilerOptions } }
+      compilerOptions = {
+        ...(content?.options || {}),
+        ...(options.compilerOptions || {}),
+        ...fixedCompilerOptions,
+        outDir: '.'
+      }
+      rawCompilerOptions = content?.raw.compilerOptions || {}
 
       if (!outDirs) {
         outDirs = options.outDir
           ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
-          : [ensureAbsolute(config.raw?.compilerOptions?.outDir || 'dist', root)]
+          : [ensureAbsolute(content?.raw.compilerOptions?.outDir || 'dist', root)]
       }
 
-      include = ensureArray(options.include ?? config.include ?? '**/*').map(normalizeGlob)
-      exclude = ensureArray(options.exclude ?? config.exclude ?? 'node_modules/**').map(
+      include = ensureArray(options.include ?? content?.raw.include ?? '**/*').map(normalizeGlob)
+      exclude = ensureArray(options.exclude ?? content?.raw.exclude ?? 'node_modules/**').map(
         normalizeGlob
       )
-      compilerOptions = { ...config.options, outDir: outDirs[0] }
-      rawCompilerOptions = config.raw?.compilerOptions || {}
 
       filter = createFilter(include, exclude, { resolve: root })
 
@@ -266,7 +255,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       libName = libName || '_default'
       indexName = indexName || defaultIndex
 
-      entryRoot = entryRoot || queryPublicPath(rootNames)
+      publicRoot = queryPublicPath(rootNames)
+      entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
       const diagnostics = program.getDeclarationDiagnostics()
@@ -314,11 +304,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (!sourceFile) return
 
-      const outDir = outDirs[0]
       const service = program.__vue.languageService
 
       for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-        outputFiles.set(normalizePath(outputFile.name), outputFile.text)
+        outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
       }
 
       const dtsId = id.replace(tjsRE, '.d.ts')
@@ -326,10 +315,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       dtsSourceFile &&
         filter(dtsSourceFile.fileName) &&
-        outputFiles.set(
-          resolve(outDir, relative(entryRoot, dtsSourceFile.fileName)),
-          dtsSourceFile.getFullText()
-        )
+        outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
     },
 
     watchChange(id) {
@@ -363,15 +349,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (!filter(sourceFile.fileName)) continue
 
         if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
-          outputFiles.set(
-            resolve(outDir, relative(entryRoot, sourceFile.fileName)),
-            sourceFile.getFullText()
-          )
+          outputFiles.set(normalizePath(sourceFile.fileName), sourceFile.getFullText())
         }
 
         if (rootFiles.has(sourceFile.fileName)) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(normalizePath(outputFile.name), outputFile.text)
+            outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
           }
 
           rootFiles.delete(sourceFile.fileName)
@@ -388,16 +371,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           if (!isMapFile && content) {
             content = clearPureImport ? removePureImport(content) : content
-            content = transformAliasImport(
-              resolve(entryRoot, relative(outDir, path)),
-              content,
-              aliases,
-              aliasesExclude
-            )
+            content = transformAliasImport(path, content, aliases, aliasesExclude)
             content = staticImport || rollupTypes ? transformDynamicImport(content) : content
           }
 
-          path = cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path
+          path = resolve(
+            outDir,
+            relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
+          )
           content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
 
           if (typeof beforeWriteFile === 'function') {
