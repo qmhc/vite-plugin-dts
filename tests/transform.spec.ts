@@ -28,7 +28,7 @@ describe('transform tests', () => {
 
   it('test: transformDynamicImport', () => {
     expect(transformDynamicImport('data: import("vexip-ui/lib/tree").InitDataOptions[];')).toEqual(
-      "import type { InitDataOptions } from 'vexip-ui/lib/tree';\ndata: InitDataOptions[];"
+      "import { InitDataOptions } from 'vexip-ui/lib/tree';\ndata: InitDataOptions[];"
     )
 
     expect(
@@ -36,13 +36,13 @@ describe('transform tests', () => {
         'declare const _default: import("vue").DefineComponent<{}, {}, {}, {}, {}, import("vue").ComponentOptionsMixin>;\nexport default _default;\n'
       )
     ).toEqual(
-      "import type { DefineComponent, ComponentOptionsMixin } from 'vue';\ndeclare const _default: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin>;\nexport default _default;\n"
+      "import { DefineComponent, ComponentOptionsMixin } from 'vue';\ndeclare const _default: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin>;\nexport default _default;\n"
     )
 
     expect(
       transformDynamicImport('}> & {} & {} & import("vue").ComponentCustomProperties) | null>;')
     ).toEqual(
-      "import type { ComponentCustomProperties } from 'vue';\n}> & {} & {} & ComponentCustomProperties) | null>;"
+      "import { ComponentCustomProperties } from 'vue';\n}> & {} & {} & ComponentCustomProperties) | null>;"
     )
 
     expect(
@@ -50,8 +50,12 @@ describe('transform tests', () => {
         'declare const _default: import("./Service").ServiceConstructor<import("./Service").default>;'
       )
     ).toEqual(
-      "import type { ServiceConstructor, default as __DTS_1__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_1__>;"
+      "import { ServiceConstructor, default as __DTS_1__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_1__>;"
     )
+
+    expect(
+      transformDynamicImport('import { Type } from "./test";\nconst test: import("./test").Test;')
+    ).toEqual("import { Test, Type } from './test';\nconst test: Test;")
   })
 
   it('test: transformAliasImport', () => {

@@ -53,14 +53,20 @@ export function transformDynamicImport(content: string) {
     const matchResult = content.match(importReg)
 
     if (matchResult?.[0]) {
-      matchResult[0].match(importTypesRE)![1].trim().split(',').forEach(importSet.add)
+      matchResult[0]
+        .match(importTypesRE)![1]
+        .trim()
+        .split(',')
+        .forEach(type => {
+          type && importSet.add(type.trim())
+        })
 
       content = content.replace(
         matchResult[0],
-        `import type { ${Array.from(importSet).join(', ')} } from '${libName}'`
+        `import { ${Array.from(importSet).join(', ')} } from '${libName}'`
       )
     } else {
-      content = `import type { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
+      content = `import { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
     }
   })
 
