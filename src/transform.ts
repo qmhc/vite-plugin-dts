@@ -21,15 +21,26 @@ const importTypesRE = /import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/
 
 export function transformDynamicImport(content: string) {
   const importMap = new Map<string, Set<string>>()
+  const defaultMap = new Map<string, string>()
+
+  let defaultCount = 1
 
   content = content.replace(globalDynamicTypeRE, str => {
     const matchResult = str.match(dynamicTypeRE)!
     const libName = matchResult[1]
     const importSet =
       importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
-    const usedType = matchResult[2]
 
-    importSet.add(usedType)
+    let usedType = matchResult[2]
+
+    if (usedType === 'default') {
+      usedType =
+        defaultMap.get(libName) ??
+        defaultMap.set(libName, `__DTS_${defaultCount++}__`).get(libName)!
+      importSet.add(`default as ${usedType}`)
+    } else {
+      importSet.add(usedType)
+    }
 
     return usedType + matchResult[3]
   })
@@ -42,13 +53,11 @@ export function transformDynamicImport(content: string) {
     const matchResult = content.match(importReg)
 
     if (matchResult?.[0]) {
-      const importedTypes = matchResult[0].match(importTypesRE)![1].trim().split(',')
+      matchResult[0].match(importTypesRE)![1].trim().split(',').forEach(importSet.add)
 
       content = content.replace(
         matchResult[0],
-        `import type { ${Array.from(importSet)
-          .concat(importedTypes)
-          .join(', ')} } from '${libName}'`
+        `import type { ${Array.from(importSet).join(', ')} } from '${libName}'`
       )
     } else {
       content = `import type { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
@@ -58,14 +67,14 @@ export function transformDynamicImport(content: string) {
   return content
 }
 
-function isAliasMatch(alias: Alias, importee: string) {
-  if (isRegExp(alias.find)) return alias.find.test(importee)
-  if (importee.length < alias.find.length) return false
-  if (importee === alias.find) return true
+function isAliasMatch(alias: Alias, importer: string) {
+  if (isRegExp(alias.find)) return alias.find.test(importer)
+  if (importer.length < alias.find.length) return false
+  if (importer === alias.find) return true
 
   return (
-    importee.indexOf(alias.find) === 0 &&
-    (alias.find.endsWith('/') || importee.substring(alias.find.length)[0] === '/')
+    importer.indexOf(alias.find) === 0 &&
+    (alias.find.endsWith('/') || importer.substring(alias.find.length)[0] === '/')
   )
 }
 

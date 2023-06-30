@@ -11,23 +11,23 @@ import type { Alias } from 'vite'
 
 describe('transform tests', () => {
   it('test: normalizeGlob', () => {
-    expect(normalizeGlob('')).toBe('/**')
-    expect(normalizeGlob('/')).toBe('/**')
-    expect(normalizeGlob('.')).toBe('./**')
-    expect(normalizeGlob('..')).toBe('../**')
-    expect(normalizeGlob('../..')).toBe('../../**')
-    expect(normalizeGlob('a/b')).toBe('a/b/**')
-    expect(normalizeGlob('a/b/')).toBe('a/b/**')
-    expect(normalizeGlob('a/.b')).toBe('a/.b')
-    expect(normalizeGlob('a/b.c')).toBe('a/b.c')
-    expect(normalizeGlob('**/*')).toBe('**/*')
-    expect(normalizeGlob('a/b*')).toBe('a/b*/**')
-    expect(normalizeGlob('a/*')).toBe('a/*')
-    expect(normalizeGlob('a/**')).toBe('a/**')
+    expect(normalizeGlob('')).toEqual('/**')
+    expect(normalizeGlob('/')).toEqual('/**')
+    expect(normalizeGlob('.')).toEqual('./**')
+    expect(normalizeGlob('..')).toEqual('../**')
+    expect(normalizeGlob('../..')).toEqual('../../**')
+    expect(normalizeGlob('a/b')).toEqual('a/b/**')
+    expect(normalizeGlob('a/b/')).toEqual('a/b/**')
+    expect(normalizeGlob('a/.b')).toEqual('a/.b')
+    expect(normalizeGlob('a/b.c')).toEqual('a/b.c')
+    expect(normalizeGlob('**/*')).toEqual('**/*')
+    expect(normalizeGlob('a/b*')).toEqual('a/b*/**')
+    expect(normalizeGlob('a/*')).toEqual('a/*')
+    expect(normalizeGlob('a/**')).toEqual('a/**')
   })
 
   it('test: transformDynamicImport', () => {
-    expect(transformDynamicImport('data: import("vexip-ui/lib/tree").InitDataOptions[];')).toBe(
+    expect(transformDynamicImport('data: import("vexip-ui/lib/tree").InitDataOptions[];')).toEqual(
       "import type { InitDataOptions } from 'vexip-ui/lib/tree';\ndata: InitDataOptions[];"
     )
 
@@ -35,14 +35,22 @@ describe('transform tests', () => {
       transformDynamicImport(
         'declare const _default: import("vue").DefineComponent<{}, {}, {}, {}, {}, import("vue").ComponentOptionsMixin>;\nexport default _default;\n'
       )
-    ).toBe(
+    ).toEqual(
       "import type { DefineComponent, ComponentOptionsMixin } from 'vue';\ndeclare const _default: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin>;\nexport default _default;\n"
     )
 
     expect(
       transformDynamicImport('}> & {} & {} & import("vue").ComponentCustomProperties) | null>;')
-    ).toBe(
+    ).toEqual(
       "import type { ComponentCustomProperties } from 'vue';\n}> & {} & {} & ComponentCustomProperties) | null>;"
+    )
+
+    expect(
+      transformDynamicImport(
+        'declare const _default: import("./Service").ServiceConstructor<import("./Service").default>;'
+      )
+    ).toEqual(
+      "import type { ServiceConstructor, default as __DTS_1__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_1__>;"
     )
   })
 
@@ -59,9 +67,9 @@ describe('transform tests', () => {
         'import type { TestBase } from "@/components/test";\n',
         aliases
       )
-    ).toBe("import type { TestBase } from '../components/test';\n")
+    ).toEqual("import type { TestBase } from '../components/test';\n")
 
-    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toBe(
+    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
       "import('../components/test').Test;\n"
     )
 
@@ -71,13 +79,13 @@ describe('transform tests', () => {
         'import VContainer from "@components/layout/container/VContainer.vue";\n',
         aliases
       )
-    ).toBe("import VContainer from './components/layout/container/VContainer.vue';\n")
+    ).toEqual("import VContainer from './components/layout/container/VContainer.vue';\n")
   })
 
   it('test: removePureImport', () => {
-    expect(removePureImport('import "@/themes/common.scss";')).toBe('')
+    expect(removePureImport('import "@/themes/common.scss";')).toEqual('')
     expect(
       removePureImport('import "@/themes/common.scss";\nimport type { Ref } from "vue";')
-    ).toBe('import type { Ref } from "vue";')
+    ).toEqual('import type { Ref } from "vue";')
   })
 })
