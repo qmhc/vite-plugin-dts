@@ -4,6 +4,7 @@
 import { resolve, normalize } from 'node:path'
 import { describe, it, expect } from 'vitest'
 import {
+  normalizePath,
   isNativeObj,
   isRegExp,
   isPromise,
@@ -14,6 +15,16 @@ import {
 } from '../src/utils'
 
 describe('utils tests', () => {
+  it('test: normalizePath', () => {
+    expect(normalizePath('a')).toEqual('a')
+    expect(normalizePath('/a/b/c')).toEqual('/a/b/c')
+    expect(normalizePath('\\a\\b\\c')).toEqual('/a/b/c')
+    expect(normalizePath('a/b\\c')).toEqual('a/b/c')
+    expect(normalizePath('D:\\\\a/b\\c')).toEqual('D:/a/b/c')
+    expect(normalizePath('./b\\c')).toEqual('b/c')
+    expect(normalizePath('..\\b/c')).toEqual('../b/c')
+  })
+
   it('test: isNativeObj', () => {
     expect(isNativeObj({})).toBe(true)
     expect(isNativeObj([])).toBe(false)
@@ -54,10 +65,12 @@ describe('utils tests', () => {
   })
 
   it('test: ensureAbsolute', () => {
-    const root = resolve(__dirname, '..')
+    const root = normalizePath(resolve(__dirname, '..'))
 
     expect(ensureAbsolute('', root)).toBe(root)
-    expect(ensureAbsolute('./src/index.ts', root)).toBe(resolve(root, 'src/index.ts'))
+    expect(ensureAbsolute('./src/index.ts', root)).toBe(
+      normalizePath(resolve(root, 'src/index.ts'))
+    )
     expect(ensureAbsolute('/src/index.ts', root)).toBe('/src/index.ts')
     expect(ensureAbsolute('/vite-plugin-dts', root)).toBe('/vite-plugin-dts')
   })

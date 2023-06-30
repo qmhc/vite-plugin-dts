@@ -32,6 +32,7 @@ import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
 
 const vueRE = /\.vue$/
+const jsRE = /\.(m|c)?jsx?$/
 const tsRE = /\.(m|c)?tsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
 const tjsRE = /\.(m|c)?(t|j)sx?$/
@@ -64,6 +65,7 @@ const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
     tsconfigPath,
+    logLevel,
     staticImport = false,
     clearPureImport = true,
     cleanVueFileName = false,
@@ -71,8 +73,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     rollupTypes = false,
     bundledPackages = [],
     aliasesExclude = [],
-    logLevel,
     copyDtsFiles = false,
+    strictOutput = true,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -258,7 +260,24 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       libName = libName || '_default'
       indexName = indexName || defaultIndex
 
-      publicRoot = queryPublicPath(rootNames)
+      const maybeEmitted = (sourceFile: ts.SourceFile) => {
+        return (
+          !(compilerOptions.noEmitForJsFiles && jsRE.test(sourceFile.fileName)) &&
+          !sourceFile.isDeclarationFile &&
+          !program!.isSourceFileFromExternalLibrary(sourceFile)
+        )
+      }
+
+      publicRoot = compilerOptions.rootDir
+        ? ensureAbsolute(compilerOptions.rootDir, root)
+        : compilerOptions.composite && compilerOptions.configFilePath
+          ? normalizePath(dirname(compilerOptions.configFilePath as string))
+          : queryPublicPath(
+            program
+              .getSourceFiles()
+              .filter(maybeEmitted)
+              .map(sourceFile => sourceFile.fileName)
+          )
       entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
@@ -351,6 +370,23 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
 
+      const writeOutput = async (path: string, content: string, outDir: string) => {
+        path = normalizePath(path)
+        const dir = normalizePath(dirname(path))
+
+        if (strictOutput && !dir.startsWith(normalizePath(outDir))) {
+          logger.warn(`${logPrefix} ${yellow('Outside emitted:')} ${path}`)
+          return
+        }
+
+        if (!existsSync(dir)) {
+          await mkdir(dir, { recursive: true })
+        }
+
+        await writeFile(path, content, 'utf-8')
+        emittedFiles.set(path, content)
+      }
+
       const service = program.__vue.languageService
       const sourceFiles = program.getSourceFiles()
 
@@ -402,15 +438,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
-          path = normalizePath(path)
-          const dir = dirname(path)
-
-          if (!existsSync(dir)) {
-            await mkdir(dir, { recursive: true })
-          }
-
-          await writeFile(path, content, 'utf-8')
-          emittedFiles.set(path, content)
+          await writeOutput(path, content, outDir)
         }
       )
 
@@ -455,10 +483,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
-          let result: ReturnType<typeof beforeWriteFile> | undefined
-
           if (typeof beforeWriteFile === 'function') {
-            result = beforeWriteFile(path, content)
+            const result = beforeWriteFile(path, content)
+
+            if (result === false) return
 
             if (result && isNativeObj(result)) {
               path = result.filePath ?? path
@@ -466,12 +494,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
-          path = normalizePath(path)
-
-          if (result !== false) {
-            await writeFile(path, content, 'utf-8')
-            emittedFiles.set(path, content)
-          }
+          await writeOutput(path, content, outDir)
         }
 
         bundleDebug('insert index')
@@ -538,21 +561,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       if (outDirs.length > 1) {
-        const dirs = outDirs.slice(1)
+        const extraOutDirs = outDirs.slice(1)
 
         await runParallel(cpus().length, Array.from(emittedFiles), async ([wroteFile, content]) => {
           const relativePath = relative(outDir, wroteFile)
 
           await Promise.all(
-            dirs.map(async dir => {
-              const path = resolve(dir, relativePath)
-              const dirPath = dirname(path)
-
-              if (!existsSync(dirPath)) {
-                await mkdir(dirPath, { recursive: true })
-              }
-
-              await writeFile(path, content, 'utf-8')
+            extraOutDirs.map(async outDir => {
+              await writeOutput(resolve(outDir, relativePath), content, outDir)
             })
           )
         })

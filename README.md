@@ -140,6 +140,15 @@ export interface PluginOptions {
   entryRoot?: string
 
   /**
+   * Strictly restrict declaration files output inside `outDir`
+   *
+   * Because if `entryRoot` is specified, declaration files maybe outside `outDir`
+   *
+   * @default true
+   */
+  strictOutput?: boolean
+
+  /**
    * Specify a CompilerOptions to override
    *
    * @default null
@@ -157,6 +166,8 @@ export interface PluginOptions {
 
   /**
    * Set which paths should exclude when transform aliases
+   *
+   * If it's regexp, it will test the original import path directly
    *
    * @default []
    */
@@ -183,14 +194,14 @@ export interface PluginOptions {
   /**
    * Manual set include glob
    *
-   * By Default it base on 'include' option of the tsconfig.json
+   * By Default it base on `include` option of the tsconfig.json
    */
   include?: string | string[]
 
   /**
    * Manual set exclude glob
    *
-   * By Default it base on 'exclude' option of the tsconfig.json, be 'node_module/**' when empty
+   * By Default it base on `exclude` option of the tsconfig.json, be `'node_module/**'` when empty
    */
   exclude?: string | string[]
 

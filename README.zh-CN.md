@@ -139,6 +139,15 @@ export interface PluginOptions {
   entryRoot?: string
 
   /**
+   * 严格限制类型文件生产在 `outDir` 内
+   *
+   * 由于当指定了 `entryRoot` 时，类型文件有可能位于 `outDir` 之外
+   *
+   * @default true
+   */
+  strictOutput?: boolean
+
+  /**
    * 指定一个用于覆写的 CompilerOptions
    *
    * @default null

@@ -4,7 +4,7 @@
   "type": "module",
   "license": "MIT",
   "author": "qmhc",
-  "packageManager": "pnpm@7.1.0",
+  "packageManager": "pnpm@8.3.0",
   "scripts": {
     "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",

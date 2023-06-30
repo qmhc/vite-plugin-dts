@@ -33,6 +33,15 @@ export interface PluginOptions {
   entryRoot?: string,
 
   /**
+   * Strictly restrict declaration files output inside `outDir`
+   *
+   * Because if `entryRoot` is specified, declaration files maybe outside `outDir`
+   *
+   * @default true
+   */
+  strictOutput?: boolean,
+
+  /**
    * Specify a CompilerOptions to override
    *
    * @default null

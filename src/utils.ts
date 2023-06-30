@@ -83,7 +83,7 @@ export function mergeObjects<T extends Record<string, unknown>, U extends Record
 }
 
 export function ensureAbsolute(path: string, root: string) {
-  return path ? (isAbsolute(path) ? path : resolve(root, path)) : root
+  return normalizePath(path ? (isAbsolute(path) ? path : resolve(root, path)) : root)
 }
 
 export function ensureArray<T>(value: T | T[]) {
