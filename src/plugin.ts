@@ -98,6 +98,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let filter: ReturnType<typeof createFilter>
 
   let bundled = false
+  let timeRecord = 0
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
@@ -215,6 +216,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       if (program) return
 
       bundleDebug('begin buildStart')
+      timeRecord = 0
+      const startTime = Date.now()
 
       const configPath = tsconfigPath
         ? ensureAbsolute(tsconfigPath, root)
@@ -277,6 +280,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       })
 
       bundleDebug('create ts program')
+      timeRecord += Date.now() - startTime
     },
 
     transform(_, id) {
@@ -288,6 +292,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       ) {
         return
       }
+
+      const startTime = Date.now()
 
       id = normalizePath(id)
       rootFiles.delete(id)
@@ -316,6 +322,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       dtsSourceFile &&
         filter(dtsSourceFile.fileName) &&
         outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
+
+      timeRecord += Date.now() - startTime
     },
 
     watchChange(id) {
@@ -326,6 +334,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           !vueRE.test(id) && rootFiles.add(sourceFile.fileName)
           program.__vue.projectVersion++
           bundled = false
+          timeRecord = 0
         }
       }
     },
@@ -556,7 +565,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       bundleDebug('finish')
-      logger.info(green(`${logPrefix} Declaration files built in ${Date.now() - startTime}ms.\n`))
+      logger.info(
+        green(`${logPrefix} Declaration files built in ${timeRecord + Date.now() - startTime}ms.\n`)
+      )
     }
   }
 }
