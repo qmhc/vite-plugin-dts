@@ -271,13 +271,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       publicRoot = compilerOptions.rootDir
         ? ensureAbsolute(compilerOptions.rootDir, root)
         : compilerOptions.composite && compilerOptions.configFilePath
-          ? normalizePath(dirname(compilerOptions.configFilePath as string))
+          ? dirname(compilerOptions.configFilePath as string)
           : queryPublicPath(
             program
               .getSourceFiles()
               .filter(maybeEmitted)
               .map(sourceFile => sourceFile.fileName)
           )
+      publicRoot = normalizePath(publicRoot)
       entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
@@ -307,7 +308,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         !program ||
         !filter(id) ||
         id.includes('.vue?vue') ||
-        (!tsRE.test(id) && !vueRE.test(id))
+        (!tjsRE.test(id) && !vueRE.test(id))
       ) {
         return
       }
