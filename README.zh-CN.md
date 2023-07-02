@@ -15,7 +15,7 @@
 ## 安装
 
 ```sh
-pnpm add vite-plugin-dts -D
+pnpm i vite-plugin-dts -D
 ```
 
 ## 使用
@@ -59,8 +59,7 @@ export default defineComponent({
 
 ```vue
 <script setup lang="ts">
-// 尽管没有直接使用 props，你仍需要接收 defineProps 的返回值
-const props = defineProps<{
+defineProps<{
   color: 'blue' | 'red'
 }>()
 </script>

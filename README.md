@@ -15,7 +15,7 @@
 ## Install
 
 ```sh
-pnpm add vite-plugin-dts -D
+pnpm i vite-plugin-dts -D
 ```
 
 ## Usage
@@ -59,9 +59,7 @@ export default defineComponent({
 
 ```vue
 <script setup lang="ts">
-// Need to access the defineProps returned value to
-// infer types although you never use the props directly
-const props = defineProps<{
+defineProps<{
   color: 'blue' | 'red'
 }>()
 </script>
