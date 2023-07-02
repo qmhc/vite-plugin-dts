@@ -32,6 +32,7 @@ import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions } from './types'
 
 const vueRE = /\.vue$/
+const svelteRE = /\.svelte$/
 const jsRE = /\.(m|c)?jsx?$/
 const tsRE = /\.(m|c)?tsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
@@ -132,8 +133,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 (isRegExp(find)
                   ? find.toString() === alias.toString()
                   : isRegExp(alias)
-                    ? find.match(alias)?.[0]
-                    : find === alias)
+                  ? find.match(alias)?.[0]
+                  : find === alias)
             )
         )
       }
@@ -271,8 +272,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       publicRoot = compilerOptions.rootDir
         ? ensureAbsolute(compilerOptions.rootDir, root)
         : compilerOptions.composite && compilerOptions.configFilePath
-          ? dirname(compilerOptions.configFilePath as string)
-          : queryPublicPath(
+        ? dirname(compilerOptions.configFilePath as string)
+        : queryPublicPath(
             program
               .getSourceFiles()
               .filter(maybeEmitted)
@@ -304,46 +305,50 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     transform(_, id) {
-      if (
-        !program ||
-        !filter(id) ||
-        id.includes('.vue?vue') ||
-        (!tjsRE.test(id) && !vueRE.test(id))
-      ) {
+      if (!program || !filter(id)) {
         return
       }
 
-      const startTime = Date.now()
+      if (!id.includes('.vue?vue') && (tjsRE.test(id) || vueRE.test(id))) {
+        const startTime = Date.now()
+        id = normalizePath(id)
+        rootFiles.delete(id)
 
-      id = normalizePath(id)
-      rootFiles.delete(id)
+        let sourceFile = program.getSourceFile(normalizePath(id))
 
-      let sourceFile = program.getSourceFile(normalizePath(id))
+        if (!sourceFile && vueRE.test(id)) {
+          sourceFile =
+            program.getSourceFile(id + '.ts') ||
+            program.getSourceFile(id + '.js') ||
+            program.getSourceFile(id + '.tsx') ||
+            program.getSourceFile(id + '.jsx')
+        }
 
-      if (!sourceFile && vueRE.test(id)) {
-        sourceFile =
-          program.getSourceFile(id + '.ts') ||
-          program.getSourceFile(id + '.js') ||
-          program.getSourceFile(id + '.tsx') ||
-          program.getSourceFile(id + '.jsx')
+        if (!sourceFile) return
+
+        const service = program.__vue.languageService
+
+        for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+          outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+        }
+
+        const dtsId = id.replace(tjsRE, '.d.ts')
+        const dtsSourceFile = program.getSourceFile(dtsId)
+
+        dtsSourceFile &&
+          filter(dtsSourceFile.fileName) &&
+          outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
+
+        timeRecord += Date.now() - startTime
+      } else if (svelteRE.test(id)) {
+        const startTime = Date.now()
+
+        const content = "export { SvelteComponentTyped as default } from 'svelte';"
+        const dtsId = `${id}.d.ts`
+        outputFiles.set(normalizePath(dtsId), content)
+
+        timeRecord += Date.now() - startTime
       }
-
-      if (!sourceFile) return
-
-      const service = program.__vue.languageService
-
-      for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-        outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
-      }
-
-      const dtsId = id.replace(tjsRE, '.d.ts')
-      const dtsSourceFile = program.getSourceFile(dtsId)
-
-      dtsSourceFile &&
-        filter(dtsSourceFile.fileName) &&
-        outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
-
-      timeRecord += Date.now() - startTime
     },
 
     watchChange(id) {
