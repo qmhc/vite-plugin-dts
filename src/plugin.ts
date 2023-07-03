@@ -84,6 +84,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let publicRoot = ''
   let entryRoot = options.entryRoot ?? ''
 
+  let configPath: string | undefined
   let compilerOptions: ts.CompilerOptions
   let rawCompilerOptions: ts.CompilerOptions
 
@@ -221,7 +222,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       timeRecord = 0
       const startTime = Date.now()
 
-      const configPath = tsconfigPath
+      configPath = tsconfigPath
         ? ensureAbsolute(tsconfigPath, root)
         : ts.findConfigFile(root, ts.sys.fileExists)
 
@@ -523,6 +524,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
               rollupDeclarationFiles({
                 root,
+                configPath,
                 compilerOptions: rawCompilerOptions,
                 outDir,
                 entryPath: path,
@@ -537,6 +539,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           } else {
             rollupDeclarationFiles({
               root,
+              configPath,
               compilerOptions: rawCompilerOptions,
               outDir,
               entryPath: typesPath,

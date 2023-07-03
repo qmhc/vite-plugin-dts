@@ -14,6 +14,7 @@ import type ts from 'typescript'
 
 export interface BundleOptions {
   root: string,
+  configPath?: string,
   compilerOptions: ts.CompilerOptions,
   outDir: string,
   entryPath: string,
@@ -26,6 +27,7 @@ const dtsRE = /\.d\.tsx?$/
 
 export function rollupDeclarationFiles({
   root,
+  configPath,
   compilerOptions,
   outDir,
   entryPath,
@@ -47,7 +49,7 @@ export function rollupDeclarationFiles({
       mainEntryPointFilePath: entryPath,
       bundledPackages,
       compiler: {
-        // tsconfigFilePath: tsConfigPath,
+        tsconfigFilePath: configPath,
         overrideTsconfig: {
           $schema: 'http://json.schemastore.org/tsconfig',
           compilerOptions: {
@@ -90,7 +92,7 @@ export function rollupDeclarationFiles({
   const compilerState = CompilerState.create(extractorConfig, {
     localBuild: false,
     showVerboseMessages: false,
-    typescriptCompilerFolder: libFolder ? resolve(libFolder, '..') : undefined
+    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined
   } as IExtractorInvokeOptions)
 
   const sourceMapper = new SourceMapper()
