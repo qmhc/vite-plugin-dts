@@ -1,4 +1,5 @@
-import { dirname, relative, isAbsolute } from 'node:path'
+import { dirname, isAbsolute, relative } from 'node:path'
+
 import { isRegExp, normalizePath } from './utils'
 
 import type { Alias } from 'vite'

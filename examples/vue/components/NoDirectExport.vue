@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 
 const Component = defineComponent({
   name: 'NoDirectExport',
@@ -16,6 +16,7 @@ const Component = defineComponent({
   }
 })
 
+// eslint-disable-next-line vue/require-direct-export
 export default Component
 </script>
 

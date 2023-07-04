@@ -1,10 +1,7 @@
 import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
-interface TransformWriteFile {
-  filePath?: string,
-  content?: string
-}
+type MaybePromise<T> = T | Promise<T>
 
 export interface PluginOptions {
   /**
@@ -155,7 +152,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => void | Promise<void>,
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>,
 
   /**
    * Hook before each declaration file is written
@@ -166,7 +163,16 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile,
+  beforeWriteFile?: (
+    filePath: string,
+    content: string
+  ) =>
+  | void
+  | false
+  | {
+    filePath?: string,
+    content?: string
+  },
 
   /**
    * Hook after built
@@ -175,5 +181,5 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: () => void | Promise<void>
+  afterBuild?: () => MaybePromise<void>
 }

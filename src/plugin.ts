@@ -1,13 +1,15 @@
-import { resolve as _resolve, dirname, relative, basename } from 'node:path'
+import { resolve as _resolve, basename, dirname, relative } from 'node:path'
 import { existsSync } from 'node:fs'
-import { writeFile, mkdir, readFile, unlink } from 'node:fs/promises'
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
+
+import { createParsedCommandLine } from '@vue/language-core'
+
 import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
-import { createParsedCommandLine } from '@vue/language-core'
 import { createProgram } from 'vue-tsc'
 import debug from 'debug'
-import { cyan, yellow, green } from 'kolorist'
+import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
 import {
   normalizeGlob,
@@ -57,7 +59,6 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))

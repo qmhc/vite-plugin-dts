@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { existsSync, readdirSync, lstatSync, rmdirSync, unlinkSync } from 'fs'
+import { existsSync, lstatSync, readdirSync, rmdirSync, unlinkSync } from 'fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import dts from '../../src'

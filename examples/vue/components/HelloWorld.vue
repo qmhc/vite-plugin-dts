@@ -1,5 +1,5 @@
 <script lang="ts">
-import { ref, computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'HelloWorld',

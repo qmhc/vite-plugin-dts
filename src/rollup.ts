@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
-import { ExtractorConfig, CompilerState } from '@microsoft/api-extractor'
+
+import { CompilerState, ExtractorConfig } from '@microsoft/api-extractor'
 import { Collector } from '@microsoft/api-extractor/lib/collector/Collector.js'
 import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter.js'
 import { SourceMapper } from '@microsoft/api-extractor/lib/collector/SourceMapper.js'

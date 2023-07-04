@@ -1,10 +1,11 @@
 import { resolve } from 'node:path'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
 import {
   normalizeGlob,
-  transformDynamicImport,
+  removePureImport,
   transformAliasImport,
-  removePureImport
+  transformDynamicImport
 } from '../src/transform'
 
 import type { Alias } from 'vite'
