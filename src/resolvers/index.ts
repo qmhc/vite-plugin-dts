@@ -2,7 +2,7 @@ import type { Resolver } from '../types'
 
 export * from './svelte'
 
-export function parseResolver(resolvers: Resolver[]) {
+export function parseResolvers(resolvers: Resolver[]) {
   const nameMap = new Map<string, Resolver>()
 
   for (const resolver of resolvers) {

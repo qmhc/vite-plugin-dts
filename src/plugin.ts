@@ -11,7 +11,7 @@ import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
-import { SvelteResolver, parseResolver } from './resolvers'
+import { SvelteResolver, parseResolvers } from './resolvers'
 import {
   normalizeGlob,
   removePureImport,
@@ -105,7 +105,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let bundled = false
   let timeRecord = 0
 
-  const resolvers = parseResolver([SvelteResolver(), ...(options.resolvers || [])])
+  const resolvers = parseResolvers([SvelteResolver(), ...(options.resolvers || [])])
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
@@ -325,6 +325,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const startTime = Date.now()
       const service = program.__vue.languageService as unknown as ts.LanguageService
 
+      rootFiles.delete(id)
+
       if (resolver) {
         const result = await resolver.transform({
           id,
@@ -337,24 +339,22 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         for (const { path, content } of result) {
           outputFiles.set(ensureAbsolute(path, publicRoot), content)
         }
-      }
+      } else {
+        let sourceFile = program.getSourceFile(id)
 
-      rootFiles.delete(id)
+        if (!sourceFile && vueRE.test(id)) {
+          sourceFile =
+            program.getSourceFile(id + '.ts') ||
+            program.getSourceFile(id + '.js') ||
+            program.getSourceFile(id + '.tsx') ||
+            program.getSourceFile(id + '.jsx')
+        }
 
-      let sourceFile = program.getSourceFile(id)
+        if (!sourceFile) return
 
-      if (!sourceFile && vueRE.test(id)) {
-        sourceFile =
-          program.getSourceFile(id + '.ts') ||
-          program.getSourceFile(id + '.js') ||
-          program.getSourceFile(id + '.tsx') ||
-          program.getSourceFile(id + '.jsx')
-      }
-
-      if (!sourceFile) return
-
-      for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-        outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+        for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+          outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+        }
       }
 
       const dtsId = id.replace(tjsRE, '') + '.d.ts'
