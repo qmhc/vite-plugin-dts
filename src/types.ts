@@ -3,6 +3,17 @@ import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
 
+export interface Resolver {
+  name: string,
+  supports: (id: string) => void | boolean,
+  transform: (payload: {
+    id: string,
+    root: string,
+    program: ts.Program,
+    service: ts.LanguageService
+  }) => MaybePromise<{ path: string, content: string }[]>
+}
+
 export interface PluginOptions {
   /**
    * Specify root directory
@@ -144,6 +155,13 @@ export interface PluginOptions {
    * By Default it base on 'logLevel' option of your Vite config
    */
   logLevel?: LogLevel,
+
+  /**
+   * Specify custom resolvers
+   *
+   * @default []
+   */
+  resolvers?: Resolver[],
 
   /**
    * Hook after diagnostic emitted
