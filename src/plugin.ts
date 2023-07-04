@@ -11,6 +11,7 @@ import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
+import { SvelteResolver, parseResolver } from './resolvers'
 import {
   normalizeGlob,
   removePureImport,
@@ -31,7 +32,7 @@ import {
 
 import type { Alias, Logger } from 'vite'
 import type { _Program as Program } from 'vue-tsc'
-import type { PluginOptions } from './types'
+import type { PluginOptions, Resolver } from './types'
 
 const vueRE = /\.vue$/
 const jsRE = /\.(m|c)?jsx?$/
@@ -103,6 +104,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
   let bundled = false
   let timeRecord = 0
+
+  const resolvers = parseResolver([SvelteResolver(), ...(options.resolvers || [])])
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
@@ -305,22 +308,40 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       timeRecord += Date.now() - startTime
     },
 
-    transform(_, id) {
+    async transform(_, id) {
+      let resolver: Resolver | undefined
+      id = normalizePath(id)
+
       if (
+        !host ||
         !program ||
         !filter(id) ||
         id.includes('.vue?vue') ||
-        (!tjsRE.test(id) && !vueRE.test(id))
+        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id) && !vueRE.test(id))
       ) {
         return
       }
 
       const startTime = Date.now()
+      const service = program.__vue.languageService as unknown as ts.LanguageService
 
-      id = normalizePath(id)
+      if (resolver) {
+        const result = await resolver.transform({
+          id,
+          root: publicRoot,
+          host,
+          program,
+          service
+        })
+
+        for (const { path, content } of result) {
+          outputFiles.set(ensureAbsolute(path, publicRoot), content)
+        }
+      }
+
       rootFiles.delete(id)
 
-      let sourceFile = program.getSourceFile(normalizePath(id))
+      let sourceFile = program.getSourceFile(id)
 
       if (!sourceFile && vueRE.test(id)) {
         sourceFile =
@@ -332,13 +353,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (!sourceFile) return
 
-      const service = program.__vue.languageService
-
       for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
         outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
       }
 
-      const dtsId = id.replace(tjsRE, '.d.ts')
+      const dtsId = id.replace(tjsRE, '') + '.d.ts'
       const dtsSourceFile = program.getSourceFile(dtsId)
 
       dtsSourceFile &&

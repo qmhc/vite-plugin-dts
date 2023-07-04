@@ -9,6 +9,7 @@ export interface Resolver {
   transform: (payload: {
     id: string,
     root: string,
+    host: ts.CompilerHost,
     program: ts.Program,
     service: ts.LanguageService
   }) => MaybePromise<{ path: string, content: string }[]>
@@ -64,6 +65,13 @@ export interface PluginOptions {
    * By default plugin will find config form root if not specify
    */
   tsconfigPath?: string,
+
+  /**
+   * Specify custom resolvers
+   *
+   * @default []
+   */
+  resolvers?: Resolver[],
 
   /**
    * Set which paths should exclude when transform aliases
@@ -155,13 +163,6 @@ export interface PluginOptions {
    * By Default it base on 'logLevel' option of your Vite config
    */
   logLevel?: LogLevel,
-
-  /**
-   * Specify custom resolvers
-   *
-   * @default []
-   */
-  resolvers?: Resolver[],
 
   /**
    * Hook after diagnostic emitted
