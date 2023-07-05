@@ -9,7 +9,7 @@
     "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "unbuild --stub",
-    "lint": "eslint --fix --ext .js,.jsx,.ts,.tsx,.vue \"{src,tests,examples}/**\"",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx \"{src,tests}/**\"",
     "postinstall": "is-ci || husky install",
     "postpublish": "pinst --enable",
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
