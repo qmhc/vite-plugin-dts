@@ -77,7 +77,6 @@
     "@vue/eslint-config-standard": "^8.0.1",
     "@vue/eslint-config-typescript": "^11.0.3",
     "conventional-changelog-cli": "^3.0.0",
-    "cross-env": "^7.0.3",
     "eslint": "^8.43.0",
     "execa": "^7.1.1",
     "husky": "^8.0.3",

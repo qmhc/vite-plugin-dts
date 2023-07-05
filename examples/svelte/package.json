@@ -5,7 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "cross-env DEBUG=\"vite-plugin-dts:bundle\" vite build"
+    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.4",
