@@ -1,21 +1,18 @@
 import { resolve as _resolve, dirname, isAbsolute, normalize, posix, sep } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
-import { platform } from 'node:os'
 
 import typescript from 'typescript'
 
 import type { CompilerOptions } from 'typescript'
 
-const windowsSlashRE = /\\/g
+const windowsSlashRE = /\\+/g
 
 export function slash(p: string): string {
   return p.replace(windowsSlashRE, '/')
 }
 
-export const isWindows = platform() === 'win32'
-
 export function normalizePath(id: string): string {
-  return posix.normalize(isWindows ? slash(id) : id)
+  return posix.normalize(slash(id))
 }
 
 export function resolve(...paths: string[]) {
