@@ -1,4 +1,4 @@
-import { resolve as _resolve, basename, dirname, relative } from 'node:path'
+import { basename, dirname, relative } from 'node:path'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
@@ -11,7 +11,7 @@ import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
-import { SvelteResolver, parseResolvers } from './resolvers'
+import { SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import {
   normalizeGlob,
   removePureImport,
@@ -27,6 +27,7 @@ import {
   normalizePath,
   queryPublicPath,
   removeDirIfEmpty,
+  resolve,
   runParallel
 } from './utils'
 
@@ -34,7 +35,6 @@ import type { Alias, Logger } from 'vite'
 import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions, Resolver } from './types'
 
-const vueRE = /\.vue$/
 const jsRE = /\.(m|c)?jsx?$/
 const tsRE = /\.(m|c)?tsx?$/
 const dtsRE = /\.d\.(m|c)?tsx?$/
@@ -42,7 +42,6 @@ const tjsRE = /\.(m|c)?(t|j)sx?$/
 const mtjsRE = /\.m(t|j)sx?$/
 const ctjsRE = /\.c(t|j)sx?$/
 const fullRelativeRE = /^\.\.?\//
-const watchExtensionRE = /\.(vue|(m|c)?(t|j)sx?)$/
 const defaultIndex = 'index.d.ts'
 
 const logPrefix = cyan('[vite:dts]')
@@ -62,7 +61,6 @@ const fixedCompilerOptions: ts.CompilerOptions = {
 
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
-const resolve = (...paths: string[]) => normalizePath(_resolve(...paths))
 
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
@@ -105,7 +103,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let bundled = false
   let timeRecord = 0
 
-  const resolvers = parseResolvers([SvelteResolver(), ...(options.resolvers || [])])
+  const resolvers = parseResolvers([VueResolver(), SvelteResolver(), ...(options.resolvers || [])])
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
@@ -310,14 +308,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
     async transform(_, id) {
       let resolver: Resolver | undefined
-      id = normalizePath(id)
+      id = normalizePath(id).split('?')[0]
 
       if (
         !host ||
         !program ||
         !filter(id) ||
-        id.includes('.vue?vue') ||
-        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id) && !vueRE.test(id))
+        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id))
       ) {
         return
       }
@@ -340,20 +337,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           outputFiles.set(ensureAbsolute(path, publicRoot), content)
         }
       } else {
-        let sourceFile = program.getSourceFile(id)
+        const sourceFile = program.getSourceFile(id)
 
-        if (!sourceFile && vueRE.test(id)) {
-          sourceFile =
-            program.getSourceFile(id + '.ts') ||
-            program.getSourceFile(id + '.js') ||
-            program.getSourceFile(id + '.tsx') ||
-            program.getSourceFile(id + '.jsx')
-        }
-
-        if (!sourceFile) return
-
-        for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-          outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+        if (sourceFile) {
+          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+            outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+          }
         }
       }
 
@@ -368,15 +357,24 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     watchChange(id) {
-      if (host && program && watchExtensionRE.test(id)) {
-        const sourceFile = host.getSourceFile(normalizePath(id), ts.ScriptTarget.ESNext)
+      id = normalizePath(id).split('?')[0]
 
-        if (sourceFile && filter(sourceFile.fileName)) {
-          !vueRE.test(id) && rootFiles.add(sourceFile.fileName)
-          program.__vue.projectVersion++
-          bundled = false
-          timeRecord = 0
-        }
+      if (
+        !host ||
+        !program ||
+        !filter(id) ||
+        (!resolvers.find(r => r.supports(id)) && !tjsRE.test(id))
+      ) {
+        return
+      }
+
+      const sourceFile = host.getSourceFile(normalizePath(id), ts.ScriptTarget.ESNext)
+
+      if (sourceFile) {
+        rootFiles.add(sourceFile.fileName)
+        program.__vue.projectVersion++
+        bundled = false
+        timeRecord = 0
       }
     },
 

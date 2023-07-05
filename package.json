@@ -18,6 +18,7 @@
     "release": "tsx scripts/release.ts",
     "test": "vitest run",
     "test:react": "pnpm -C examples/react build",
+    "test:svelte": "pnpm -C examples/svelte build",
     "test:ts": "pnpm -C examples/ts build",
     "test:vue": "pnpm -C examples/vue build"
   },

@@ -1,6 +1,7 @@
 import type { Resolver } from '../types'
 
 export * from './svelte'
+export * from './vue'
 
 export function parseResolvers(resolvers: Resolver[]) {
   const nameMap = new Map<string, Resolver>()

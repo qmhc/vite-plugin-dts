@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, normalize, posix, resolve, sep } from 'node:path'
+import { resolve as _resolve, dirname, isAbsolute, normalize, posix, sep } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 import { platform } from 'node:os'
 
@@ -16,6 +16,10 @@ export const isWindows = platform() === 'win32'
 
 export function normalizePath(id: string): string {
   return posix.normalize(isWindows ? slash(id) : id)
+}
+
+export function resolve(...paths: string[]) {
+  return normalizePath(_resolve(...paths))
 }
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
