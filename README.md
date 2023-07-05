@@ -106,9 +106,30 @@ This is an existing issue when TypeScript infers types from packages located in 
 import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
-interface TransformWriteFile {
-  filePath?: string
-  content?: string
+type MaybePromise<T> = T | Promise<T>
+
+export interface Resolver {
+  /**
+   * The name of the resolver
+   *
+   * The later resolver with the same name will overwrite the earlier
+   */
+  name: string,
+  /**
+   * Determine whether the resolve supports the file
+   */
+  supports: (id: string) => void | boolean,
+  /**
+   * Transform the source file to declaration files
+   */
+  transform: (payload: {
+    id: string,
+    code: string,
+    root: string,
+    host: ts.CompilerHost,
+    program: ts.Program,
+    service: ts.LanguageService
+  }) => MaybePromise<{ path: string, content: string }[]>
 }
 
 export interface PluginOptions {
@@ -117,7 +138,7 @@ export interface PluginOptions {
    *
    * By Default it base on 'root' of your Vite config, or `process.cwd()` if using Rollup
    */
-  root?: string
+  root?: string,
 
   /**
    * Specify declaration files output directory
@@ -126,7 +147,7 @@ export interface PluginOptions {
    *
    * By Default it base on 'build.outDir' of your Vite config, or `outDir` of tsconfig.json if using Rollup
    */
-  outDir?: string | string[]
+  outDir?: string | string[],
 
   /**
    * Manually set the root path of the entry files, useful in monorepo
@@ -135,7 +156,7 @@ export interface PluginOptions {
    *
    * By Default it is the smallest public path for all files
    */
-  entryRoot?: string
+  entryRoot?: string,
 
   /**
    * Strictly restrict declaration files output inside `outDir`
@@ -144,14 +165,14 @@ export interface PluginOptions {
    *
    * @default true
    */
-  strictOutput?: boolean
+  strictOutput?: boolean,
 
   /**
    * Specify a CompilerOptions to override
    *
    * @default null
    */
-  compilerOptions?: ts.CompilerOptions | null
+  compilerOptions?: ts.CompilerOptions | null,
 
   /**
    * Specify tsconfig.json path
@@ -160,7 +181,14 @@ export interface PluginOptions {
    *
    * By default plugin will find config form root if not specify
    */
-  tsconfigPath?: string
+  tsconfigPath?: string,
+
+  /**
+   * Specify custom resolvers
+   *
+   * @default []
+   */
+  resolvers?: Resolver[],
 
   /**
    * Set which paths should exclude when transform aliases
@@ -169,14 +197,14 @@ export interface PluginOptions {
    *
    * @default []
    */
-  aliasesExclude?: (string | RegExp)[]
+  aliasesExclude?: (string | RegExp)[],
 
   /**
    * Whether transform file name '.vue.d.ts' to '.d.ts'
    *
    * @default false
    */
-  cleanVueFileName?: boolean
+  cleanVueFileName?: boolean,
 
   /**
    * Whether transform dynamic import to static
@@ -187,28 +215,28 @@ export interface PluginOptions {
    *
    * @default false
    */
-  staticImport?: boolean
+  staticImport?: boolean,
 
   /**
    * Manual set include glob
    *
    * By Default it base on `include` option of the tsconfig.json
    */
-  include?: string | string[]
+  include?: string | string[],
 
   /**
    * Manual set exclude glob
    *
    * By Default it base on `exclude` option of the tsconfig.json, be `'node_module/**'` when empty
    */
-  exclude?: string | string[]
+  exclude?: string | string[],
 
   /**
    * Whether remove those `import 'xxx'`
    *
    * @default true
    */
-  clearPureImport?: boolean
+  clearPureImport?: boolean,
 
   /**
    * Whether generate types entry file
@@ -219,7 +247,7 @@ export interface PluginOptions {
    *
    * @default false
    */
-  insertTypesEntry?: boolean
+  insertTypesEntry?: boolean,
 
   /**
    * Set whether rollup declaration files after emit
@@ -228,7 +256,7 @@ export interface PluginOptions {
    *
    * @default false
    */
-  rollupTypes?: boolean
+  rollupTypes?: boolean,
 
   /**
    * Bundled packages for `@microsoft/api-extractor`
@@ -236,7 +264,7 @@ export interface PluginOptions {
    * @default []
    * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
    */
-  bundledPackages?: string[]
+  bundledPackages?: string[],
 
   /**
    * Whether copy .d.ts source files into `outDir`
@@ -244,14 +272,14 @@ export interface PluginOptions {
    * @default false
    * @remarks Before 2.0 it defaults to true
    */
-  copyDtsFiles?: boolean
+  copyDtsFiles?: boolean,
 
   /**
    * Specify the log level of plugin
    *
    * By Default it base on 'logLevel' option of your Vite config
    */
-  logLevel?: LogLevel
+  logLevel?: LogLevel,
 
   /**
    * Hook after diagnostic emitted
@@ -260,7 +288,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => void | Promise<void>
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>,
 
   /**
    * Hook before each declaration file is written
@@ -271,7 +299,16 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
+  beforeWriteFile?: (
+    filePath: string,
+    content: string
+  ) =>
+  | void
+  | false
+  | {
+    filePath?: string,
+    content?: string
+  },
 
   /**
    * Hook after built
@@ -280,7 +317,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: () => void | Promise<void>
+  afterBuild?: () => MaybePromise<void>
 }
 ```
 

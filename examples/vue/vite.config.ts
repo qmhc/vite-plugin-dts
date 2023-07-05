@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { existsSync, lstatSync, readdirSync, rmdirSync, unlinkSync } from 'fs'
+import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
@@ -42,20 +42,12 @@ export default defineConfig({
   ]
 })
 
-function emptyDir(dir: string): void {
+function emptyDir(dir: string) {
   if (!existsSync(dir)) {
     return
   }
 
   for (const file of readdirSync(dir)) {
-    const abs = resolve(dir, file)
-
-    // baseline is Node 12 so can't use rmSync
-    if (lstatSync(abs).isDirectory()) {
-      emptyDir(abs)
-      rmdirSync(abs)
-    } else {
-      unlinkSync(abs)
-    }
+    rmSync(resolve(dir, file), { recursive: true, force: true })
   }
 }

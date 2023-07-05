@@ -7,5 +7,6 @@ scripts/
 
 .*rc.js
 *.config.js
+*.md
 
 JsSetup.vue
