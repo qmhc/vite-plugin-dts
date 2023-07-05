@@ -106,9 +106,30 @@ defineProps<{
 import type ts from 'typescript'
 import type { LogLevel } from 'vite'
 
-interface TransformWriteFile {
-  filePath?: string
-  content?: string
+type MaybePromise<T> = T | Promise<T>
+
+export interface Resolver {
+  /**
+   * 解析器的名称
+   *
+   * 靠后的同名解析器将会覆盖靠前的
+   */
+  name: string,
+  /**
+   * 决定是否要解析文件
+   */
+  supports: (id: string) => void | boolean,
+  /**
+   * 将源文件转换为类型文件
+   */
+  transform: (payload: {
+    id: string,
+    code: string,
+    root: string,
+    host: ts.CompilerHost,
+    program: ts.Program,
+    service: ts.LanguageService
+  }) => MaybePromise<{ path: string, content: string }[]>
 }
 
 export interface PluginOptions {
@@ -117,7 +138,7 @@ export interface PluginOptions {
    *
    * 默认基于 Vite 配置的 'root'，使用 Rollup 时基于 `process.cwd()`
    */
-  root?: string
+  root?: string,
 
   /**
    * 指定输出目录
@@ -126,7 +147,7 @@ export interface PluginOptions {
    *
    * 默认基于 Vite 配置的 'build.outDir'，使用 Rollup 时基于 tsconfig.json 的 `outDir`
    */
-  outDir?: string | string[]
+  outDir?: string | string[],
 
   /**
    * 用于手动设置入口文件的根路径，通常用在 monorepo
@@ -135,7 +156,7 @@ export interface PluginOptions {
    *
    * 默认为所有文件的最小公共路径
    */
-  entryRoot?: string
+  entryRoot?: string,
 
   /**
    * 严格限制类型文件生产在 `outDir` 内
@@ -144,14 +165,14 @@ export interface PluginOptions {
    *
    * @default true
    */
-  strictOutput?: boolean
+  strictOutput?: boolean,
 
   /**
    * 指定一个用于覆写的 CompilerOptions
    *
    * @default null
    */
-  compilerOptions?: ts.CompilerOptions | null
+  compilerOptions?: ts.CompilerOptions | null,
 
   /**
    * 指定 tsconfig.json 的路径
@@ -160,21 +181,28 @@ export interface PluginOptions {
    *
    * 未指定时插件默认从根目录寻找配置
    */
-  tsconfigPath?: string
+  tsconfigPath?: string,
+
+  /**
+   * 指定自定义的解析器
+   *
+   * @default []
+   */
+  resolvers?: Resolver[],
 
   /**
    * 设置在转换别名时哪些路径需要排除
    *
    * @default []
    */
-  aliasesExclude?: (string | RegExp)[]
+  aliasesExclude?: (string | RegExp)[],
 
   /**
    * 是否将 '.vue.d.ts' 文件名转换为 '.d.ts'
    *
    * @default false
    */
-  cleanVueFileName?: boolean
+  cleanVueFileName?: boolean,
 
   /**
    * 是否将动态引入转换为静态
@@ -185,28 +213,28 @@ export interface PluginOptions {
    *
    * @default false
    */
-  staticImport?: boolean
+  staticImport?: boolean,
 
   /**
    * 手动设置包含路径的 glob
    *
    * 默认基于 tsconfig.json 的 `include` 选项
    */
-  include?: string | string[]
+  include?: string | string[],
 
   /**
    * 手动设置排除路径的 glob
    *
    * 默认基于 tsconfig.json 的 `exclude` 选线，未设置时为 `'node_module/**'`
    */
-  exclude?: string | string[]
+  exclude?: string | string[],
 
   /**
    * 是否移除那些 `import 'xxx'`
    *
    * @default true
    */
-  clearPureImport?: boolean
+  clearPureImport?: boolean,
 
   /**
    * 是否生成类型声明入口
@@ -217,7 +245,7 @@ export interface PluginOptions {
    *
    * @default false
    */
-  insertTypesEntry?: boolean
+  insertTypesEntry?: boolean,
 
   /**
    * 设置是否在发出类型文件后将其打包
@@ -226,7 +254,7 @@ export interface PluginOptions {
    *
    * @default false
    */
-  rollupTypes?: boolean
+  rollupTypes?: boolean,
 
   /**
    * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
@@ -234,7 +262,7 @@ export interface PluginOptions {
    * @default []
    * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
    */
-  bundledPackages?: string[]
+  bundledPackages?: string[],
 
   /**
    * 是否将源码里的 .d.ts 文件复制到 `outDir`
@@ -242,14 +270,14 @@ export interface PluginOptions {
    * @default false
    * @remarks 在 2.0 之前它默认为 true
    */
-  copyDtsFiles?: boolean
+  copyDtsFiles?: boolean,
 
   /**
    * 指定插件的输出等级
    *
    * 默认基于 Vite 配置的 'logLevel' 选项
    */
-  logLevel?: LogLevel
+  logLevel?: LogLevel,
 
   /**
    * 获取诊断信息后的钩子
@@ -258,7 +286,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterDiagnostic?: (diagnostics: Diagnostic[]) => void | Promise<void>
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>,
 
   /**
    * 类型声明文件被写入前的钩子
@@ -269,7 +297,16 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  beforeWriteFile?: (filePath: string, content: string) => void | false | TransformWriteFile
+  beforeWriteFile?: (
+    filePath: string,
+    content: string
+  ) =>
+  | void
+  | false
+  | {
+    filePath?: string,
+    content?: string
+  },
 
   /**
    * 构建后回调钩子
@@ -278,7 +315,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: () => void | Promise<void>
+  afterBuild?: () => MaybePromise<void>
 }
 ```
 

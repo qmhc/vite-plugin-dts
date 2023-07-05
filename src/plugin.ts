@@ -306,7 +306,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       timeRecord += Date.now() - startTime
     },
 
-    async transform(_, id) {
+    async transform(code, id) {
       let resolver: Resolver | undefined
       id = normalizePath(id).split('?')[0]
 
@@ -327,6 +327,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       if (resolver) {
         const result = await resolver.transform({
           id,
+          code,
           root: publicRoot,
           host,
           program,

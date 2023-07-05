@@ -4,10 +4,22 @@ import type { LogLevel } from 'vite'
 type MaybePromise<T> = T | Promise<T>
 
 export interface Resolver {
+  /**
+   * The name of the resolver
+   *
+   * The later resolver with the same name will overwrite the earlier
+   */
   name: string,
+  /**
+   * Determine whether the resolve supports the file
+   */
   supports: (id: string) => void | boolean,
+  /**
+   * Transform the source file to declaration files
+   */
   transform: (payload: {
     id: string,
+    code: string,
     root: string,
     host: ts.CompilerHost,
     program: ts.Program,
