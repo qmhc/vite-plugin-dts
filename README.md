@@ -8,6 +8,9 @@
   <a href="https://www.npmjs.com/package/vite-plugin-dts">
     <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
   </a>
+  <a href="https://github.com/qmhc/vite-plugin-dts/blob/main/LICENSE">
+    <img src="https://img.shields.io/npm/l/vite-plugin-dts" alt="license" />
+  </a>
 </p>
 
 **English** | [中文](./README.zh-CN.md)
@@ -40,34 +43,7 @@ export default defineConfig({
 })
 ```
 
-In your component:
-
-```vue
-<template>
-  <div></div>
-</template>
-
-<script lang="ts">
-// using defineComponent for inferring types
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'Component'
-})
-</script>
-```
-
-```vue
-<script setup lang="ts">
-defineProps<{
-  color: 'blue' | 'red'
-}>()
-</script>
-
-<template>
-  <div>{{ color }}</div>
-</template>
-```
+Starting from `3.0.0`, you can use this plugin in Rollup.
 
 ## FAQ
 

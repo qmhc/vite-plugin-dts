@@ -8,6 +8,9 @@
   <a href="https://www.npmjs.com/package/vite-plugin-dts">
     <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
   </a>
+  <a href="https://github.com/qmhc/vite-plugin-dts/blob/main/LICENSE">
+    <img src="https://img.shields.io/npm/l/vite-plugin-dts" alt="license" />
+  </a>
 </p>
 
 **中文** | [English](./README.md)
@@ -40,34 +43,7 @@ export default defineConfig({
 })
 ```
 
-在你的组件中:
-
-```vue
-<template>
-  <div></div>
-</template>
-
-<script lang="ts">
-// 使用 defineComponent 来进行类型推断
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  name: 'Component'
-})
-</script>
-```
-
-```vue
-<script setup lang="ts">
-defineProps<{
-  color: 'blue' | 'red'
-}>()
-</script>
-
-<template>
-  <div>{{ color }}</div>
-</template>
-```
+从 `3.0.0` 开始，你可以在 Rollup 中使用该插件。
 
 ## 常见问题
 
