@@ -137,7 +137,7 @@ export interface PluginOptions {
   /**
    * Restrict declaration files output to `outDir`
    *
-   * If `entryRoot` is specified, generated declaration files could be outside `outDir`
+   * If `entryRoot` is specified, generated declaration files could be outside `outDir`.
    *
    * @default true
    */
