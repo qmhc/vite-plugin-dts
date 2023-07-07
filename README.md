@@ -43,7 +43,7 @@ export default defineConfig({
 })
 ```
 
-Starting from `3.0.0`, you can use this plugin in Rollup.
+Starting with `3.0.0`, you can use this plugin with Rollup.
 
 ## FAQ
 
@@ -51,19 +51,19 @@ Here are some FAQ's and solutions.
 
 ### Missing some declaration files after build (before `1.7.0`)
 
-By default, the `skipDiagnostics` option is set to `true` which means type diagnostic will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). If there are some files with type errors which interrupt the build process, these files will not be emitted (declaration files won't be generated).
+By default, the `skipDiagnostics` option is set to `true` which means type diagnostics will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). Files with type errors which interrupt the build process will not be emitted (declaration files won't be generated).
 
-If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. It will help you check the type errors during build and log error information to the terminal.
+If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. Type errors during build will be logged to the terminal.
 
 ### Type error when using both `script` and `setup-script` in Vue component (before `3.0.0`)
 
-This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`, which results in a type error.
+This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`. This results in a type error.
 
-Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue). You should remove the `defineComponent` which in `script` and export a native object directly.
+Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue). You should remove the `defineComponent` in `script` and export a native object directly.
 
 ### Type errors that are unable to infer types from packages in `node_modules`
 
-This is an existing issue when TypeScript infers types from packages located in `node_modules` through soft links (pnpm). Please refer to [this TypeScript issue](https://github.com/microsoft/TypeScript/issues/42873). The current workaround is to add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
+This is an existing [TypeScript issue](https://github.com/microsoft/TypeScript/issues/42873) where TypeScript infers types from packages located in `node_modules` through soft links (pnpm). A workaround is to add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
 
 ```json
 {
@@ -92,11 +92,11 @@ export interface Resolver {
    */
   name: string,
   /**
-   * Determine whether the resolve supports the file
+   * Determine whether the resolver supports the file
    */
   supports: (id: string) => void | boolean,
   /**
-   * Transform the source file to declaration files
+   * Transform source to declaration files
    */
   transform: (payload: {
     id: string,
@@ -112,39 +112,39 @@ export interface PluginOptions {
   /**
    * Specify root directory
    *
-   * By Default it base on 'root' of your Vite config, or `process.cwd()` if using Rollup
+   * Defaults to the 'root' of the Vite config, or `process.cwd()` if using Rollup
    */
   root?: string,
 
   /**
-   * Specify declaration files output directory
+   * Output directory for declaration files
    *
-   * Can be specified a array to output to multiple directories
+   * Can be an array to output to multiple directories
    *
-   * By Default it base on 'build.outDir' of your Vite config, or `outDir` of tsconfig.json if using Rollup
+   * Defaults to 'build.outDir' of the Vite config, or `outDir` of tsconfig.json if using Rollup
    */
   outDir?: string | string[],
 
   /**
-   * Manually set the root path of the entry files, useful in monorepo
+   * Override root path of entry files (useful in monorepos)
    *
-   * The output path of each file will be calculated base on it
+   * The output path of each file will be calculated based on the value provided
    *
-   * By Default it is the smallest public path for all files
+   * The default is the smallest public path for all source files
    */
   entryRoot?: string,
 
   /**
-   * Strictly restrict declaration files output inside `outDir`
+   * Restrict declaration files output to `outDir`
    *
-   * Because if `entryRoot` is specified, declaration files maybe outside `outDir`
+   * If true, generated declaration files outside `outDir` will be ignored
    *
    * @default true
    */
   strictOutput?: boolean,
 
   /**
-   * Specify a CompilerOptions to override
+   * Override compilerOptions
    *
    * @default null
    */
@@ -153,9 +153,9 @@ export interface PluginOptions {
   /**
    * Specify tsconfig.json path
    *
-   * Plugin also resolve include and exclude files from tsconfig.json
+   * Plugin resolves `include` and `exclude` globs from tsconfig.json
    *
-   * By default plugin will find config form root if not specify
+   * If not specified, plugin will find config file from root
    */
   tsconfigPath?: string,
 
@@ -167,68 +167,64 @@ export interface PluginOptions {
   resolvers?: Resolver[],
 
   /**
-   * Set which paths should exclude when transform aliases
-   *
-   * If it's regexp, it will test the original import path directly
+   * Set which paths should be excluded when transforming aliases
    *
    * @default []
    */
   aliasesExclude?: (string | RegExp)[],
 
   /**
-   * Whether transform file name '.vue.d.ts' to '.d.ts'
+   * Whether to transform file names ending in '.vue.d.ts' to '.d.ts'
    *
    * @default false
    */
   cleanVueFileName?: boolean,
 
   /**
-   * Whether transform dynamic import to static
+   * Whether to transform dynamic imports to static (eg `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`)
    *
-   * Force `true` when `rollupTypes` is effective
-   *
-   * eg. `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`
+   * Value is forced to `true` when `rollupTypes` is `true`
    *
    * @default false
    */
   staticImport?: boolean,
 
   /**
-   * Manual set include glob
+   * Override `include` glob
    *
-   * By Default it base on `include` option of the tsconfig.json
+   * Defaults to `include` property of tsconfig.json
    */
   include?: string | string[],
 
   /**
-   * Manual set exclude glob
+   * Override `exclude` glob
    *
-   * By Default it base on `exclude` option of the tsconfig.json, be `'node_module/**'` when empty
+   * Defaults to `exclude` property of tsconfig.json or `'node_module/**'` if not supplied.
    */
   exclude?: string | string[],
 
   /**
-   * Whether remove those `import 'xxx'`
+   * Whether to remove `import 'xxx'`
    *
    * @default true
    */
   clearPureImport?: boolean,
 
   /**
-   * Whether generate types entry file
+   * Whether to generate types entry file(s)
    *
-   * When `true` will from package.json types field if exists or `${outDir}/index.d.ts`
+   * When `true`, uses package.json `types` property if it exists or `${outDir}/index.d.ts`
    *
-   * Force `true` when `rollupTypes` is effective
+   * Value is forced to `true` when `rollupTypes` is `true`
    *
    * @default false
    */
   insertTypesEntry?: boolean,
 
   /**
-   * Set whether rollup declaration files after emit
+   * Rollup type declaration files after emitting them
    *
-   * Power by `@microsoft/api-extractor`, it will start a new program which takes some time
+   * Powered by `@microsoft/api-extractor` - time-intensive operation
    *
    * @default false
    */
@@ -243,35 +239,35 @@ export interface PluginOptions {
   bundledPackages?: string[],
 
   /**
-   * Whether copy .d.ts source files into `outDir`
+   * Whether to copy .d.ts source files to `outDir`
    *
    * @default false
-   * @remarks Before 2.0 it defaults to true
+   * @remarks Before 2.0, the default was `true`
    */
   copyDtsFiles?: boolean,
 
   /**
-   * Specify the log level of plugin
+   * Logging level for this plugin
    *
-   * By Default it base on 'logLevel' option of your Vite config
+   * Defaults to the 'logLevel' property of your Vite config
    */
   logLevel?: LogLevel,
 
   /**
-   * Hook after diagnostic emitted
+   * Hook called after diagnostic is emitted
    *
-   * According to the length to judge whether there is any type error
+   * According to the `diagnostics.length`, you can judge whether there is any type error
    *
    * @default () => {}
    */
   afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>,
 
   /**
-   * Hook before each declaration file is written
+   * Hook called prior to writing each declaration file
    *
-   * You can transform declaration file's path and content through it
+   * This allows you to transform the path or content
    *
-   * The file will be skipped when return exact `false`
+   * The file will be skipped when the return value `false`
    *
    * @default () => {}
    */
@@ -287,9 +283,7 @@ export interface PluginOptions {
   },
 
   /**
-   * Hook after built
-   *
-   * It wil be called after all declaration files are written
+   * Hook called after all declaration files are written
    *
    * @default () => {}
    */
