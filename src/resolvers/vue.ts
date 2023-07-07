@@ -11,15 +11,12 @@ export function VueResolver(): Resolver {
       return vueRE.test(id)
     },
     transform({ id, root, program, service }) {
-      let sourceFile = program.getSourceFile(id)
-
-      if (!sourceFile && vueRE.test(id)) {
-        sourceFile =
-          program.getSourceFile(id + '.ts') ||
-          program.getSourceFile(id + '.js') ||
-          program.getSourceFile(id + '.tsx') ||
-          program.getSourceFile(id + '.jsx')
-      }
+      const sourceFile =
+        program.getSourceFile(id) ||
+        program.getSourceFile(id + '.ts') ||
+        program.getSourceFile(id + '.js') ||
+        program.getSourceFile(id + '.tsx') ||
+        program.getSourceFile(id + '.jsx')
 
       if (!sourceFile) return []
 

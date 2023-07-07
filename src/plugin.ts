@@ -11,7 +11,7 @@ import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
-import { SvelteResolver, VueResolver, parseResolvers } from './resolvers'
+import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import {
   normalizeGlob,
   removePureImport,
@@ -103,7 +103,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let bundled = false
   let timeRecord = 0
 
-  const resolvers = parseResolvers([VueResolver(), SvelteResolver(), ...(options.resolvers || [])])
+  const resolvers = parseResolvers([
+    JsonResolver(),
+    VueResolver(),
+    SvelteResolver(),
+    ...(options.resolvers || [])
+  ])
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
