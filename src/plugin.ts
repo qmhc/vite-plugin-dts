@@ -72,6 +72,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     insertTypesEntry = false,
     rollupTypes = false,
     bundledPackages = [],
+    pathsToAliases = true,
     aliasesExclude = [],
     copyDtsFiles = false,
     strictOutput = true,
@@ -130,13 +131,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         aliases = aliases.filter(
           ({ find }) =>
             !aliasesExclude.some(
-              alias =>
-                alias &&
+              aliasExclude =>
+                aliasExclude &&
                 (isRegExp(find)
-                  ? find.toString() === alias.toString()
-                  : isRegExp(alias)
-                    ? find.match(alias)?.[0]
-                    : find === alias)
+                  ? find.toString() === aliasExclude.toString()
+                  : isRegExp(aliasExclude)
+                    ? find.match(aliasExclude)?.[0]
+                    : find === aliasExclude)
             )
         )
       }
@@ -245,6 +246,26 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         outDirs = options.outDir
           ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
           : [ensureAbsolute(content?.raw.compilerOptions?.outDir || 'dist', root)]
+      }
+
+      const { baseUrl, paths } = compilerOptions
+
+      if (pathsToAliases && baseUrl && paths) {
+        const basePath = ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root)
+        const existsFinds = new Set(
+          aliases.map(alias => alias.find).filter(find => typeof find === 'string')
+        )
+
+        for (const [findWithAsterisk, replacements] of Object.entries(paths)) {
+          const find = findWithAsterisk.replace('/*', '')
+
+          if (!replacements.length || existsFinds.has(find)) continue
+
+          aliases.push({
+            find,
+            replacement: ensureAbsolute(replacements[0].replace('/*', ''), basePath)
+          })
+        }
       }
 
       include = ensureArray(options.include ?? content?.raw.include ?? '**/*').map(normalizeGlob)

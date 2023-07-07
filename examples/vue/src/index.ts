@@ -24,6 +24,8 @@ export { Decorator } from './decorator'
 export type { User } from './types'
 export type { DtsType } from './dts-types'
 
+export type { AliasType } from '@alias/type'
+
 export {
   BothScripts,
   JsTest,
