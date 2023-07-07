@@ -1,9 +1,6 @@
-import ts from 'typescript'
-import { resolve } from '../utils'
-
 import type { Resolver } from '../types'
 
-const jsonRE = /\.json5?$/
+const jsonRE = /\.json$/
 
 export function JsonResolver(): Resolver {
   return {
@@ -19,7 +16,7 @@ export function JsonResolver(): Resolver {
       return [
         {
           path: `${id}.d.ts`,
-          content: `declare const _default: ${sourceFile.text.trim()};\n\nexport default _default;\n`
+          content: `declare const _default: ${sourceFile.text};\n\nexport default _default;\n`
         }
       ]
     }
