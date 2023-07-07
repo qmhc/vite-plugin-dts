@@ -112,32 +112,32 @@ export interface PluginOptions {
   /**
    * Specify root directory
    *
-   * Defaults to the 'root' of the Vite config or `process.cwd()`, if using Rollup.
+   * Defaults to the 'root' of the Vite config, or `process.cwd()` if using Rollup
    */
   root?: string,
 
   /**
    * Output directory for declaration files
    *
-   * Can be an array to output to multiple directories.
+   * Can be an array to output to multiple directories
    *
-   * Defaults to 'build.outDir' of the Vite config or `outDir` of tsconfig.json, if using Rollup.
+   * Defaults to 'build.outDir' of the Vite config, or `outDir` of tsconfig.json if using Rollup
    */
   outDir?: string | string[],
 
   /**
    * Override root path of entry files (useful in monorepos)
    *
-   * The output path of each file will be calculated based on the value provided.
+   * The output path of each file will be calculated based on the value provided
    *
-   * The default is the smallest public path for all files.
+   * The default is the smallest public path for all source files
    */
   entryRoot?: string,
 
   /**
    * Restrict declaration files output to `outDir`
    *
-   * If `entryRoot` is specified, generated declaration files could be outside `outDir`.
+   * If true, generated declaration files outside `outDir` will be ignored
    *
    * @default true
    */
@@ -153,9 +153,9 @@ export interface PluginOptions {
   /**
    * Specify tsconfig.json path
    *
-   * Plugin resolves `include` and `exclude` globs from tsconfig.json.
+   * Plugin resolves `include` and `exclude` globs from tsconfig.json
    *
-   * If not specified, defaults to root tsconfig.json.
+   * If not specified, plugin will find config file from root
    */
   tsconfigPath?: string,
 
@@ -168,8 +168,6 @@ export interface PluginOptions {
 
   /**
    * Set which paths should be excluded when transforming aliases
-   *
-   * If a regular expression, the original import path will be directly tested.
    *
    * @default []
    */
@@ -185,7 +183,7 @@ export interface PluginOptions {
   /**
    * Whether to transform dynamic imports to static (eg `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`)
    *
-   * Valued is forced to `true` when `rollupTypes` is `true`.
+   * Value is forced to `true` when `rollupTypes` is `true`
    *
    * @default false
    */
@@ -194,7 +192,7 @@ export interface PluginOptions {
   /**
    * Override `include` glob
    *
-   * Defaults to `include` property of tsconfig.json.
+   * Defaults to `include` property of tsconfig.json
    */
   include?: string | string[],
 
@@ -213,11 +211,11 @@ export interface PluginOptions {
   clearPureImport?: boolean,
 
   /**
-   * Whether to generate a types entry file
+   * Whether to generate types entry file(s)
    *
-   * When `true`, uses package.json `types` property if it exists or `${outDir}/index.d.ts`.
+   * When `true`, uses package.json `types` property if it exists or `${outDir}/index.d.ts`
    *
-   * Value is forced to `true` when `rollupTypes` is `true`.
+   * Value is forced to `true` when `rollupTypes` is `true`
    *
    * @default false
    */
@@ -226,7 +224,7 @@ export interface PluginOptions {
   /**
    * Rollup type declaration files after emitting them
    *
-   * Powered by `@microsoft/api-extractor` - time-intensive operation.
+   * Powered by `@microsoft/api-extractor` - time-intensive operation
    *
    * @default false
    */
@@ -244,21 +242,21 @@ export interface PluginOptions {
    * Whether to copy .d.ts source files to `outDir`
    *
    * @default false
-   * @remarks Before 2.0, the default was true.
+   * @remarks Before 2.0, the default was `true`
    */
   copyDtsFiles?: boolean,
 
   /**
    * Logging level for this plugin
    *
-   * Defaults to the 'logLevel' property of your Vite config.
+   * Defaults to the 'logLevel' property of your Vite config
    */
   logLevel?: LogLevel,
 
   /**
    * Hook called after diagnostic is emitted
    *
-   * According to the length, you can judge whether there is a type error.
+   * According to the `diagnostics.length`, you can judge whether there is any type error
    *
    * @default () => {}
    */
@@ -267,9 +265,9 @@ export interface PluginOptions {
   /**
    * Hook called prior to writing each declaration file
    *
-   * This allows you to transform the path or content.
+   * This allows you to transform the path or content
    *
-   * The file will be skipped when the return value `false`.
+   * The file will be skipped when the return value `false`
    *
    * @default () => {}
    */

@@ -92,7 +92,7 @@ export interface Resolver {
    */
   name: string,
   /**
-   * 决定是否要解析文件
+   * 判断解析器是否支持该文件
    */
   supports: (id: string) => void | boolean,
   /**
@@ -112,7 +112,7 @@ export interface PluginOptions {
   /**
    * 指定根目录
    *
-   * 默认基于 Vite 配置的 'root'，使用 Rollup 时基于 `process.cwd()`
+   * 默认为 Vite 配置的 'root'，使用 Rollup 为 `process.cwd()`
    */
   root?: string,
 
@@ -121,30 +121,30 @@ export interface PluginOptions {
    *
    * 可以指定一个数组来输出到多个目录中
    *
-   * 默认基于 Vite 配置的 'build.outDir'，使用 Rollup 时基于 tsconfig.json 的 `outDir`
+   * 默认为 Vite 配置的 'build.outDir'，使用 Rollup 时为 tsconfig.json 的 `outDir`
    */
   outDir?: string | string[],
 
   /**
-   * 用于手动设置入口文件的根路径，通常用在 monorepo
+   * 用于手动设置入口文件的根路径（通常用在 monorepo）
    *
    * 在计算每个文件的输出路径时将基于该路径
    *
-   * 默认为所有文件的最小公共路径
+   * 默认为所有源文件的最小公共路径
    */
   entryRoot?: string,
 
   /**
-   * 严格限制类型文件生产在 `outDir` 内
+   * 限制类型文件生成在 `outDir` 内
    *
-   * 由于当指定了 `entryRoot` 时，类型文件有可能位于 `outDir` 之外
+   * 如果为 `true`，生成在 `outDir` 外的文件将被忽略
    *
    * @default true
    */
   strictOutput?: boolean,
 
   /**
-   * 指定一个用于覆写的 CompilerOptions
+   * 覆写 CompilerOptions
    *
    * @default null
    */
@@ -153,9 +153,9 @@ export interface PluginOptions {
   /**
    * 指定 tsconfig.json 的路径
    *
-   * 插件也会解析 tsconfig.json 的 include 和 exclude 选项
+   * 插件会解析 tsconfig.json 的 include 和 exclude 选项
    *
-   * 未指定时插件默认从根目录寻找配置
+   * 未指定时插件默认从根目录开始寻找配置文件
    */
   tsconfigPath?: string,
 
@@ -181,11 +181,9 @@ export interface PluginOptions {
   cleanVueFileName?: boolean,
 
   /**
-   * 是否将动态引入转换为静态
+   * 是否将动态引入转换为静态（例如：`import('vue').DefineComponent` 转换为 `import { DefineComponent } from 'vue'`）
    *
    * 开启 `rollupTypes` 时强制为 `true`
-   *
-   * 例如将 `import('vue').DefineComponent` 转换为 `import { DefineComponent } from 'vue'`
    *
    * @default false
    */
@@ -206,18 +204,18 @@ export interface PluginOptions {
   exclude?: string | string[],
 
   /**
-   * 是否移除那些 `import 'xxx'`
+   * 是否移除 `import 'xxx'`
    *
    * @default true
    */
   clearPureImport?: boolean,
 
   /**
-   * 是否生成类型声明入口
+   * 是否生成类型入口文件
    *
-   * 当为 `true` 时会基于 package.json 的 types 字段生成，或者 `${outDir}/index.d.ts`
+   * 当为 `true` 时会基于 package.json 的 `types` 字段生成，或者 `${outDir}/index.d.ts`
    *
-   * 当开启打包类型文件时强制为 `true`
+   * 当开启 `rollupTypes` 时强制为 `true`
    *
    * @default false
    */
@@ -226,7 +224,7 @@ export interface PluginOptions {
   /**
    * 设置是否在发出类型文件后将其打包
    *
-   * 基于 `@microsoft/api-extractor`，由于这开启了一个新的进程，将会消耗一些时间
+   * 基于 `@microsoft/api-extractor`，过程将会消耗一些时间
    *
    * @default false
    */
@@ -244,7 +242,7 @@ export interface PluginOptions {
    * 是否将源码里的 .d.ts 文件复制到 `outDir`
    *
    * @default false
-   * @remarks 在 2.0 之前它默认为 true
+   * @remarks 在 2.0 之前它默认为 `true`
    */
   copyDtsFiles?: boolean,
 
@@ -258,7 +256,7 @@ export interface PluginOptions {
   /**
    * 获取诊断信息后的钩子
    *
-   * 可以根据参数 length 来判断有误类型错误
+   * 可以根据 `diagnostics.length` 来判断有误类型错误
    *
    * @default () => {}
    */
@@ -285,9 +283,7 @@ export interface PluginOptions {
   },
 
   /**
-   * 构建后回调钩子
-   *
-   * 将会在所有类型文件被写入后调用
+   * 在所有类型文件被写入后调用的钩子
    *
    * @default () => {}
    */
