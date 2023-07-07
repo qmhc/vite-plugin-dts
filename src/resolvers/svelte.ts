@@ -12,7 +12,7 @@ export function SvelteResolver(): Resolver {
       return [
         {
           path: `${id}.d.ts`,
-          content: "export { SvelteComponentTyped as default } from 'svelte';"
+          content: "export { SvelteComponentTyped as default } from 'svelte';\n"
         }
       ]
     }
