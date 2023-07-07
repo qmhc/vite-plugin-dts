@@ -211,6 +211,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       logger = logger || console
+      aliases = aliases || []
       libName = '_default'
       indexName = defaultIndex
 
