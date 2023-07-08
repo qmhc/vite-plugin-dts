@@ -17,7 +17,7 @@ export interface Resolver {
   /**
    * Transform source to declaration files
    *
-   * Note that the path of the return files should base on `root`, not `outDir`
+   * Note that the path of the returns should base on `outDir`, or relative path to `root`
    */
   transform: (payload: {
     id: string,

@@ -1,3 +1,5 @@
+import { relative } from 'node:path'
+
 import type { Resolver } from '../types'
 
 const svelteRE = /\.svelte$/
@@ -8,10 +10,10 @@ export function SvelteResolver(): Resolver {
     supports(id) {
       return svelteRE.test(id)
     },
-    transform({ id }) {
+    transform({ id, root }) {
       return [
         {
-          path: `${id}.d.ts`,
+          path: relative(root, `${id}.d.ts`),
           content: "export { SvelteComponentTyped as default } from 'svelte';\n"
         }
       ]

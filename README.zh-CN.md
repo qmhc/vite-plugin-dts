@@ -98,7 +98,7 @@ export interface Resolver {
   /**
    * 将源文件转换为类型文件
    *
-   * 注意，返回的文件的路径应该基于 `root` 而不是 `outDir`
+   * 注意，返回的文件的路径应该基于 `outDir`，或者相对于 `root`
    */
   transform: (payload: {
     id: string,
