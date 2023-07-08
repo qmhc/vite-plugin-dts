@@ -170,6 +170,16 @@ export interface PluginOptions {
   resolvers?: Resolver[],
 
   /**
+   * 解析 tsconfig.json 的 `paths` 作为别名
+   *
+   * 注意，这些别名仅用在类型文件中使用
+   *
+   * @default true
+   * @remarks 只使用每个路径的第一个替换
+   */
+  pathsToAliases?: boolean,
+
+  /**
    * 设置在转换别名时哪些路径需要排除
    *
    * @default []

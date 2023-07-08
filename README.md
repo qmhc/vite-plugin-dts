@@ -170,6 +170,16 @@ export interface PluginOptions {
   resolvers?: Resolver[],
 
   /**
+   * Parsing `paths` of tsconfig.json to aliases
+   *
+   * Note that these aliases only use for declaration files
+   *
+   * @default true
+   * @remarks Only use first replacement of each path
+   */
+  pathsToAliases?: boolean,
+
+  /**
    * Set which paths should be excluded when transforming aliases
    *
    * @default []
