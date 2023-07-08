@@ -17,3 +17,4 @@ export { ParametersTest, test, method } from './test'
 export { data }
 
 export type { User } from './types'
+export type { AliasType } from '@alias/type'
