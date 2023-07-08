@@ -365,14 +365,20 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         })
 
         for (const { path, content } of result) {
-          outputFiles.set(ensureAbsolute(path, publicRoot), content)
+          outputFiles.set(
+            resolve(publicRoot, relative(outDir, ensureAbsolute(path, outDir))),
+            content
+          )
         }
       } else {
         const sourceFile = program.getSourceFile(id)
 
         if (sourceFile) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(resolve(publicRoot, relative(outDir, outputFile.name)), outputFile.text)
+            outputFiles.set(
+              resolve(publicRoot, relative(outDir, ensureAbsolute(outputFile.name, outDir))),
+              outputFile.text
+            )
           }
         }
       }
@@ -450,7 +456,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
         if (rootFiles.has(sourceFile.fileName)) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(resolve(publicRoot, relative(outDir, outputFile.name)), outputFile.text)
+            outputFiles.set(
+              resolve(publicRoot, relative(outDir, ensureAbsolute(outputFile.name, outDir))),
+              outputFile.text
+            )
           }
 
           rootFiles.delete(sourceFile.fileName)
