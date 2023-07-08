@@ -16,11 +16,14 @@ export interface Resolver {
   supports: (id: string) => void | boolean,
   /**
    * Transform source to declaration files
+   *
+   * Note that the path of the return files should base on `root`, not `outDir`
    */
   transform: (payload: {
     id: string,
     code: string,
     root: string,
+    outDir: string,
     host: ts.CompilerHost,
     program: ts.Program,
     service: ts.LanguageService

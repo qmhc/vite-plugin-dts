@@ -97,11 +97,14 @@ export interface Resolver {
   supports: (id: string) => void | boolean,
   /**
    * 将源文件转换为类型文件
+   *
+   * 注意，返回的文件的路径应该基于 `root` 而不是 `outDir`
    */
   transform: (payload: {
     id: string,
     code: string,
     root: string,
+    outDir: string,
     host: ts.CompilerHost,
     program: ts.Program,
     service: ts.LanguageService

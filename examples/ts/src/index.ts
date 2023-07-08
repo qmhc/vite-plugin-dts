@@ -1,3 +1,5 @@
+import data from './data.json'
+
 import type { TestBase } from '@/test'
 
 export interface Test extends TestBase {
@@ -11,5 +13,7 @@ export { ESClass } from './es-class'
 export { manualDts } from './manual-dts'
 
 export { ParametersTest, test, method } from './test'
+
+export { data }
 
 export type { User } from './types'

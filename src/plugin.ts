@@ -11,7 +11,7 @@ import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
-import { SvelteResolver, VueResolver, parseResolvers } from './resolvers'
+import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import {
   normalizeGlob,
   removePureImport,
@@ -104,7 +104,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let bundled = false
   let timeRecord = 0
 
-  const resolvers = parseResolvers([VueResolver(), SvelteResolver(), ...(options.resolvers || [])])
+  const resolvers = parseResolvers([
+    JsonResolver(),
+    VueResolver(),
+    SvelteResolver(),
+    ...(options.resolvers || [])
+  ])
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
@@ -276,6 +281,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       filter = createFilter(include, exclude, { resolve: root })
 
       const rootNames = Object.values(entries)
+        .map(entry => ensureAbsolute(entry, root))
         .concat(content?.fileNames.filter(filter) || [])
         .map(normalizePath)
 
@@ -342,6 +348,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       const startTime = Date.now()
+      const outDir = outDirs[0]
       const service = program.__vue.languageService as unknown as ts.LanguageService
 
       rootFiles.delete(id)
@@ -351,6 +358,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           id,
           code,
           root: publicRoot,
+          outDir,
           host,
           program,
           service
@@ -364,7 +372,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
         if (sourceFile) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+            outputFiles.set(resolve(publicRoot, relative(outDir, outputFile.name)), outputFile.text)
           }
         }
       }
@@ -442,7 +450,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
         if (rootFiles.has(sourceFile.fileName)) {
           for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(resolve(publicRoot, outputFile.name), outputFile.text)
+            outputFiles.set(resolve(publicRoot, relative(outDir, outputFile.name)), outputFile.text)
           }
 
           rootFiles.delete(sourceFile.fileName)
