@@ -21,6 +21,7 @@ export interface Resolver {
     id: string,
     code: string,
     root: string,
+    outDir: string,
     host: ts.CompilerHost,
     program: ts.Program,
     service: ts.LanguageService

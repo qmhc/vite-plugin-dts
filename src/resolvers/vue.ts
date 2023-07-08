@@ -1,3 +1,5 @@
+import { relative } from 'node:path'
+
 import { resolve } from '../utils'
 
 import type { Resolver } from '../types'
@@ -10,7 +12,7 @@ export function VueResolver(): Resolver {
     supports(id) {
       return vueRE.test(id)
     },
-    transform({ id, root, program, service }) {
+    transform({ id, root, outDir, program, service }) {
       const sourceFile =
         program.getSourceFile(id) ||
         program.getSourceFile(id + '.ts') ||
@@ -22,7 +24,7 @@ export function VueResolver(): Resolver {
 
       return service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(file => {
         return {
-          path: resolve(root, file.name),
+          path: resolve(root, relative(outDir, file.name)),
           content: file.text
         }
       })
