@@ -1,5 +1,9 @@
+<template>
+  <div>{{ color }}</div>
+</template>
+
 <script setup lang="ts">
-type Props = {
+export type Props = {
   color: 'blue' | 'red' | 'purple',
   array?: { foo: number }[]
 }
@@ -17,7 +21,3 @@ interface Events {
 
 defineEmits<Events>()
 </script>
-
-<template>
-  <div>{{ color }}</div>
-</template>
