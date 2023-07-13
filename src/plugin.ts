@@ -22,13 +22,13 @@ import {
   ensureAbsolute,
   ensureArray,
   isNativeObj,
-  isPromise,
   isRegExp,
   normalizePath,
   queryPublicPath,
   removeDirIfEmpty,
   resolve,
-  runParallel
+  runParallel,
+  wrapPromise
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
@@ -320,9 +320,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       if (typeof afterDiagnostic === 'function') {
-        const result = afterDiagnostic(diagnostics)
-
-        isPromise(result) && (await result)
+        await wrapPromise(afterDiagnostic(diagnostics))
       }
 
       rootNames.forEach(file => {
@@ -427,7 +425,18 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
 
-      const writeOutput = async (path: string, content: string, outDir: string) => {
+      const writeOutput = async (path: string, content: string, outDir: string, record = true) => {
+        if (typeof beforeWriteFile === 'function') {
+          const result = await wrapPromise(beforeWriteFile(path, content))
+
+          if (result === false) return
+
+          if (result) {
+            path = result.filePath || path
+            content = result.content ?? content
+          }
+        }
+
         path = normalizePath(path)
         const dir = normalizePath(dirname(path))
 
@@ -441,7 +450,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         }
 
         await writeFile(path, content, 'utf-8')
-        emittedFiles.set(path, content)
+        record && emittedFiles.set(path, content)
       }
 
       const service = program.__vue.languageService
@@ -486,18 +495,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           )
           content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
 
-          if (typeof beforeWriteFile === 'function') {
-            const result = beforeWriteFile(path, content)
-
-            // #110 skip if return false
-            if (result === false) return
-
-            if (result && isNativeObj(result)) {
-              path = result.filePath || path
-              content = result.content ?? content
-            }
-          }
-
           await writeOutput(path, content, outDir)
         }
       )
@@ -519,7 +516,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
 
         for (const name of entryNames) {
-          let path = multiple ? resolve(outDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
+          const path = multiple ? resolve(outDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
 
           if (existsSync(path)) continue
 
@@ -540,17 +537,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
             if (entryCodes.includes('export default')) {
               content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
-            }
-          }
-
-          if (typeof beforeWriteFile === 'function') {
-            const result = beforeWriteFile(path, content)
-
-            if (result === false) return
-
-            if (result && isNativeObj(result)) {
-              path = result.filePath ?? path
-              content = result.content ?? content
             }
           }
 
@@ -630,16 +616,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           await Promise.all(
             extraOutDirs.map(async outDir => {
-              await writeOutput(resolve(outDir, relativePath), content, outDir)
+              await writeOutput(resolve(outDir, relativePath), content, outDir, false)
             })
           )
         })
       }
 
       if (typeof afterBuild === 'function') {
-        const result = afterBuild()
-
-        isPromise(result) && (await result)
+        await wrapPromise(afterBuild())
       }
 
       bundleDebug('finish')

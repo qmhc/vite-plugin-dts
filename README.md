@@ -280,20 +280,21 @@ export interface PluginOptions {
    *
    * This allows you to transform the path or content
    *
-   * The file will be skipped when the return value `false`
+   * The file will be skipped when the return value `false` or `Promise<false>`
    *
    * @default () => {}
    */
   beforeWriteFile?: (
     filePath: string,
     content: string
-  ) =>
-  | void
-  | false
-  | {
-    filePath?: string,
-    content?: string
-  },
+  ) => MaybePromise<
+    | void
+    | false
+    | {
+      filePath?: string,
+      content?: string
+    }
+  >,
 
   /**
    * Hook called after all declaration files are written

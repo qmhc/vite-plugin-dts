@@ -280,20 +280,21 @@ export interface PluginOptions {
    *
    * 可以在钩子里转换文件路径和文件内容
    *
-   * 当返回 `false` 时会跳过该文件
+   * 当返回 `false` 或 `Promise<false>` 时会跳过该文件
    *
    * @default () => {}
    */
   beforeWriteFile?: (
     filePath: string,
     content: string
-  ) =>
-  | void
-  | false
-  | {
-    filePath?: string,
-    content?: string
-  },
+  ) => MaybePromise<
+    | void
+    | false
+    | {
+      filePath?: string,
+      content?: string
+    }
+  >,
 
   /**
    * 在所有类型文件被写入后调用的钩子

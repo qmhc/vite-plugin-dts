@@ -37,6 +37,10 @@ export function isPromise(value: unknown): value is Promise<any> {
   )
 }
 
+export async function wrapPromise<T>(maybePromise: T | Promise<T>) {
+  return isPromise(maybePromise) ? await maybePromise : maybePromise
+}
+
 export function mergeObjects<T extends Record<string, unknown>, U extends Record<string, unknown>>(
   sourceObj: T,
   targetObj: U
