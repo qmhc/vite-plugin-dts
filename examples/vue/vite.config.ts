@@ -30,7 +30,11 @@ export default defineConfig({
   plugins: [
     dts({
       copyDtsFiles: true,
-      outDir: ['dist', 'types/inner'],
+      outDir: [
+        'dist',
+        'types'
+        // 'types/inner'
+      ],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       staticImport: true,
