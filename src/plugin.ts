@@ -334,7 +334,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
     async transform(code, id) {
       let resolver: Resolver | undefined
-      id = normalizePath(id).split('?')[0]
+      id = normalizePath(id)
 
       if (
         !host ||
@@ -349,6 +349,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const outDir = outDirs[0]
       const service = program.__vue.languageService as unknown as ts.LanguageService
 
+      id = id.split('?')[0]
       rootFiles.delete(id)
 
       if (resolver) {
@@ -392,7 +393,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     watchChange(id) {
-      id = normalizePath(id).split('?')[0]
+      id = normalizePath(id)
 
       if (
         !host ||
@@ -403,7 +404,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         return
       }
 
-      const sourceFile = host.getSourceFile(normalizePath(id), ts.ScriptTarget.ESNext)
+      id = id.split('?')[0]
+      const sourceFile = host.getSourceFile(id, ts.ScriptTarget.ESNext)
 
       if (sourceFile) {
         rootFiles.add(sourceFile.fileName)
