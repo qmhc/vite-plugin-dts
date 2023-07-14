@@ -234,6 +234,51 @@ export function getTsConfig(
   return tsConfig
 }
 
+/**
+ * @see https://github.com/mozilla/source-map/blob/master/lib/base64-vlq.js
+ */
+
+const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('')
+
+function base64Encode(number: number) {
+  if (number >= 0 && number < BASE64_ALPHABET.length) {
+    return BASE64_ALPHABET[number]
+  }
+
+  throw new TypeError('Base64 integer must be between 0 and 63: ' + number)
+}
+
+const VLQ_BASE_SHIFT = 5
+const VLQ_BASE = 1 << VLQ_BASE_SHIFT
+const VLQ_BASE_MASK = VLQ_BASE - 1
+const VLQ_CONTINUATION_BIT = VLQ_BASE
+
+function toVLQSigned(number: number) {
+  return number < 0 ? (-number << 1) + 1 : (number << 1) + 0
+}
+
+export function base64VLQEncode(numbers: number[]) {
+  let encoded = ''
+
+  for (const number of numbers) {
+    let vlq = toVLQSigned(number)
+    let digit: number
+
+    do {
+      digit = vlq & VLQ_BASE_MASK
+      vlq >>>= VLQ_BASE_SHIFT
+      if (vlq > 0) {
+        // There are still more digits in this value, so we must make sure the
+        // continuation bit is marked.
+        digit |= VLQ_CONTINUATION_BIT
+      }
+      encoded += base64Encode(digit)
+    } while (vlq > 0)
+  }
+
+  return encoded
+}
+
 const pkgPathCache = new Map<string, string | undefined>()
 
 export function tryGetPkgPath(beginPath: string) {
