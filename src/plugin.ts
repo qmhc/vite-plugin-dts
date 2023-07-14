@@ -28,6 +28,7 @@ import {
   removeDirIfEmpty,
   resolve,
   runParallel,
+  tryGetPkgPath,
   wrapPromise
 } from './utils'
 
@@ -504,8 +505,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       bundleDebug('write output')
 
       if (insertTypesEntry || rollupTypes) {
-        const pkgPath = resolve(root, 'package.json')
-        const pkg = existsSync(pkgPath) ? JSON.parse(await readFile(pkgPath, 'utf-8')) : {}
+        const pkgPath = tryGetPkgPath(root)
+
+        let pkg: any
+
+        try {
+          pkg = pkgPath && existsSync(pkgPath) ? JSON.parse(await readFile(pkgPath, 'utf-8')) : {}
+        } catch (e) {}
+
         const entryNames = Object.keys(entries)
         const types =
           pkg.types ||

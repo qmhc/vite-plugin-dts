@@ -1,16 +1,9 @@
 import { resolve } from 'node:path'
 
-import { CompilerState, ExtractorConfig } from '@microsoft/api-extractor'
-import { Collector } from '@microsoft/api-extractor/lib/collector/Collector.js'
-import { MessageRouter } from '@microsoft/api-extractor/lib/collector/MessageRouter.js'
-import { SourceMapper } from '@microsoft/api-extractor/lib/collector/SourceMapper.js'
-import {
-  DtsRollupGenerator,
-  DtsRollupKind
-} from '@microsoft/api-extractor/lib/generators/DtsRollupGenerator.js'
-import { PackageJsonLookup } from '@rushstack/node-core-library'
+import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
+import { tryGetPkgPath } from './utils'
 
-import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
+import type { ExtractorLogLevel } from '@microsoft/api-extractor'
 import type ts from 'typescript'
 
 export interface BundleOptions {
@@ -37,8 +30,6 @@ export function rollupDeclarationFiles({
   bundledPackages
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
-  const packageJsonLookup = new PackageJsonLookup()
-  const packageJsonFullPath = packageJsonLookup.tryGetPackageJsonFilePathFor(configObjectFullPath)
 
   if (!dtsRE.test(fileName)) {
     fileName += '.d.ts'
@@ -87,40 +78,15 @@ export function rollupDeclarationFiles({
       }
     },
     configObjectFullPath,
-    packageJsonFullPath
+    packageJsonFullPath: tryGetPkgPath(configObjectFullPath)
   })
 
-  const compilerState = CompilerState.create(extractorConfig, {
+  const result = Extractor.invoke(extractorConfig, {
     localBuild: false,
     showVerboseMessages: false,
-    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined
-  } as IExtractorInvokeOptions)
-
-  const sourceMapper = new SourceMapper()
-
-  const messageRouter = new MessageRouter({
-    workingPackageFolder: root,
-    messageCallback: undefined,
-    messagesConfig: extractorConfig.messages as any,
-    showVerboseMessages: false,
     showDiagnostics: false,
-    tsdocConfiguration: extractorConfig.tsdocConfiguration,
-    sourceMapper
+    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined
   })
 
-  const collector = new Collector({
-    program: compilerState.program as any,
-    messageRouter,
-    extractorConfig: extractorConfig as any,
-    sourceMapper
-  })
-
-  collector.analyze()
-
-  DtsRollupGenerator.writeTypingsFile(
-    collector,
-    extractorConfig.publicTrimmedFilePath,
-    DtsRollupKind.PublicRelease,
-    extractorConfig.newlineKind
-  )
+  return result.succeeded
 }

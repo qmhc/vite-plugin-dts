@@ -233,3 +233,31 @@ export function getTsConfig(
 
   return tsConfig
 }
+
+const pkgPathCache = new Map<string, string | undefined>()
+
+export function tryGetPkgPath(beginPath: string) {
+  beginPath = normalizePath(beginPath)
+
+  if (pkgPathCache.has(beginPath)) {
+    return pkgPathCache.get(beginPath)
+  }
+
+  const pkgPath = resolve(beginPath, 'package.json')
+
+  if (existsSync(pkgPath)) {
+    pkgPathCache.set(beginPath, pkgPath)
+
+    return pkgPath
+  }
+
+  const parentDir = normalizePath(dirname(beginPath))
+
+  if (!parentDir || parentDir === beginPath) {
+    pkgPathCache.set(beginPath, undefined)
+
+    return
+  }
+
+  return tryGetPkgPath(parentDir)
+}
