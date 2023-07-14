@@ -44,15 +44,11 @@ export function rollupDeclarationFiles({
         tsconfigFilePath: configPath,
         overrideTsconfig: {
           $schema: 'http://json.schemastore.org/tsconfig',
-          compilerOptions: {
-            ...compilerOptions,
-            target: 'ESNext'
-          }
+          compilerOptions
         }
       },
       apiReport: {
-        enabled: false,
-        reportFileName: '<unscopedPackageName>.api.md'
+        enabled: false
       },
       docModel: {
         enabled: false
