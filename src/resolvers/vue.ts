@@ -35,7 +35,7 @@ export function VueResolver(): Resolver {
       if (!program.getCompilerOptions().declarationMap) return outputs
 
       const [beforeScript] = code.split(/\s*<script.*>/)
-      const beforeLines = Math.max(beforeScript.split('\n').length - 1, 0)
+      const beforeLines = beforeScript.split('\n').length
 
       for (const output of outputs) {
         if (output.path.endsWith('.map')) {
@@ -46,7 +46,7 @@ export function VueResolver(): Resolver {
               source.replace(/\.vue\.ts$/, '.vue')
             )
 
-            if (beforeLines) {
+            if (beforeScript && beforeScript !== code && beforeLines) {
               sourceMap.mappings = `${base64VLQEncode([0, 0, beforeLines, 0])};${
                 sourceMap.mappings
               }`

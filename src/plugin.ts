@@ -484,6 +484,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         Array.from(outputFiles.entries()),
         async ([path, content]) => {
           const isMapFile = path.endsWith('.map')
+          const baseDir = dirname(path)
 
           if (!isMapFile && content) {
             content = clearPureImport ? removePureImport(content) : content
@@ -496,6 +497,19 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
           )
           content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
+
+          if (isMapFile) {
+            try {
+              const sourceMap: { sources: string[] } = JSON.parse(content)
+
+              sourceMap.sources = sourceMap.sources.map(source => {
+                return normalizePath(relative(dirname(path), resolve(baseDir, source)))
+              })
+              content = JSON.stringify(sourceMap)
+            } catch (e) {
+              logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
+            }
+          }
 
           await writeOutput(path, content, outDir)
         }
@@ -617,8 +631,27 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           const relativePath = relative(outDir, wroteFile)
 
           await Promise.all(
-            extraOutDirs.map(async outDir => {
-              await writeOutput(resolve(outDir, relativePath), content, outDir, false)
+            extraOutDirs.map(async targetOutDir => {
+              const path = resolve(targetOutDir, relativePath)
+
+              if (wroteFile.endsWith('.map')) {
+                const relativeOutDir = relative(outDir, targetOutDir)
+
+                if (relativeOutDir) {
+                  try {
+                    const sourceMap: { sources: string[] } = JSON.parse(content)
+
+                    sourceMap.sources = sourceMap.sources.map(source => {
+                      return normalizePath(relative(relativeOutDir, source))
+                    })
+                    content = JSON.stringify(sourceMap)
+                  } catch (e) {
+                    logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
+                  }
+                }
+              }
+
+              await writeOutput(path, content, targetOutDir, false)
             })
           )
         })
