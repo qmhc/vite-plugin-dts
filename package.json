@@ -55,7 +55,6 @@
   "dependencies": {
     "@microsoft/api-extractor": "^7.36.0",
     "@rollup/pluginutils": "^5.0.2",
-    "@rushstack/node-core-library": "^3.59.4",
     "@vue/language-core": "^1.8.1",
     "debug": "^4.3.4",
     "kolorist": "^1.8.0",
@@ -96,10 +95,12 @@
     "vitest": "^0.32.2"
   },
   "peerDependencies": {
-    "typescript": "*"
-  },
-  "optionalDependencies": {
-    "rollup": "*",
+    "typescript": "*",
     "vite": "*"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   }
 }

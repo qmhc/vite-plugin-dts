@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "tslib": "^2.5.3",
+    "typescript": "5.0.4",
     "vite": "^4.3.9"
   }
 }
