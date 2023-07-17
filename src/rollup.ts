@@ -48,7 +48,8 @@ export function rollupDeclarationFiles({
         }
       },
       apiReport: {
-        enabled: false
+        enabled: false,
+        reportFileName: '<unscopedPackageName>.api.md'
       },
       docModel: {
         enabled: false
