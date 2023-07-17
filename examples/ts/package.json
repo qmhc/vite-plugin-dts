@@ -7,6 +7,7 @@
   "scripts": {
     "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
   },
+  "types": "dist/ts-test.d.ts",
   "devDependencies": {
     "tslib": "^2.5.3",
     "typescript": "5.0.4",

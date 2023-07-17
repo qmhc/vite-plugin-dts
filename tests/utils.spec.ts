@@ -13,7 +13,8 @@ import {
   isRegExp,
   mergeObjects,
   normalizePath,
-  queryPublicPath
+  queryPublicPath,
+  toCapitalCase
 } from '../src/utils'
 
 describe('utils tests', () => {
@@ -148,5 +149,19 @@ describe('utils tests', () => {
     for (let i = 0, len = snapshots.length; i < len; ++i) {
       expect(base64VLQEncode([i - 255])).toEqual(snapshots[i])
     }
+  })
+
+  it('test: toCapitalCase', () => {
+    expect(toCapitalCase('abc')).toEqual('Abc')
+    expect(toCapitalCase('aa-bb-cc')).toEqual('AaBbCc')
+    expect(toCapitalCase('aa_bb_cc')).toEqual('Aa_bb_cc')
+    expect(toCapitalCase('_aa-bb-cc')).toEqual('_aaBbCc')
+    expect(toCapitalCase('aa--bb')).toEqual('AaBb')
+    expect(toCapitalCase('aa bb cc')).toEqual('AaBbCc')
+    expect(toCapitalCase('aa -bb- cc')).toEqual('AaBbCc')
+    expect(toCapitalCase(' aa bb cc')).toEqual('AaBbCc')
+    expect(toCapitalCase(' aa bb cc ')).toEqual('AaBbCc')
+    expect(toCapitalCase('-aa bb cc ')).toEqual('AaBbCc')
+    expect(toCapitalCase(' -aa bb cc -')).toEqual('AaBbCc')
   })
 })

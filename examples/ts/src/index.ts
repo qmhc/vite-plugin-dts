@@ -15,6 +15,7 @@ export { manualDts } from './manual-dts'
 export { ParametersTest, test, method } from './test'
 
 export { data }
+export default data
 
 export type { User } from './types'
 export type { AliasType } from '@alias/type'

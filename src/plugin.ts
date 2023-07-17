@@ -28,6 +28,7 @@ import {
   removeDirIfEmpty,
   resolve,
   runParallel,
+  toCapitalCase,
   tryGetPkgPath,
   wrapPromise
 } from './utils'
@@ -289,7 +290,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       host = ts.createCompilerHost(compilerOptions, true)
       program = createProgram({ host, rootNames, options: compilerOptions })
 
-      libName = libName || '_default'
+      libName = toCapitalCase(libName || '_default')
       indexName = indexName || defaultIndex
 
       const maybeEmitted = (sourceFile: ts.SourceFile) => {

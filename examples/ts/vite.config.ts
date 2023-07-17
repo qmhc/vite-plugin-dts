@@ -15,7 +15,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
-      name: 'Test',
+      name: 'ts-test',
       formats: ['es']
     }
   },
@@ -26,8 +26,8 @@ export default defineConfig({
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],
       staticImport: true,
-      rollupTypes: true,
-      insertTypesEntry: true
+      // insertTypesEntry: true,
+      rollupTypes: true
     })
   ]
 })

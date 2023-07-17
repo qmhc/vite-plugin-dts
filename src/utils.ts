@@ -306,3 +306,19 @@ export function tryGetPkgPath(beginPath: string) {
 
   return tryGetPkgPath(parentDir)
 }
+
+type CapitalCase<T extends string> = T extends `${infer First} ${infer Rest}`
+  ? CapitalCase<`${First}-${Rest}`>
+  : T extends `${infer First}-${infer Rest}`
+    ? `${Capitalize<First>}${CapitalCase<Rest>}`
+    : Capitalize<T>
+
+export function toCapitalCase<T extends string>(value: T) {
+  value = value.trim().replace(/\s+/g, '-') as T
+  value = value.replace(/-+(\w)/g, (_, char) => (char ? char.toUpperCase() : '')) as T
+
+  return (value.charAt(0).toLocaleUpperCase() + value.slice(1)).replace(
+    /[^\w]/g,
+    ''
+  ) as CapitalCase<T>
+}
