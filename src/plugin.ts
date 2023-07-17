@@ -417,7 +417,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     async writeBundle() {
-      if (!program || bundled) return
+      if (!host || !program || bundled) return
 
       bundled = true
       bundleDebug('begin writeBundle')
@@ -480,6 +480,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       bundleDebug('emit output patch')
 
+      const currentDir = host.getCurrentDirectory()
+
       await runParallel(
         cpus().length,
         Array.from(outputFiles.entries()),
@@ -504,7 +506,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               const sourceMap: { sources: string[] } = JSON.parse(content)
 
               sourceMap.sources = sourceMap.sources.map(source => {
-                return normalizePath(relative(dirname(path), resolve(baseDir, source)))
+                return normalizePath(
+                  relative(
+                    dirname(path),
+                    resolve(currentDir, relative(publicRoot, baseDir), source)
+                  )
+                )
               })
               content = JSON.stringify(sourceMap)
             } catch (e) {
