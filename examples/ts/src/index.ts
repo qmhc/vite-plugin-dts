@@ -8,7 +8,7 @@ export interface Test extends TestBase {
 
 export { testFn } from './comment'
 export { Decorator } from './decorator'
-export { addOne, add } from '@/js-test.js'
+export { addOne, add, jsdoc } from '@/js-test.js'
 export { ESClass } from './es-class'
 export { manualDts } from './manual-dts'
 
