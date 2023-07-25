@@ -52,7 +52,8 @@ export function rollupDeclarationFiles({
         reportFileName: '<unscopedPackageName>.api.md'
       },
       docModel: {
-        enabled: false
+        enabled: true,
+        apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json'
       },
       dtsRollup: {
         enabled: true,
