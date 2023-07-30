@@ -38,10 +38,16 @@ export default defineConfig({
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       staticImport: true,
-      // rollupTypes: true,
-      insertTypesEntry: true,
+      rollupTypes: true,
+      // insertTypesEntry: true,
       compilerOptions: {
         declarationMap: true
+      },
+      rollupConfig: {
+        docModel: {
+          enabled: true,
+          apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json'
+        }
       }
     }),
     vue(),

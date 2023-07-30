@@ -73,7 +73,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     cleanVueFileName = false,
     insertTypesEntry = false,
     rollupTypes = false,
-    bundledPackages = [],
     pathsToAliases = true,
     aliasesExclude = [],
     copyDtsFiles = false,
@@ -115,6 +114,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
+
+  const rollupConfig = { ...(options.rollupConfig || {}) }
+  rollupConfig.bundledPackages = rollupConfig.bundledPackages || options.bundledPackages || []
 
   return {
     name: 'vite:dts',
@@ -606,7 +608,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                 entryPath: path,
                 fileName: basename(path),
                 libFolder,
-                bundledPackages
+                rollupConfig
               })
 
               emittedFiles.delete(path)
@@ -621,7 +623,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               entryPath: typesPath,
               fileName: basename(typesPath),
               libFolder,
-              bundledPackages
+              rollupConfig
             })
 
             emittedFiles.delete(typesPath)

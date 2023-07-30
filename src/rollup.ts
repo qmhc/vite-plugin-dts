@@ -3,8 +3,9 @@ import { resolve } from 'node:path'
 import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
 import { tryGetPkgPath } from './utils'
 
-import type { ExtractorLogLevel } from '@microsoft/api-extractor'
 import type ts from 'typescript'
+import type { ExtractorLogLevel } from '@microsoft/api-extractor'
+import type { RollupConfig } from './types'
 
 export interface BundleOptions {
   root: string,
@@ -14,7 +15,7 @@ export interface BundleOptions {
   entryPath: string,
   fileName: string,
   libFolder?: string,
-  bundledPackages?: string[]
+  rollupConfig?: RollupConfig
 }
 
 const dtsRE = /\.d\.tsx?$/
@@ -27,7 +28,7 @@ export function rollupDeclarationFiles({
   entryPath,
   fileName,
   libFolder,
-  bundledPackages
+  rollupConfig = {}
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
 
@@ -37,9 +38,9 @@ export function rollupDeclarationFiles({
 
   const extractorConfig = ExtractorConfig.prepare({
     configObject: {
+      ...rollupConfig,
       projectFolder: root,
       mainEntryPointFilePath: entryPath,
-      bundledPackages,
       compiler: {
         tsconfigFilePath: configPath,
         overrideTsconfig: {
@@ -49,17 +50,20 @@ export function rollupDeclarationFiles({
       },
       apiReport: {
         enabled: false,
-        reportFileName: '<unscopedPackageName>.api.md'
+        reportFileName: '<unscopedPackageName>.api.md',
+        ...rollupConfig.apiReport
       },
       docModel: {
-        enabled: false
+        enabled: false,
+        ...rollupConfig.docModel
       },
       dtsRollup: {
         enabled: true,
         publicTrimmedFilePath: resolve(outDir, fileName)
       },
       tsdocMetadata: {
-        enabled: false
+        enabled: false,
+        ...rollupConfig.tsdocMetadata
       },
       messages: {
         compilerMessageReporting: {
@@ -71,7 +75,8 @@ export function rollupDeclarationFiles({
           default: {
             logLevel: 'none' as ExtractorLogLevel.None
           }
-        }
+        },
+        ...rollupConfig.messages
       }
     },
     configObjectFullPath,
