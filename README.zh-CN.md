@@ -277,6 +277,15 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
+   * 是否只输出dts产物
+   *
+   * 启用此选项将删除所有vite打包的产物，并且只会输出dts声明文件
+   *
+   * @default false
+   */
+  declarationOnly?: boolean,
+
+  /**
    * 指定插件的输出等级
    *
    * 默认基于 Vite 配置的 'logLevel' 选项

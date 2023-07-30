@@ -193,6 +193,15 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
+   * Whether to output only dts
+   *
+   * Enabling this option will delete all the original products packaged with vite and only output the dts declaration file
+   *
+   * @default false
+   */
+  declarationOnly?: boolean,
+
+  /**
    * Logging level for this plugin
    *
    * Defaults to the 'logLevel' property of your Vite config
