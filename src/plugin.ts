@@ -375,7 +375,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const sourceFile = program.getSourceFile(id)
 
         if (sourceFile) {
-          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
+          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true, true)
+            .outputFiles) {
             outputFiles.set(
               resolve(publicRoot, relative(outDir, ensureAbsolute(outputFile.name, outDir))),
               outputFile.text
