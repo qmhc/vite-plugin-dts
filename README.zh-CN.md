@@ -23,7 +23,7 @@ pnpm i vite-plugin-dts -D
 
 ## 使用
 
-在 `vite.config.ts`:
+在 `vite.config.ts`：
 
 ```ts
 import { resolve } from 'path'
@@ -41,6 +41,16 @@ export default defineConfig({
   },
   plugins: [dts()]
 })
+```
+
+默认情况，生成的类型文件会跟随源文件的结构。
+
+如果你希望将所有的类型合并到一个文件中，只需指定 `rollupTypes: true`：
+
+```ts
+{
+  plugins: [dts({ rollupTypes: true })]
+}
 ```
 
 从 `3.0.0` 开始，你可以在 Rollup 中使用该插件。

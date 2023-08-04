@@ -43,6 +43,16 @@ export default defineConfig({
 })
 ```
 
+By default, the generated declaration files are following the source structure.
+
+If you want to merge all declarations into one file, just specify `rollupTypes: true`:
+
+```ts
+{
+  plugins: [dts({ rollupTypes: true })]
+}
+```
+
 Starting with `3.0.0`, you can use this plugin with Rollup.
 
 ## FAQ
