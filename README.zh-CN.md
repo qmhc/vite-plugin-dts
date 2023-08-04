@@ -287,6 +287,15 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
+   * 是否只生成类型文件
+   *
+   * 当为 `true` 时会强制删除所有 Vite（Rollup）的原始产物
+   *
+   * @default false
+   */
+  declarationOnly?: boolean,
+
+  /**
    * 指定插件的输出等级
    *
    * 默认基于 Vite 配置的 'logLevel' 选项

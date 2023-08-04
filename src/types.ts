@@ -193,6 +193,15 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
+   * Whether to emit declaration files only
+   *
+   * When `true`, all the original outputs of vite (rollup) will be force removed
+   *
+   * @default false
+   */
+  declarationOnly?: boolean,
+
+  /**
    * Logging level for this plugin
    *
    * Defaults to the 'logLevel' property of your Vite config

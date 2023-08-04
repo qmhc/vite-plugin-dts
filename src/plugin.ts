@@ -76,6 +76,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     pathsToAliases = true,
     aliasesExclude = [],
     copyDtsFiles = false,
+    declarationOnly = false,
     strictOutput = true,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
@@ -691,6 +692,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       logger.info(
         green(`${logPrefix} Declaration files built in ${timeRecord + Date.now() - startTime}ms.\n`)
       )
+    },
+    generateBundle(_, bundle) {
+      if (declarationOnly) {
+        for (const id of Object.keys(bundle)) {
+          delete bundle[id]
+        }
+      }
     }
   }
 }
