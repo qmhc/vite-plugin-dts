@@ -695,8 +695,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
     generateBundle(_, bundle) {
       if (declarationOnly) {
-        for (const k in bundle) {
-          delete bundle[k]
+        for (const id of Object.keys(bundle)) {
+          delete bundle[id]
         }
       }
     }

@@ -287,9 +287,9 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
-   * Whether to output only dts
+   * Whether to emit declaration files only
    *
-   * Enabling this option will delete all the original products packaged with vite and only output the dts declaration file
+   * When `true`, all the original outputs of vite (rollup) will be force removed
    *
    * @default false
    */

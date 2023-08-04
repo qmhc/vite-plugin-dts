@@ -287,9 +287,9 @@ export interface PluginOptions {
   copyDtsFiles?: boolean,
 
   /**
-   * 是否只输出dts产物
+   * 是否只生成类型文件
    *
-   * 启用此选项将删除所有vite打包的产物，并且只会输出dts声明文件
+   * 当为 `true` 时会强制删除所有 Vite（Rollup）的原始产物
    *
    * @default false
    */
