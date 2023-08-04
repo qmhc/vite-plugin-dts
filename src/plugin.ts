@@ -188,11 +188,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         }
       } else {
         logger.warn(
-          yellow(
-            `\n${cyan(
-              '[vite:dts]'
-            )} You are building a library that may not need to generate declaration files.\n`
-          )
+          `\n${logPrefix} ${yellow(
+            'You are building a library that may not need to generate declaration files.'
+          )}\n`
         )
 
         libName = '_default'
@@ -547,7 +545,17 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           (pkg.exports?.['.'] || pkg.exports?.['./'])?.types
         const multiple = entryNames.length > 1
 
-        const typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
+        let typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
+
+        if (!multiple && !dtsRE.test(typesPath)) {
+          logger.warn(
+            `\n${logPrefix} ${yellow(
+              "The resolved path of type entry is not ending with '.d.ts'."
+            )}\n`
+          )
+
+          typesPath = `${typesPath.replace(tjsRE, '')}.d.${extPrefix(typesPath)}ts`
+        }
 
         for (const name of entryNames) {
           const path = multiple ? resolve(outDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
