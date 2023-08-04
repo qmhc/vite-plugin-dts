@@ -98,7 +98,7 @@ export function transformAliasImport(
   aliases: Alias[],
   exclude: (string | RegExp)[] = []
 ) {
-  if (!aliases.length) return content
+  if (!aliases?.length) return content
 
   return content.replace(globalImportRE, str => {
     let matchResult = str.match(staticImportRE)
