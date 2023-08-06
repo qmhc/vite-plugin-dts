@@ -246,7 +246,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         ...(content?.options || {}),
         ...(options.compilerOptions || {}),
         ...fixedCompilerOptions,
-        outDir: '.'
+        outDir: '.',
+        declarationDir: '.'
       }
       rawCompilerOptions = content?.raw.compilerOptions || {}
 
