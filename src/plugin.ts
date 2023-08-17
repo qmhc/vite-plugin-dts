@@ -21,6 +21,7 @@ import {
 import {
   ensureAbsolute,
   ensureArray,
+  fileTypesPath,
   isNativeObj,
   isRegExp,
   normalizePath,
@@ -538,12 +539,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         } catch (e) {}
 
         const entryNames = Object.keys(entries)
-        const types =
-          pkg.types ||
-          pkg.typings ||
-          pkg.publishConfig?.types ||
-          pkg.publishConfig?.typings ||
-          (pkg.exports?.['.'] || pkg.exports?.['./'])?.types
+        const types = fileTypesPath(pkg.publishConfig, pkg)
         const multiple = entryNames.length > 1
 
         let typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
