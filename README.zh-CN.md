@@ -231,7 +231,7 @@ export interface PluginOptions {
   /**
    * 手动设置排除路径的 glob
    *
-   * 默认基于 tsconfig.json 的 `exclude` 选线，未设置时为 `'node_module/**'`
+   * 默认基于 tsconfig.json 的 `exclude` 选线，未设置时为 `'node_modules/**'`
    */
   exclude?: string | string[],
 
