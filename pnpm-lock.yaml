@@ -1,12 +1,21 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+patchedDependencies:
+  '@microsoft/api-extractor@7.36.4':
+    hash: euowp2yvqs26f55373vaqnab3e
+    path: patches/@microsoft__api-extractor@7.36.4.patch
+
 importers:
 
   .:
     dependencies:
       '@microsoft/api-extractor':
         specifier: ^7.36.4
-        version: 7.36.4(@types/node@20.4.10)
+        version: 7.36.4(patch_hash=euowp2yvqs26f55373vaqnab3e)(@types/node@20.4.10)
       '@rollup/pluginutils':
         specifier: ^5.0.2
         version: 5.0.2(rollup@3.25.2)
@@ -1455,7 +1464,7 @@ packages:
       - '@types/node'
     dev: false
 
-  /@microsoft/api-extractor@7.36.4(@types/node@20.4.10):
+  /@microsoft/api-extractor@7.36.4(patch_hash=euowp2yvqs26f55373vaqnab3e)(@types/node@20.4.10):
     resolution: {integrity: sha512-21UECq8C/8CpHT23yiqTBQ10egKUacIpxkPyYR7hdswo/M5yTWdBvbq+77YC9uPKQJOUfOD1FImBQ1DzpsdeQQ==}
     hasBin: true
     dependencies:
@@ -1474,6 +1483,7 @@ packages:
     transitivePeerDependencies:
       - '@types/node'
     dev: false
+    patched: true
 
   /@microsoft/tsdoc-config@0.16.2:
     resolution: {integrity: sha512-OGiIzzoBLgWWR0UdRJX98oYO+XKGf7tiK4Zk6tQ/E4IJqGCe7dvkTvgDZV5cFJUzLGDOjeAXrnZoA6QkVySuxw==}

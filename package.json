@@ -99,5 +99,10 @@
     "vite": {
       "optional": true
     }
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@microsoft/api-extractor@7.36.4": "patches/@microsoft__api-extractor@7.36.4.patch"
+    }
   }
 }
