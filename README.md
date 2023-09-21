@@ -222,9 +222,9 @@ export interface PluginOptions {
   staticImport?: boolean,
 
   /**
-   * Override `include` glob
+   * Override `include` glob (relative to root)
    *
-   * Defaults to `include` property of tsconfig.json
+   * Defaults to `include` property of tsconfig.json (relative to tsconfig.json located)
    */
   include?: string | string[],
 

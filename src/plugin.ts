@@ -278,12 +278,24 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         }
       }
 
-      include = ensureArray(options.include ?? content?.raw.include ?? '**/*').map(normalizeGlob)
-      exclude = ensureArray(options.exclude ?? content?.raw.exclude ?? 'node_modules/**').map(
-        normalizeGlob
-      )
+      const computeGlobs = (
+        rootGlobs: string | string[] | undefined,
+        tsGlobs: string | string[] | undefined,
+        defaultGlob: string | string[]
+      ) => {
+        if (rootGlobs?.length) {
+          return ensureArray(rootGlobs).map(glob => normalizeGlob(ensureAbsolute(glob, root)))
+        }
 
-      filter = createFilter(include, exclude, { resolve: root })
+        return ensureArray(tsGlobs?.length ? tsGlobs : defaultGlob).map(glob =>
+          normalizeGlob(ensureAbsolute(glob, configPath ? dirname(configPath) : root))
+        )
+      }
+
+      include = computeGlobs(options.include, content?.raw.include, '**/*')
+      exclude = computeGlobs(options.exclude, content?.raw.exclude, 'node_modules/**')
+
+      filter = createFilter(include, exclude)
 
       const rootNames = Object.values(entries)
         .map(entry => ensureAbsolute(entry, root))

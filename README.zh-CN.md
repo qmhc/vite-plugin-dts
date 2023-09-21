@@ -222,9 +222,9 @@ export interface PluginOptions {
   staticImport?: boolean,
 
   /**
-   * 手动设置包含路径的 glob
+   * 手动设置包含路径的 glob（相对于 root）
    *
-   * 默认基于 tsconfig.json 的 `include` 选项
+   * 默认基于 tsconfig.json 的 `include` 选项（相对于 tsconfig.json 所在目录）
    */
   include?: string | string[],
 
