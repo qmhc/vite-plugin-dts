@@ -4,7 +4,7 @@ import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
 import { tryGetPkgPath } from './utils'
 
 import type ts from 'typescript'
-import type { ExtractorLogLevel } from '@microsoft/api-extractor'
+import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { RollupConfig } from './types'
 
 export interface BundleOptions {
@@ -15,7 +15,8 @@ export interface BundleOptions {
   entryPath: string,
   fileName: string,
   libFolder?: string,
-  rollupConfig?: RollupConfig
+  rollupConfig?: RollupConfig,
+  rollupOptions?: IExtractorInvokeOptions
 }
 
 const dtsRE = /\.d\.tsx?$/
@@ -28,7 +29,8 @@ export function rollupDeclarationFiles({
   entryPath,
   fileName,
   libFolder,
-  rollupConfig = {}
+  rollupConfig = {},
+  rollupOptions = {}
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
 
@@ -87,7 +89,8 @@ export function rollupDeclarationFiles({
     localBuild: false,
     showVerboseMessages: false,
     showDiagnostics: false,
-    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined
+    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined,
+    ...rollupOptions
   })
 
   return result.succeeded

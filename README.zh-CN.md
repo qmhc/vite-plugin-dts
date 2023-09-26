@@ -90,7 +90,7 @@ export default defineConfig({
 
 ```ts
 import type ts from 'typescript'
-import type { IExtractorConfigPrepareOptions } from '@microsoft/api-extractor'
+import type { IExtractorConfigPrepareOptions, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
@@ -277,6 +277,14 @@ export interface PluginOptions {
    * @see https://api-extractor.com/pages/setup/configure_api_report/
    */
   rollupConfig?: RollupConfig,
+
+  /**
+   * 覆写 `@microsoft/api-extractor` 的调用选项
+   *
+   * @default null
+   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+   */
+  rollupOptions?: IExtractorInvokeOptions,
 
   /**
    * 是否将源码里的 .d.ts 文件复制到 `outDir`

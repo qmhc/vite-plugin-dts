@@ -90,7 +90,7 @@ This is an existing [TypeScript issue](https://github.com/microsoft/TypeScript/i
 
 ```ts
 import type ts from 'typescript'
-import type { IExtractorConfigPrepareOptions } from '@microsoft/api-extractor'
+import type { IExtractorConfigPrepareOptions, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
@@ -277,6 +277,14 @@ export interface PluginOptions {
    * @see https://api-extractor.com/pages/setup/configure_api_report/
    */
   rollupConfig?: RollupConfig,
+
+  /**
+   * Override the invoke options of `@microsoft/api-extractor`
+   *
+   * @default null
+   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+   */
+  rollupOptions?: IExtractorInvokeOptions,
 
   /**
    * Whether to copy .d.ts source files to `outDir`
