@@ -1,3 +1,10 @@
+## [3.6.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.0...v3.6.1) (2023-10-24)
+
+### Bug Fixes
+
+- ensure `moduleResolution` option in compilerOptions ([01528a4](https://github.com/qmhc/vite-plugin-dts/commit/01528a45050ecae81ff2b2a836839e0e3d468824)), closes [#277](https://github.com/qmhc/vite-plugin-dts/issues/277)
+- ensure `rollupTypes` work with `cleanVueFileName` ([261f7bc](https://github.com/qmhc/vite-plugin-dts/commit/261f7bc9579787c7a09dbeef4ef5eb60905a0b8c)), closes [#276](https://github.com/qmhc/vite-plugin-dts/issues/276)
+
 # [3.6.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.5.4...v3.6.0) (2023-09-26)
 
 ### Features
