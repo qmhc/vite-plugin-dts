@@ -510,6 +510,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       bundleDebug('emit output patch')
 
       const currentDir = host.getCurrentDirectory()
+      const vuePathRE = /['"](.+)\.vue['"]/g
 
       await runParallel(
         cpus().length,
@@ -528,7 +529,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             outDir,
             relative(entryRoot, cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path)
           )
-          content = cleanVueFileName ? content.replace(/['"](.+)\.vue['"]/g, '"$1"') : content
+          content = cleanVueFileName ? content.replace(vuePathRE, '"$1"') : content
 
           if (isMapFile) {
             try {
@@ -567,7 +568,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const types = fileTypesPath(pkg.publishConfig, pkg)
         const multiple = entryNames.length > 1
 
-        let typesPath = types ? resolve(root, types) : resolve(outDir, indexName)
+        const cleanPath = (path: string) => {
+          return cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path
+        }
+
+        let typesPath = cleanPath(types ? resolve(root, types) : resolve(outDir, indexName))
 
         if (!multiple && !dtsRE.test(typesPath)) {
           logger.warn(
@@ -580,13 +585,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         }
 
         for (const name of entryNames) {
-          const path = multiple ? resolve(outDir, `${name.replace(tsRE, '')}.d.ts`) : typesPath
+          const path = multiple
+            ? cleanPath(resolve(outDir, `${name.replace(tsRE, '')}.d.ts`))
+            : typesPath
 
           if (existsSync(path)) continue
 
-          const index = resolve(
-            outDir,
-            relative(entryRoot, `${entries[name].replace(tsRE, '')}.d.ts`)
+          const index = cleanPath(
+            resolve(outDir, relative(entryRoot, `${entries[name].replace(tsRE, '')}.d.ts`))
           )
 
           let fromPath = normalizePath(relative(dirname(path), index))
@@ -604,7 +610,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             }
           }
 
-          await writeOutput(path, content, outDir)
+          await writeOutput(cleanPath(path), content, outDir)
         }
 
         bundleDebug('insert index')
@@ -628,7 +634,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           if (multiple) {
             for (const name of entryNames) {
-              const path = resolve(outDir, `${name.replace(tsRE, '')}.d.ts`)
+              const path = cleanPath(resolve(outDir, `${name.replace(tsRE, '')}.d.ts`))
 
               rollupDeclarationFiles({
                 root,
