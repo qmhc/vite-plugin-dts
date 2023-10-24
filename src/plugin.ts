@@ -245,6 +245,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         : undefined
 
       compilerOptions = {
+        // (#277) If user don't specify `moduleResolution` in top config file,
+        // declaration of Vue files will be inferred to `any` type.
+        moduleResolution: ts.ModuleResolutionKind.Node10,
         ...(content?.options || {}),
         ...(options.compilerOptions || {}),
         ...fixedCompilerOptions,
@@ -298,13 +301,22 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       filter = createFilter(include, exclude)
 
-      const rootNames = Object.values(entries)
-        .map(entry => ensureAbsolute(entry, root))
-        .concat(content?.fileNames.filter(filter) || [])
-        .map(normalizePath)
+      const rootNames = [
+        ...new Set(
+          Object.values(entries)
+            .map(entry => ensureAbsolute(entry, root))
+            .concat(content?.fileNames.filter(filter) || [])
+            .map(normalizePath)
+        )
+      ]
 
-      host = ts.createCompilerHost(compilerOptions, true)
-      program = createProgram({ host, rootNames, options: compilerOptions })
+      host = ts.createCompilerHost(compilerOptions)
+      program = createProgram({
+        host,
+        rootNames,
+        projectReferences: content?.projectReferences,
+        options: compilerOptions
+      })
 
       libName = toCapitalCase(libName || '_default')
       indexName = indexName || defaultIndex
