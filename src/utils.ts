@@ -323,7 +323,7 @@ export function toCapitalCase<T extends string>(value: T) {
   ) as CapitalCase<T>
 }
 
-export function fileTypesPath(...pkgs: Record<any, any>[]) {
+export function findTypesPath(...pkgs: Record<any, any>[]) {
   let path: string
 
   for (const pkg of pkgs) {

@@ -21,7 +21,7 @@ import {
 import {
   ensureAbsolute,
   ensureArray,
-  fileTypesPath,
+  findTypesPath,
   isNativeObj,
   isRegExp,
   normalizePath,
@@ -169,10 +169,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             : config.build.lib.entry
 
         if (Array.isArray(input)) {
-          entries = input.reduce((prev, current) => {
-            prev[basename(current)] = current
-            return prev
-          }, {} as Record<string, string>)
+          entries = input.reduce(
+            (prev, current) => {
+              prev[basename(current)] = current
+              return prev
+            },
+            {} as Record<string, string>
+          )
         } else {
           entries = { ...input }
         }
@@ -213,10 +216,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const input = typeof options.input === 'string' ? [options.input] : options.input
 
       if (Array.isArray(input)) {
-        entries = input.reduce((prev, current) => {
-          prev[basename(current)] = current
-          return prev
-        }, {} as Record<string, string>)
+        entries = input.reduce(
+          (prev, current) => {
+            prev[basename(current)] = current
+            return prev
+          },
+          {} as Record<string, string>
+        )
       } else {
         entries = { ...input }
       }
@@ -314,7 +320,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       program = createProgram({
         host,
         rootNames,
-        projectReferences: content?.projectReferences,
         options: compilerOptions
       })
 
@@ -565,7 +570,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         } catch (e) {}
 
         const entryNames = Object.keys(entries)
-        const types = fileTypesPath(pkg.publishConfig, pkg)
+        const types = findTypesPath(pkg.publishConfig, pkg)
         const multiple = entryNames.length > 1
 
         const cleanPath = (path: string) => {
