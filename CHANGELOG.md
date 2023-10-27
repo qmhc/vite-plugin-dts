@@ -1,3 +1,9 @@
+## [3.6.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.1...v3.6.2) (2023-10-27)
+
+### Bug Fixes
+
+- remove passing projectReferences to program ([fc1209c](https://github.com/qmhc/vite-plugin-dts/commit/fc1209c42b9ce2fc0ad4d8227c2cd594500e95f0)), closes [#279](https://github.com/qmhc/vite-plugin-dts/issues/279)
+
 ## [3.6.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.0...v3.6.1) (2023-10-24)
 
 ### Bug Fixes
