@@ -1,7 +1,7 @@
 import { resolve as _resolve, dirname, isAbsolute, normalize, posix, sep } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 
-import typescript from 'typescript'
+import ts from 'typescript'
 
 import type { CompilerOptions } from 'typescript'
 
@@ -212,7 +212,7 @@ export function getTsConfig(
     extends?: string | string[]
   } = {
     compilerOptions: {},
-    ...(typescript.readConfigFile(tsConfigPath, readFileSync).config ?? {})
+    ...(ts.readConfigFile(tsConfigPath, readFileSync).config ?? {})
   }
 
   if (tsConfig.extends) {
@@ -333,4 +333,36 @@ export function findTypesPath(...pkgs: Record<any, any>[]) {
 
     if (path) return path
   }
+}
+
+export function setModuleResolution(options: CompilerOptions) {
+  if (options.moduleResolution) return
+
+  const module =
+    typeof options.module === 'number'
+      ? options.module
+      : options.target ?? ts.ScriptTarget.ES5 >= 2
+        ? ts.ModuleKind.ES2015
+        : ts.ModuleKind.CommonJS
+
+  let moduleResolution: ts.ModuleResolutionKind
+
+  switch (module) {
+    case ts.ModuleKind.CommonJS:
+      moduleResolution = ts.ModuleResolutionKind.Node10
+      break
+    case ts.ModuleKind.Node16:
+      moduleResolution = ts.ModuleResolutionKind.Node16
+      break
+    case ts.ModuleKind.NodeNext:
+      moduleResolution = ts.ModuleResolutionKind.NodeNext
+      break
+    default:
+      moduleResolution = ts.version.startsWith('5')
+        ? ts.ModuleResolutionKind.Bundler
+        : ts.ModuleResolutionKind.Classic
+      break
+  }
+
+  options.moduleResolution = moduleResolution
 }

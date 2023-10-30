@@ -29,6 +29,7 @@ import {
   removeDirIfEmpty,
   resolve,
   runParallel,
+  setModuleResolution,
   toCapitalCase,
   tryGetPkgPath,
   wrapPromise
@@ -251,9 +252,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         : undefined
 
       compilerOptions = {
-        // (#277) If user don't specify `moduleResolution` in top config file,
-        // declaration of Vue files will be inferred to `any` type.
-        moduleResolution: ts.ModuleResolutionKind.Node10,
         ...(content?.options || {}),
         ...(options.compilerOptions || {}),
         ...fixedCompilerOptions,
@@ -261,6 +259,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         declarationDir: '.'
       }
       rawCompilerOptions = content?.raw.compilerOptions || {}
+
+      if (content?.fileNames.find(name => name.endsWith('.vue'))) {
+        // (#277) A patch for Vue
+        // If user don't specify `moduleResolution` in top config file,
+        // declaration of Vue files will be inferred to `any` type.
+        setModuleResolution(compilerOptions)
+      }
 
       if (!outDirs) {
         outDirs = options.outDir
