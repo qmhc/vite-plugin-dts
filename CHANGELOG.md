@@ -1,3 +1,9 @@
+## [3.6.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.2...v3.6.3) (2023-10-30)
+
+### Bug Fixes
+
+- make inject moduleResolution as patch for Vue ([a6f12dc](https://github.com/qmhc/vite-plugin-dts/commit/a6f12dcb52d10941c41a67ca18a3da01d57a4fda)), closes [#280](https://github.com/qmhc/vite-plugin-dts/issues/280)
+
 ## [3.6.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.1...v3.6.2) (2023-10-27)
 
 ### Bug Fixes
