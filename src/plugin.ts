@@ -13,6 +13,7 @@ import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import {
+  hasExportDefault,
   normalizeGlob,
   removePureImport,
   transformAliasImport,
@@ -612,12 +613,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           let content = `export * from '${fromPath}'\n`
 
-          if (existsSync(index)) {
-            const entryCodes = await readFile(index, 'utf-8')
-
-            if (entryCodes.includes('export default')) {
-              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
-            }
+          if (existsSync(index) && hasExportDefault(await readFile(index, 'utf-8'))) {
+            content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
           }
 
           await writeOutput(cleanPath(path), content, outDir)

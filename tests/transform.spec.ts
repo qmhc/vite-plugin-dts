@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
+  hasExportDefault,
   normalizeGlob,
   removePureImport,
   transformAliasImport,
@@ -92,5 +93,22 @@ describe('transform tests', () => {
     expect(
       removePureImport('import "@/themes/common.scss";\nimport type { Ref } from "vue";')
     ).toEqual('import type { Ref } from "vue";')
+  })
+
+  it('test: hasExportDefault', () => {
+    expect(hasExportDefault("export { sdk as default } from './sdk'")).toBe(true)
+    expect(hasExportDefault("export { foo, sdk as default } from './sdk'")).toBe(true)
+    expect(hasExportDefault("export { sdk as default, baz } from './sdk'")).toBe(true)
+    expect(hasExportDefault("export { foo, sdk as default, baz } from './sdk'")).toBe(true)
+    expect(hasExportDefault("export { foo as sdk, sdk as default, baz } from './sdk'")).toBe(true)
+    expect(hasExportDefault('export { sdk as default } from "./sdk"')).toBe(true)
+    expect(hasExportDefault("export {sdk as default} from './sdk'")).toBe(true)
+    expect(hasExportDefault("export{sdk as default}from'./sdk'")).toBe(true)
+    expect(hasExportDefault("export { sdk  as  default } from './sdk'")).toBe(true)
+    expect(hasExportDefault("export { sdk } from './sdk'")).toBe(false)
+    expect(hasExportDefault("export { foo, sdk } from './sdk'")).toBe(false)
+    expect(hasExportDefault("export { foo as baz, sdk } from './sdk'")).toBe(false)
+    expect(hasExportDefault("export { as default } from './sdk'")).toBe(false)
+    expect(hasExportDefault("export { sdkas default } from './sdk'")).toBe(false)
   })
 })

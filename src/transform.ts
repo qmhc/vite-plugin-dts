@@ -159,3 +159,9 @@ export function transferSetupPosition(content: string) {
 
   return content
 }
+
+const asDefaultRE = /export\s*\{.*\w+\s*\bas\s+default\b.*\}\s*from\s*['"].+['"]/
+
+export function hasExportDefault(content: string) {
+  return content.includes('export default') || asDefaultRE.test(content)
+}
