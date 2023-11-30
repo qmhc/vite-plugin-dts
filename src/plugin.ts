@@ -357,7 +357,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const diagnostics = program.getDeclarationDiagnostics()
 
       if (diagnostics?.length) {
-        logger.error(ts.formatDiagnostics(diagnostics, host))
+        logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
       }
 
       if (typeof afterDiagnostic === 'function') {
