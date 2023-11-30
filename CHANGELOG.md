@@ -1,3 +1,10 @@
+## [3.6.4](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.3...v3.6.4) (2023-11-30)
+
+### Bug Fixes
+
+- should match `as default` export syntax ([6e2d16d](https://github.com/qmhc/vite-plugin-dts/commit/6e2d16dadf5ef90002e9f26ece14cf4e3d587db9)), closes [#285](https://github.com/qmhc/vite-plugin-dts/issues/285)
+- using more noticeable diagnostics log ([4ad9a81](https://github.com/qmhc/vite-plugin-dts/commit/4ad9a810d0f42cefc489d2754638baf8cf5f9919))
+
 ## [3.6.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.2...v3.6.3) (2023-10-30)
 
 ### Bug Fixes
