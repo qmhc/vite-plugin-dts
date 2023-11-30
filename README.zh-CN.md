@@ -59,18 +59,6 @@ export default defineConfig({
 
 此处将收录一些常见的问题并提供一些解决方案。
 
-### 打包后出现类型文件缺失 (`1.7.0` 之前)
-
-默认情况下 `skipDiagnostics` 选项的值为 `true`，这意味着打包过程中将跳过类型检查（一些项目通常有 `vue-tsc` 等的类型检查工具），这时如果出现存在类型错误的文件，并且这是错误会中断打包过程，那么这些文件对应的类型文件将不会被生成。
-
-如果您的项目没有依赖外部的类型检查工具，这时候可以您可以设置 `skipDiagnostics: false` 和 `logDiagnostics: true` 来打开插件的诊断与输出功能，这将帮助您检查打包过程中出现的类型错误并将错误信息输出至终端。
-
-### Vue 组件中同时使用了 `script` 和 `setup-script` 后出现类型错误（`3.0.0` 之前）
-
-这通常是由于分别在 `script` 和 `setup-script` 中同时使用了 `defineComponent` 方法导致的。 `vue/compiler-sfc` 为这类文件编译时会将 `script` 中的默认导出结果合并到 `setup-script` 的 `defineComponent` 的参数定义中，而 `defineComponent` 的参数类型与结果类型并不兼容，这一行为将会导致类型错误。
-
-这是一个简单的[示例](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue)，您应该将位于 `script` 中的 `defineComponent` 方法移除，直接导出一个原始的对象。
-
 ### 打包时出现了无法从 `node_modules` 的包中推断类型的错误
 
 这是 TypeScript 通过软链接 (pnpm) 读取 `node_modules` 中过的类型时会出现的一个已知的问题，可以参考这个 [issue](https://github.com/microsoft/TypeScript/issues/42873)，目前已有的一个解决方案，在你的 `tsconfig.json` 中添加 `baseUrl` 以及在 `paths` 添加这些包的路径：
@@ -95,6 +83,23 @@ export default defineConfig({
 例如：指定了 `baseUrl: 'src'` 并且在 `<root>/src/index.ts` 中引入 `<root>/src/components/index.ts` 时使用了 `import 'components'` 而不是 `import './components'`。
 
 目前想要正常打包，需要规避上述情况，或使用别名代替（配合 `paths` 属性）。
+
+<details>
+  <summary>过时的</summary>
+
+### 打包后出现类型文件缺失 (`1.7.0` 之前)
+
+默认情况下 `skipDiagnostics` 选项的值为 `true`，这意味着打包过程中将跳过类型检查（一些项目通常有 `vue-tsc` 等的类型检查工具），这时如果出现存在类型错误的文件，并且这是错误会中断打包过程，那么这些文件对应的类型文件将不会被生成。
+
+如果您的项目没有依赖外部的类型检查工具，这时候可以您可以设置 `skipDiagnostics: false` 和 `logDiagnostics: true` 来打开插件的诊断与输出功能，这将帮助您检查打包过程中出现的类型错误并将错误信息输出至终端。
+
+### Vue 组件中同时使用了 `script` 和 `setup-script` 后出现类型错误（`3.0.0` 之前）
+
+这通常是由于分别在 `script` 和 `setup-script` 中同时使用了 `defineComponent` 方法导致的。 `vue/compiler-sfc` 为这类文件编译时会将 `script` 中的默认导出结果合并到 `setup-script` 的 `defineComponent` 的参数定义中，而 `defineComponent` 的参数类型与结果类型并不兼容，这一行为将会导致类型错误。
+
+这是一个简单的[示例](https://github.com/qmhc/vite-plugin-dts/blob/main/example/components/BothScripts.vue)，您应该将位于 `script` 中的 `defineComponent` 方法移除，直接导出一个原始的对象。
+
+</details>
 
 ## 选项
 

@@ -59,18 +59,6 @@ Starting with `3.0.0`, you can use this plugin with Rollup.
 
 Here are some FAQ's and solutions.
 
-### Missing some declaration files after build (before `1.7.0`)
-
-By default, the `skipDiagnostics` option is set to `true` which means type diagnostics will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). Files with type errors which interrupt the build process will not be emitted (declaration files won't be generated).
-
-If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. Type errors during build will be logged to the terminal.
-
-### Type error when using both `script` and `setup-script` in Vue component (before `3.0.0`)
-
-This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`. This results in a type error.
-
-Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue). You should remove the `defineComponent` in `script` and export a native object directly.
-
 ### Type errors that are unable to infer types from packages in `node_modules`
 
 This is an existing [TypeScript issue](https://github.com/microsoft/TypeScript/issues/42873) where TypeScript infers types from packages located in `node_modules` through soft links (pnpm). A workaround is to add `baseUrl` to your `tsconfig.json` and specify the `paths` for these packages:
@@ -95,6 +83,23 @@ The main reason is that `baseUrl` is specified in `tsconfig.json` and non-standa
 For example: `baseUrl: 'src'` is specified and importing from `<root>/src/components/index.ts` in `<root>/src/index.ts`, and `import 'components'` is used instead of `import './components'`.
 
 Currently, you need to avoid the above situation, or use aliases instead (with the `paths` option).
+
+<details>
+  <summary>Legacy</summary>
+
+### Missing some declaration files after build (before `1.7.0`)
+
+By default, the `skipDiagnostics` option is set to `true` which means type diagnostics will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). Files with type errors which interrupt the build process will not be emitted (declaration files won't be generated).
+
+If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. Type errors during build will be logged to the terminal.
+
+### Type error when using both `script` and `setup-script` in Vue component (before `3.0.0`)
+
+This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`. This results in a type error.
+
+Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue). You should remove the `defineComponent` in `script` and export a native object directly.
+
+</details>
 
 ## Options
 
