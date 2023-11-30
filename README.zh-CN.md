@@ -86,6 +86,16 @@ export default defineConfig({
 }
 ```
 
+### 在 `rollupTypes: true` 时出现 `Internal Error`
+
+参考这个 [issue](https://github.com/microsoft/rushstack/issues/3875)，这是由于 `@microsoft/api-extractor` 或者是 TypeScript 解析器的一些限制导致的。
+
+主要原因在于 `tsconfig.json` 中指定了 `baseUrl` 并且在引入时直接使用非标准路径。
+
+例如：指定了 `baseUrl: 'src'` 并且在 `<root>/src/index.ts` 中引入 `<root>/src/components/index.ts` 时使用了 `import 'components'` 而不是 `import './components'`。
+
+目前想要正常打包，需要规避上述情况，或使用别名代替（配合 `paths` 属性）。
+
 ## 选项
 
 ```ts

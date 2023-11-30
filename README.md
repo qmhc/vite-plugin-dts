@@ -86,6 +86,16 @@ This is an existing [TypeScript issue](https://github.com/microsoft/TypeScript/i
 }
 ```
 
+### `Internal Error` occurs when using `rollupTypes: true`
+
+Refer to this [issue](https://github.com/microsoft/rushstack/issues/3875), it's due to a limitation of `@microsoft/api-extractor` or TypeScript resolver.
+
+The main reason is that `baseUrl` is specified in `tsconfig.json` and non-standard paths are used directly when imported.
+
+For example: `baseUrl: 'src'` is specified and importing from `<root>/src/components/index.ts` in `<root>/src/index.ts`, and `import 'components'` is used instead of `import './components'`.
+
+Currently, you need to avoid the above situation, or use aliases instead (with the `paths` option).
+
 ## Options
 
 ```ts
