@@ -20,6 +20,7 @@ import {
   transformDynamicImport
 } from './transform'
 import {
+  editSourceMapDir,
   ensureAbsolute,
   ensureArray,
   findTypesPath,
@@ -698,19 +699,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               const path = resolve(targetOutDir, relativePath)
 
               if (wroteFile.endsWith('.map')) {
-                const relativeOutDir = relative(outDir, targetOutDir)
-
-                if (relativeOutDir) {
-                  try {
-                    const sourceMap: { sources: string[] } = JSON.parse(content)
-
-                    sourceMap.sources = sourceMap.sources.map(source => {
-                      return normalizePath(relative(relativeOutDir, source))
-                    })
-                    content = JSON.stringify(sourceMap)
-                  } catch (e) {
-                    logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
-                  }
+                // edit `sources` section with correct relative path of source map file
+                if (!editSourceMapDir(content, outDir, targetOutDir)) {
+                  logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
                 }
               }
 
@@ -721,7 +712,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       if (typeof afterBuild === 'function') {
-        await wrapPromise(afterBuild())
+        await wrapPromise(afterBuild(emittedFiles))
       }
 
       bundleDebug('finish')

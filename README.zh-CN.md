@@ -358,9 +358,11 @@ export interface PluginOptions {
   /**
    * 在所有类型文件被写入后调用的钩子
    *
+   * 它会接收一个记录了那些最终被写入的文件的映射（path -> content）
+   *
    * @default () => {}
    */
-  afterBuild?: () => MaybePromise<void>
+  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>
 }
 ```
 

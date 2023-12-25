@@ -358,6 +358,8 @@ export interface PluginOptions {
   /**
    * Hook called after all declaration files are written
    *
+   * It will be received a map (path -> content) that records those emitted files
+   *
    * @default () => {}
    */
   afterBuild?: () => MaybePromise<void>

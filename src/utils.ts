@@ -1,4 +1,12 @@
-import { resolve as _resolve, dirname, isAbsolute, normalize, posix, sep } from 'node:path'
+import {
+  resolve as _resolve,
+  dirname,
+  isAbsolute,
+  normalize,
+  posix,
+  relative,
+  sep
+} from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 
 import ts from 'typescript'
@@ -365,4 +373,24 @@ export function setModuleResolution(options: CompilerOptions) {
   }
 
   options.moduleResolution = moduleResolution
+}
+
+export function editSourceMapDir(content: string, fromDir: string, toDir: string) {
+  const relativeOutDir = relative(fromDir, toDir)
+
+  if (relativeOutDir) {
+    try {
+      const sourceMap: { sources: string[] } = JSON.parse(content)
+
+      sourceMap.sources = sourceMap.sources.map(source => {
+        return normalizePath(relative(relativeOutDir, source))
+      })
+
+      return JSON.stringify(sourceMap)
+    } catch (e) {
+      return false
+    }
+  }
+
+  return true
 }
