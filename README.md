@@ -369,7 +369,7 @@ export interface PluginOptions {
 Thanks for all the contributions!
 
 <a href="https://github.com/qmhc/vite-plugin-dts/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=qmhc/vite-plugin-dts" />
+  <img src="https://contrib.rocks/image?repo=qmhc/vite-plugin-dts" alt="contributors" />
 </a>
 
 ## Example
