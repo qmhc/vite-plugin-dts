@@ -10,11 +10,17 @@ emptyDir(resolve(__dirname, 'types'))
 
 export default defineConfig({
   resolve: {
-    // alias: [{ find: /^@\/(.+)/, replacement: resolve(__dirname, '$1') }]
-    alias: {
-      '@': resolve(__dirname),
-      '@components': resolve(__dirname, 'src/components')
-    }
+    // alias: {
+    //   '@': resolve(__dirname),
+    //   '@components': resolve(__dirname, 'src/components')
+    // }
+    alias: [
+      {
+        find: /@\//,
+        replacement: resolve(__dirname) + '/'
+      },
+      { find: '@components', replacement: resolve(__dirname, 'src/components') }
+    ]
   },
   build: {
     lib: {
@@ -37,9 +43,9 @@ export default defineConfig({
       ],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
-      staticImport: true,
+      // staticImport: true,
       // rollupTypes: true,
-      insertTypesEntry: true,
+      // insertTypesEntry: true,
       compilerOptions: {
         declarationMap: true
       },

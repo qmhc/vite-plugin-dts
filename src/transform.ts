@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, relative } from 'node:path'
+import { dirname, isAbsolute, relative, resolve } from 'node:path'
 
 import { isRegExp, normalizePath } from './utils'
 
@@ -85,6 +85,10 @@ function isAliasMatch(alias: Alias, importer: string) {
   )
 }
 
+function ensureStartWithDot(path: string) {
+  return path.startsWith('.') ? path : `./${path}`
+}
+
 const globalImportRE =
   /(?:(?:import|export)\s?(?:type)?\s?(?:(?:\{[^;\n]+\})|(?:[^;\n]+))\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g
 const staticImportRE = /(?:import|export)\s?(?:type)?\s?\{?.+\}?\s?from\s?['"](.+)['"]/
@@ -119,17 +123,24 @@ export function transformAliasImport(
           return str
         }
 
-        const truthPath = isAbsolute(matchedAlias.replacement)
-          ? normalizePath(relative(dirname(filePath), matchedAlias.replacement))
+        const dir = dirname(filePath)
+        const replacement = isAbsolute(matchedAlias.replacement)
+          ? normalizePath(relative(dir, matchedAlias.replacement))
           : normalizePath(matchedAlias.replacement)
+
+        const endSlash = matchResult[1].match(matchedAlias.find)![0].endsWith('/')
+        const truthPath = matchResult[1].replace(
+          matchedAlias.find,
+          replacement + (endSlash ? '/' : '')
+        )
+        const normalizedPath = normalizePath(relative(dir, resolve(dir, truthPath)))
+
+        // for debug
+        // console.log(replacement, truthPath, filePath, resolve(dir, truthPath), normalizedPath)
 
         return str.replace(
           isDynamic ? simpleDynamicImportRE : simpleStaticImportRE,
-          `$1'${matchResult[1].replace(
-            matchedAlias.find,
-            (truthPath.startsWith('.') ? truthPath : `./${truthPath}`) +
-              (typeof matchedAlias.find === 'string' && matchedAlias.find.endsWith('/') ? '/' : '')
-          )}'${isDynamic ? ')' : ''}`
+          `$1'${ensureStartWithDot(normalizedPath)}'${isDynamic ? ')' : ''}`
         )
       }
     }

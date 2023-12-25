@@ -139,7 +139,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           return { find: key, replacement: value }
         })
       } else {
-        aliases = ensureArray(aliasOptions)
+        aliases = ensureArray(aliasOptions as Alias[]).map(alias => ({ ...alias }))
       }
 
       if (aliasesExclude.length > 0) {
@@ -155,6 +155,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                     : find === aliasExclude)
             )
         )
+      }
+
+      for (const alias of aliases) {
+        alias.replacement = resolve(alias.replacement)
       }
     },
 

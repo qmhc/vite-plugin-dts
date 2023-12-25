@@ -63,10 +63,18 @@ describe('transform tests', () => {
   it('test: transformAliasImport', () => {
     const aliases: Alias[] = [
       { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
-      { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') }
+      { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
+      { find: /^~\//, replacement: resolve(__dirname, '../src/') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
 
+    expect(
+      transformAliasImport(filePath, 'import type { TestBase } from "@/src/test";\n', aliases)
+    ).toEqual("import type { TestBase } from './test';\n")
+
+    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
+      "import('../components/test').Test;\n"
+    )
     expect(
       transformAliasImport(
         filePath,
@@ -86,6 +94,10 @@ describe('transform tests', () => {
         aliases
       )
     ).toEqual("import VContainer from './components/layout/container/VContainer.vue';\n")
+
+    expect(
+      transformAliasImport(filePath, 'import type { TestBase } from "~/test";\n', aliases)
+    ).toEqual("import type { TestBase } from './test';\n")
   })
 
   it('test: removePureImport', () => {
