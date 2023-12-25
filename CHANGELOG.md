@@ -1,3 +1,13 @@
+# [3.7.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.4...v3.7.0) (2023-12-25)
+
+### Bug Fixes
+
+- incorrect alias transform if using a regexp that ends with slash ([213aa39](https://github.com/qmhc/vite-plugin-dts/commit/213aa39eb7de988afc8a188b485d2656c66a317a)), closes [#290](https://github.com/qmhc/vite-plugin-dts/issues/290)
+
+### Features
+
+- add emittedFiles parameter for afterBuild hook ([b06d2c4](https://github.com/qmhc/vite-plugin-dts/commit/b06d2c4ba9bf3f2a4e75f6b2f61308faedb42a84))
+
 ## [3.6.4](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.3...v3.6.4) (2023-11-30)
 
 ### Bug Fixes
