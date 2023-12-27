@@ -600,29 +600,38 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           typesPath = `${typesPath.replace(tjsRE, '')}.d.${extPrefix(typesPath)}ts`
         }
 
+        const getDtsTarget = (name: string) =>
+          multiple ? cleanPath(resolve(outDir, `${name.replace(tsRE, '')}.d.ts`)) : typesPath
+
+        if (multiple) {
+          await runParallel(cpus().length, entryNames, async name => {
+            if (existsSync(getDtsTarget(name))) await unlink(getDtsTarget(name))
+          })
+        } else {
+          if (existsSync(typesPath)) await unlink(typesPath)
+        }
+
         for (const name of entryNames) {
-          const path = multiple
-            ? cleanPath(resolve(outDir, `${name.replace(tsRE, '')}.d.ts`))
-            : typesPath
+          const dtsTarget = getDtsTarget(name)
 
-          if (existsSync(path)) continue
+          if (existsSync(dtsTarget)) continue
 
-          const index = cleanPath(
+          const dtsIndex = cleanPath(
             resolve(outDir, relative(entryRoot, `${entries[name].replace(tsRE, '')}.d.ts`))
           )
 
-          let fromPath = normalizePath(relative(dirname(path), index))
+          let fromPath = normalizePath(relative(dirname(dtsTarget), dtsIndex))
 
           fromPath = fromPath.replace(dtsRE, '')
           fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
 
           let content = `export * from '${fromPath}'\n`
 
-          if (existsSync(index) && hasExportDefault(await readFile(index, 'utf-8'))) {
+          if (existsSync(dtsIndex) && hasExportDefault(await readFile(dtsIndex, 'utf-8'))) {
             content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
           }
 
-          await writeOutput(cleanPath(path), content, outDir)
+          await writeOutput(cleanPath(dtsTarget), content, outDir)
         }
 
         bundleDebug('insert index')
