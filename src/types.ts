@@ -220,6 +220,13 @@ export interface PluginOptions {
   logLevel?: LogLevel,
 
   /**
+   * The extension to be used for declaration files
+   *
+   * Can override the default (`.d.ts`) with a custom extension (e.g. `.d.cts`, `.d.mts`)
+   */
+  dtsExtension?: string,
+
+  /**
    * Hook called after diagnostic is emitted
    *
    * According to the `diagnostics.length`, you can judge whether there is any type error
@@ -256,12 +263,5 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>,
-
-  /**
-   * The extension to be used for declaration files
-   *
-   * Can override the default (`.d.ts`) with a custom extension (e.g. `.d.cts`, `.d.mts`)
-   */
-  dtsExtension?: string
+  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>
 }

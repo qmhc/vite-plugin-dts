@@ -83,6 +83,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     copyDtsFiles = false,
     declarationOnly = false,
     strictOutput = true,
+    dtsExtension = '.d.ts',
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -474,9 +475,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const emittedFiles = new Map<string, string>()
 
       const writeOutput = async (path: string, content: string, outDir: string, record = true) => {
-        // path = path.replace('.d.ts', '.d.cts')
-        // console.log(path)
-
         if (typeof beforeWriteFile === 'function') {
           const result = await wrapPromise(beforeWriteFile(path, content))
 
@@ -550,6 +548,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           )
           content = cleanVueFileName ? content.replace(vuePathRE, '"$1"') : content
 
+          path = path.replace('.d.ts', dtsExtension)
+
           if (isMapFile) {
             try {
               const sourceMap: { sources: string[] } = JSON.parse(content)
@@ -562,7 +562,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                   )
                 )
               })
-              content = JSON.stringify(sourceMap)
+              content = JSON.stringify(sourceMap).replace('.d.ts', dtsExtension)
             } catch (e) {
               logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
             }
