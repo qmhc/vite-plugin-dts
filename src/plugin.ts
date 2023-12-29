@@ -83,7 +83,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     copyDtsFiles = false,
     declarationOnly = false,
     strictOutput = true,
-    dtsExtension = '.d.ts',
+    dtsExtension,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
     afterBuild = noop
@@ -548,7 +548,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           )
           content = cleanVueFileName ? content.replace(vuePathRE, '"$1"') : content
 
-          path = path.replace('.d.ts', dtsExtension)
+          path = dtsExtension ? path.replace('.d.ts', dtsExtension) : path
 
           if (isMapFile) {
             try {
@@ -562,7 +562,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
                   )
                 )
               })
-              content = JSON.stringify(sourceMap).replace('.d.ts', dtsExtension)
+              content = JSON.stringify(sourceMap)
+              content = dtsExtension ? content.replace('.d.ts', dtsExtension) : content
             } catch (e) {
               logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
             }
