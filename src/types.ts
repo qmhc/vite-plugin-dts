@@ -256,5 +256,12 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>
+  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>,
+
+  /**
+   * The extension to be used for declaration files
+   *
+   * Can override the default (`.d.ts`) with a custom extension (e.g. `.d.cts`, `.d.mts`)
+   */
+  dtsExtension?: string
 }
