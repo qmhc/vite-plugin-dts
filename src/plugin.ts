@@ -549,7 +549,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           content = cleanVueFileName ? content.replace(vuePathRE, '"$1"') : content
 
-          if (dtsExtension) {
+          if (dtsExtension && !rollupTypes) {
             path = path.replace('.d.ts', dtsExtension)
             content = content.replaceAll('.d.ts', dtsExtension)
           }
