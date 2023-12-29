@@ -474,6 +474,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const emittedFiles = new Map<string, string>()
 
       const writeOutput = async (path: string, content: string, outDir: string, record = true) => {
+        path = path.replace('.d.ts', '.d.cts')
+        console.log(path)
         if (typeof beforeWriteFile === 'function') {
           const result = await wrapPromise(beforeWriteFile(path, content))
 
