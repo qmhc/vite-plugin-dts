@@ -64,7 +64,8 @@ describe('transform tests', () => {
     const aliases: Alias[] = [
       { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
       { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
-      { find: /^~\//, replacement: resolve(__dirname, '../src/') }
+      { find: /^~\//, replacement: resolve(__dirname, '../src/') },
+      { find: '$src', replacement: resolve(__dirname, '../src') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
 
@@ -98,6 +99,10 @@ describe('transform tests', () => {
     expect(
       transformAliasImport(filePath, 'import type { TestBase } from "~/test";\n', aliases)
     ).toEqual("import type { TestBase } from './test';\n")
+
+    expect(
+      transformAliasImport(filePath, 'import type { TestBase } from "$src/test"', aliases)
+    ).toEqual("import type { TestBase } from './test'")
   })
 
   it('test: removePureImport', () => {

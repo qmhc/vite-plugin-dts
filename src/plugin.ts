@@ -68,6 +68,9 @@ const fixedCompilerOptions: ts.CompilerOptions = {
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 
+const regexpSymbolRE = /([$.\\+?()[\]!<=|{}^,])/g
+const asteriskRE = /[*]+/g
+
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
     tsconfigPath,
@@ -283,18 +286,20 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (pathsToAliases && baseUrl && paths) {
         const basePath = ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root)
-        const existsFinds = new Set(
-          aliases.map(alias => alias.find).filter(find => typeof find === 'string')
-        )
 
         for (const [findWithAsterisk, replacements] of Object.entries(paths)) {
-          const find = findWithAsterisk.replace('/*', '')
+          const find = new RegExp(
+            findWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')
+          )
 
-          if (!replacements.length || existsFinds.has(find)) continue
+          let index = 1
 
           aliases.push({
             find,
-            replacement: ensureAbsolute(replacements[0].replace('/*', ''), basePath)
+            replacement: ensureAbsolute(
+              replacements[0].replace(asteriskRE, () => `$${index++}`),
+              basePath
+            )
           })
         }
       }

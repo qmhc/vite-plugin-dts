@@ -128,7 +128,10 @@ export function transformAliasImport(
           ? normalizePath(relative(dir, matchedAlias.replacement))
           : normalizePath(matchedAlias.replacement)
 
-        const endSlash = matchResult[1].match(matchedAlias.find)![0].endsWith('/')
+        const endSlash =
+          typeof matchedAlias.find === 'string'
+            ? matchedAlias.find.endsWith('/')
+            : matchResult[1].match(matchedAlias.find)![0].endsWith('/')
         const truthPath = matchResult[1].replace(
           matchedAlias.find,
           replacement + (endSlash ? '/' : '')

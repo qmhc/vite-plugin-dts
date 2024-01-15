@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./*"],
       "@components/*": ["./src/components/*"],
-      "@alias/*": ["./alias/*"]
+      "$alias/*": ["./alias/*"]
     },
     "lib": ["esnext", "dom"]
   },
