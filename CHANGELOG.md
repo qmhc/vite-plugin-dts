@@ -1,3 +1,10 @@
+## [3.7.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.0...v3.7.1) (2024-01-15)
+
+### Bug Fixes
+
+- improve aliases replacement logic ([e8827cb](https://github.com/qmhc/vite-plugin-dts/commit/e8827cb6c8be1406e4e3a9a24639b7b54ca20d53)), closes [#294](https://github.com/qmhc/vite-plugin-dts/issues/294)
+- manually collect compiler options for types rollup ([0d0b255](https://github.com/qmhc/vite-plugin-dts/commit/0d0b255ad2731746a3ad2b484ee756cd92994651)), closes [#297](https://github.com/qmhc/vite-plugin-dts/issues/297)
+
 # [3.7.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.6.4...v3.7.0) (2023-12-25)
 
 ### Bug Fixes
