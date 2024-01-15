@@ -24,6 +24,7 @@ import {
   ensureAbsolute,
   ensureArray,
   findTypesPath,
+  getTsConfig,
   isNativeObj,
   isRegExp,
   normalizePath,
@@ -648,6 +649,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           }
 
           const rollupFiles = new Set<string>()
+          const compilerOptions = configPath
+            ? getTsConfig(configPath, host.readFile).compilerOptions
+            : rawCompilerOptions
 
           if (multiple) {
             for (const name of entryNames) {
@@ -656,7 +660,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               rollupDeclarationFiles({
                 root,
                 configPath,
-                compilerOptions: rawCompilerOptions,
+                compilerOptions,
                 outDir,
                 entryPath: path,
                 fileName: basename(path),
@@ -672,7 +676,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             rollupDeclarationFiles({
               root,
               configPath,
-              compilerOptions: rawCompilerOptions,
+              compilerOptions,
               outDir,
               entryPath: typesPath,
               fileName: basename(typesPath),
