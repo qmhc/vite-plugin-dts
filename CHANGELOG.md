@@ -1,3 +1,9 @@
+## [3.7.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.1...v3.7.2) (2024-01-24)
+
+### Bug Fixes
+
+- correct match result for alias form tsconfig ([88469d0](https://github.com/qmhc/vite-plugin-dts/commit/88469d0e6a8883a18e93e185da8060b66cf60550)), closes [#298](https://github.com/qmhc/vite-plugin-dts/issues/298)
+
 ## [3.7.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.0...v3.7.1) (2024-01-15)
 
 ### Bug Fixes
