@@ -288,9 +288,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       if (pathsToAliases && baseUrl && paths) {
         const basePath = ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root)
 
-        for (const [findWithAsterisk, replacements] of Object.entries(paths)) {
+        for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
           const find = new RegExp(
-            findWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')
+            `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')}$`
           )
 
           let index = 1
