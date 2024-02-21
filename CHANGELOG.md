@@ -1,3 +1,9 @@
+## [3.7.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.2...v3.7.3) (2024-02-21)
+
+### Bug Fixes
+
+- incorrect process for removing pure import ([d0c0c86](https://github.com/qmhc/vite-plugin-dts/commit/d0c0c867d614c120e7e02a1727699ff18e2b4570)), closes [#301](https://github.com/qmhc/vite-plugin-dts/issues/301)
+
 ## [3.7.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.1...v3.7.2) (2024-01-24)
 
 ### Bug Fixes
