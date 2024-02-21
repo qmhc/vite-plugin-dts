@@ -110,6 +110,9 @@ describe('transform tests', () => {
     expect(
       removePureImport('import "@/themes/common.scss";\nimport type { Ref } from "vue";')
     ).toEqual('import type { Ref } from "vue";')
+    expect(removePureImport("{ 'database-import': import('vue').FunctionalComponent }")).toEqual(
+      "{ 'database-import': import('vue').FunctionalComponent }"
+    )
   })
 
   it('test: hasExportDefault', () => {

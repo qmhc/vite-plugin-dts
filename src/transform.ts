@@ -152,7 +152,7 @@ export function transformAliasImport(
   })
 }
 
-const pureImportRE = /import\s?['"][^;\n]+?['"];?\n?/g
+const pureImportRE = /^import\s?['"][^;\n]+?['"];?\n?/g
 
 export function removePureImport(content: string) {
   return content.replace(pureImportRE, '')
