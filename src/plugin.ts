@@ -10,14 +10,15 @@ import { createFilter } from '@rollup/pluginutils'
 import { createProgram } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
+import { processCode } from './ast'
 import { rollupDeclarationFiles } from './rollup'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import {
   hasExportDefault,
   normalizeGlob,
-  removePureImport,
-  transformAliasImport,
-  transformDynamicImport
+  // removePureImport,
+  transformAliasImport
+  // transformDynamicImport
 } from './transform'
 import {
   editSourceMapDir,
@@ -542,9 +543,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           const baseDir = dirname(path)
 
           if (!isMapFile && content) {
-            content = clearPureImport ? removePureImport(content) : content
             content = transformAliasImport(path, content, aliases, aliasesExclude)
-            content = staticImport || rollupTypes ? transformDynamicImport(content) : content
+            content = processCode(content)
+            // content = clearPureImport ? removePureImport(content) : content
+            // content = staticImport || rollupTypes ? transformDynamicImport(content) : content
           }
 
           path = resolve(
