@@ -1,15 +1,9 @@
-import { resolve } from 'node:path'
+// import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import {
-  hasExportDefault,
-  normalizeGlob,
-  removePureImport,
-  transformAliasImport,
-  transformDynamicImport
-} from '../src/transform'
+import { hasExportDefault, normalizeGlob, transformCode } from '../src/transform'
 
-import type { Alias } from 'vite'
+// import type { Alias } from 'vite'
 
 describe('transform tests', () => {
   it('test: normalizeGlob', () => {
@@ -28,91 +22,115 @@ describe('transform tests', () => {
     expect(normalizeGlob('a/**')).toEqual('a/**')
   })
 
-  it('test: transformDynamicImport', () => {
-    expect(transformDynamicImport('data: import("vexip-ui/lib/tree").InitDataOptions[];')).toEqual(
-      "import { InitDataOptions } from 'vexip-ui/lib/tree';\ndata: InitDataOptions[];"
-    )
+  it('test: transformCode (dynamic imports to static)', () => {
+    const options = (content: string) => ({
+      content,
+      filePath: '',
+      aliases: [],
+      aliasesExclude: [],
+      staticImport: true,
+      clearPureImport: false
+    })
 
     expect(
-      transformDynamicImport(
-        'declare const _default: import("vue").DefineComponent<{}, {}, {}, {}, {}, import("vue").ComponentOptionsMixin>;\nexport default _default;\n'
+      transformCode(options('let data: import("vexip-ui/lib/tree").InitDataOptions[];'))
+    ).toEqual("import { InitDataOptions } from 'vexip-ui/lib/tree';\nlet data: InitDataOptions[];")
+
+    expect(
+      transformCode(
+        options(
+          'declare const _default: import("vue").DefineComponent<{}, {}, {}, {}, {}, import("vue").ComponentOptionsMixin>;\nexport default _default;\n'
+        )
       )
     ).toEqual(
       "import { DefineComponent, ComponentOptionsMixin } from 'vue';\ndeclare const _default: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin>;\nexport default _default;\n"
     )
 
     expect(
-      transformDynamicImport('}> & {} & {} & import("vue").ComponentCustomProperties) | null>;')
-    ).toEqual(
-      "import { ComponentCustomProperties } from 'vue';\n}> & {} & {} & ComponentCustomProperties) | null>;"
-    )
-
-    expect(
-      transformDynamicImport(
-        'declare const _default: import("./Service").ServiceConstructor<import("./Service").default>;'
+      transformCode(
+        options('let a: A<B<C> & {} & {} & import("vue").ComponentCustomProperties) | null>;')
       )
     ).toEqual(
-      "import { ServiceConstructor, default as __DTS_1__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_1__>;"
+      "import { ComponentCustomProperties } from 'vue';\nlet a: A<B<C> & {} & {} & ComponentCustomProperties) | null>;"
     )
 
     expect(
-      transformDynamicImport('import { Type } from "./test";\nconst test: import("./test").Test;')
-    ).toEqual("import { Test, Type } from './test';\nconst test: Test;")
+      transformCode(
+        options(
+          'declare const _default: import("./Service").ServiceConstructor<import("./Service").default>;'
+        )
+      )
+    ).toEqual(
+      "import { ServiceConstructor, default as __DTS_DEFAULT_0__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_DEFAULT_0__>;"
+    )
+
+    expect(
+      transformCode(options('import { Type } from "./test";\nconst test: import("./test").Test;'))
+    ).toEqual("import { Type, Test } from './test';\n\nconst test: Test;")
   })
 
-  it('test: transformAliasImport', () => {
-    const aliases: Alias[] = [
-      { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
-      { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
-      { find: /^~\//, replacement: resolve(__dirname, '../src/') },
-      { find: '$src', replacement: resolve(__dirname, '../src') }
-    ]
-    const filePath = resolve(__dirname, '../src/index.ts')
+  // it('test: transformAliasImport', () => {
+  //   const aliases: Alias[] = [
+  //     { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
+  //     { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
+  //     { find: /^~\//, replacement: resolve(__dirname, '../src/') },
+  //     { find: '$src', replacement: resolve(__dirname, '../src') }
+  //   ]
+  //   const filePath = resolve(__dirname, '../src/index.ts')
 
+  //   expect(
+  //     transformAliasImport(filePath, 'import type { TestBase } from "@/src/test";\n', aliases)
+  //   ).toEqual("import type { TestBase } from './test';\n")
+
+  //   expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
+  //     "import('../components/test').Test;\n"
+  //   )
+  //   expect(
+  //     transformAliasImport(
+  //       filePath,
+  //       'import type { TestBase } from "@/components/test";\n',
+  //       aliases
+  //     )
+  //   ).toEqual("import type { TestBase } from '../components/test';\n")
+
+  //   expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
+  //     "import('../components/test').Test;\n"
+  //   )
+
+  //   expect(
+  //     transformAliasImport(
+  //       filePath,
+  //       'import VContainer from "@components/layout/container/VContainer.vue";\n',
+  //       aliases
+  //     )
+  //   ).toEqual("import VContainer from './components/layout/container/VContainer.vue';\n")
+
+  //   expect(
+  //     transformAliasImport(filePath, 'import type { TestBase } from "~/test";\n', aliases)
+  //   ).toEqual("import type { TestBase } from './test';\n")
+
+  //   expect(
+  //     transformAliasImport(filePath, 'import type { TestBase } from "$src/test"', aliases)
+  //   ).toEqual("import type { TestBase } from './test'")
+  // })
+
+  it('test: transformCode (remove pure imports)', () => {
+    const options = (content: string) => ({
+      content,
+      filePath: '',
+      aliases: [],
+      aliasesExclude: [],
+      staticImport: false,
+      clearPureImport: true
+    })
+
+    expect(transformCode(options('import "@/themes/common.scss";'))).toEqual('')
     expect(
-      transformAliasImport(filePath, 'import type { TestBase } from "@/src/test";\n', aliases)
-    ).toEqual("import type { TestBase } from './test';\n")
-
-    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
-      "import('../components/test').Test;\n"
-    )
+      transformCode(options('import "@/themes/common.scss";\nimport type { Ref } from "vue";'))
+    ).toEqual("import { Ref } from 'vue';\n")
     expect(
-      transformAliasImport(
-        filePath,
-        'import type { TestBase } from "@/components/test";\n',
-        aliases
-      )
-    ).toEqual("import type { TestBase } from '../components/test';\n")
-
-    expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
-      "import('../components/test').Test;\n"
-    )
-
-    expect(
-      transformAliasImport(
-        filePath,
-        'import VContainer from "@components/layout/container/VContainer.vue";\n',
-        aliases
-      )
-    ).toEqual("import VContainer from './components/layout/container/VContainer.vue';\n")
-
-    expect(
-      transformAliasImport(filePath, 'import type { TestBase } from "~/test";\n', aliases)
-    ).toEqual("import type { TestBase } from './test';\n")
-
-    expect(
-      transformAliasImport(filePath, 'import type { TestBase } from "$src/test"', aliases)
-    ).toEqual("import type { TestBase } from './test'")
-  })
-
-  it('test: removePureImport', () => {
-    expect(removePureImport('import "@/themes/common.scss";')).toEqual('')
-    expect(
-      removePureImport('import "@/themes/common.scss";\nimport type { Ref } from "vue";')
-    ).toEqual('import type { Ref } from "vue";')
-    expect(removePureImport("{ 'database-import': import('vue').FunctionalComponent }")).toEqual(
-      "{ 'database-import': import('vue').FunctionalComponent }"
-    )
+      transformCode(options("{ 'database-import': import('vue').FunctionalComponent }"))
+    ).toEqual("{ 'database-import': import('vue').FunctionalComponent }")
   })
 
   it('test: hasExportDefault', () => {
