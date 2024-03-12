@@ -223,8 +223,28 @@ export function transformCode(options: {
   return s.toString()
 }
 
-const asDefaultRE = /export\s*\{.*\w+\s*\bas\s+default\b.*\}\s*from\s*['"].+['"]/
-
 export function hasExportDefault(content: string) {
-  return content.includes('export default') || asDefaultRE.test(content)
+  const ast = ts.createSourceFile('a.ts', content, ts.ScriptTarget.Latest)
+
+  let has = false
+
+  walkSourceFile(ast, node => {
+    if (ts.isExportAssignment(node)) {
+      has = true
+    } else if (
+      ts.isExportDeclaration(node) &&
+      node.exportClause &&
+      ts.isNamedExports(node.exportClause)
+    ) {
+      for (const element of node.exportClause.elements) {
+        if (element.name.escapedText === 'default') {
+          has = true
+        }
+      }
+    }
+
+    return false
+  })
+
+  return has
 }
