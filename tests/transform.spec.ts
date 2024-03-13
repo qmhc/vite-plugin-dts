@@ -1,9 +1,9 @@
-// import { resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { hasExportDefault, normalizeGlob, transformCode } from '../src/transform'
 
-// import type { Alias } from 'vite'
+import type { Alias } from 'vite'
 
 describe('transform tests', () => {
   it('test: normalizeGlob', () => {
@@ -69,50 +69,54 @@ describe('transform tests', () => {
     ).toEqual("import { Type, Test } from './test';\n\nconst test: Test;")
   })
 
-  // it('test: transformAliasImport', () => {
-  //   const aliases: Alias[] = [
-  //     { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
-  //     { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
-  //     { find: /^~\//, replacement: resolve(__dirname, '../src/') },
-  //     { find: '$src', replacement: resolve(__dirname, '../src') }
-  //   ]
-  //   const filePath = resolve(__dirname, '../src/index.ts')
+  it('test: transformCode (process aliases)', () => {
+    const aliases: Alias[] = [
+      { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
+      { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
+      { find: /^~\//, replacement: resolve(__dirname, '../src/') },
+      { find: '$src', replacement: resolve(__dirname, '../src') }
+    ]
+    const filePath = resolve(__dirname, '../src/index.ts')
+    const options = (content: string) => ({
+      content,
+      filePath,
+      aliases,
+      aliasesExclude: [],
+      staticImport: true,
+      clearPureImport: false
+    })
 
-  //   expect(
-  //     transformAliasImport(filePath, 'import type { TestBase } from "@/src/test";\n', aliases)
-  //   ).toEqual("import type { TestBase } from './test';\n")
+    expect(transformCode(options('import type { TestBase } from "@/src/test";'))).toEqual(
+      "import { TestBase } from './test';\n"
+    )
 
-  //   expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
-  //     "import('../components/test').Test;\n"
-  //   )
-  //   expect(
-  //     transformAliasImport(
-  //       filePath,
-  //       'import type { TestBase } from "@/components/test";\n',
-  //       aliases
-  //     )
-  //   ).toEqual("import type { TestBase } from '../components/test';\n")
+    expect(transformCode(options('import("@/components/test").Test;'))).toEqual(
+      "import('../components/test').Test;"
+    )
+    expect(transformCode(options('import type { TestBase } from "@/components/test";'))).toEqual(
+      "import { TestBase } from '../components/test';\n"
+    )
 
-  //   expect(transformAliasImport(filePath, 'import("@/components/test").Test;\n', aliases)).toEqual(
-  //     "import('../components/test').Test;\n"
-  //   )
+    expect(transformCode(options('import("@/components/test").Test;\n'))).toEqual(
+      "import('../components/test').Test;\n"
+    )
 
-  //   expect(
-  //     transformAliasImport(
-  //       filePath,
-  //       'import VContainer from "@components/layout/container/VContainer.vue";\n',
-  //       aliases
-  //     )
-  //   ).toEqual("import VContainer from './components/layout/container/VContainer.vue';\n")
+    expect(
+      transformCode(
+        options('import VContainer from "@components/layout/container/VContainer.vue";')
+      )
+    ).toEqual(
+      "import { default as VContainer } from './components/layout/container/VContainer.vue';\n"
+    )
 
-  //   expect(
-  //     transformAliasImport(filePath, 'import type { TestBase } from "~/test";\n', aliases)
-  //   ).toEqual("import type { TestBase } from './test';\n")
+    expect(transformCode(options('import type { TestBase } from "~/test";'))).toEqual(
+      "import { TestBase } from './test';\n"
+    )
 
-  //   expect(
-  //     transformAliasImport(filePath, 'import type { TestBase } from "$src/test"', aliases)
-  //   ).toEqual("import type { TestBase } from './test'")
-  // })
+    expect(transformCode(options('import type { TestBase } from "$src/test";'))).toEqual(
+      "import { TestBase } from './test';\n"
+    )
+  })
 
   it('test: transformCode (remove pure imports)', () => {
     const options = (content: string) => ({
