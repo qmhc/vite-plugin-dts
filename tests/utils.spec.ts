@@ -14,7 +14,8 @@ import {
   mergeObjects,
   normalizePath,
   queryPublicPath,
-  toCapitalCase
+  toCapitalCase,
+  unwrapPromise
 } from '../src/utils'
 
 describe('utils tests', () => {
@@ -54,6 +55,12 @@ describe('utils tests', () => {
     expect(isPromise({ then: () => {} })).toBe(true)
     expect(isPromise({ catch: () => {} })).toBe(false)
     expect(isPromise({ then: () => {}, catch: () => {} })).toBe(true)
+  })
+
+  it('test: unwrapPromise', async () => {
+    expect(await unwrapPromise(false)).toBe(false)
+    expect(await unwrapPromise('')).toBe('')
+    expect(await unwrapPromise(Promise.resolve().then(() => 1))).toBe(1)
   })
 
   it('test: mergeObjects', () => {

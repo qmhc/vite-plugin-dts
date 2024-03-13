@@ -45,7 +45,7 @@ export function isPromise(value: unknown): value is Promise<any> {
   )
 }
 
-export async function wrapPromise<T>(maybePromise: T | Promise<T>) {
+export async function unwrapPromise<T>(maybePromise: T | Promise<T>) {
   return isPromise(maybePromise) ? await maybePromise : maybePromise
 }
 
