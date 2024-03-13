@@ -1,5 +1,7 @@
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 
+import MagicString from 'magic-string'
+import ts from 'typescript'
 import { isRegExp, normalizePath } from './utils'
 
 import type { Alias } from 'vite'
@@ -16,62 +18,21 @@ export function normalizeGlob(path: string) {
   return path
 }
 
-const globalDynamicTypeRE = /import\(['"][^;\n]+?['"]\)\.\w+[.()[\]<>,;\n\s]/g
-const dynamicTypeRE = /import\(['"](.+)['"]\)\.(.+)([.()[\]<>,;\n\s])/
-const importTypesRE = /import\s?(?:type)?\s?\{(.+)\}\s?from\s?['"].+['"]/
-
-export function transformDynamicImport(content: string) {
-  const importMap = new Map<string, Set<string>>()
-  const defaultMap = new Map<string, string>()
-
-  let defaultCount = 1
-
-  content = content.replace(globalDynamicTypeRE, str => {
-    const matchResult = str.match(dynamicTypeRE)!
-    const libName = matchResult[1]
-    const importSet =
-      importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
-
-    let usedType = matchResult[2]
-
-    if (usedType === 'default') {
-      usedType =
-        defaultMap.get(libName) ??
-        defaultMap.set(libName, `__DTS_${defaultCount++}__`).get(libName)!
-      importSet.add(`default as ${usedType}`)
-    } else {
-      importSet.add(usedType)
+function walkSourceFile(
+  sourceFile: ts.SourceFile,
+  callback: (node: ts.Node, parent: ts.Node) => void | boolean
+) {
+  function walkNode(
+    node: ts.Node,
+    parent: ts.Node,
+    callback: (node: ts.Node, parent: ts.Node) => void | boolean
+  ) {
+    if (callback(node, parent) !== false) {
+      node.forEachChild(child => walkNode(child, node, callback))
     }
+  }
 
-    return usedType + matchResult[3]
-  })
-
-  importMap.forEach((importSet, libName) => {
-    const importReg = new RegExp(
-      `import\\s?(?:type)?\\s?\\{[^;\\n]+\\}\\s?from\\s?['"]${libName}['"]`,
-      'g'
-    )
-    const matchResult = content.match(importReg)
-
-    if (matchResult?.[0]) {
-      matchResult[0]
-        .match(importTypesRE)![1]
-        .trim()
-        .split(',')
-        .forEach(type => {
-          type && importSet.add(type.trim())
-        })
-
-      content = content.replace(
-        matchResult[0],
-        `import { ${Array.from(importSet).join(', ')} } from '${libName}'`
-      )
-    } else {
-      content = `import { ${Array.from(importSet).join(', ')} } from '${libName}';\n` + content
-    }
-  })
-
-  return content
+  sourceFile.forEachChild(child => walkNode(child, sourceFile, callback))
 }
 
 function isAliasMatch(alias: Alias, importer: string) {
@@ -85,97 +46,205 @@ function isAliasMatch(alias: Alias, importer: string) {
   )
 }
 
-function ensureStartWithDot(path: string) {
-  return path.startsWith('.') ? path : `./${path}`
+function transformAlias(
+  importer: string,
+  dir: string,
+  aliases: Alias[],
+  aliasesExclude: (string | RegExp)[]
+) {
+  if (
+    aliases.length &&
+    !aliasesExclude.some(e => (isRegExp(e) ? e.test(importer) : String(e) === importer))
+  ) {
+    const matchedAlias = aliases.find(alias => isAliasMatch(alias, importer))
+
+    if (matchedAlias) {
+      const replacement = isAbsolute(matchedAlias.replacement)
+        ? normalizePath(relative(dir, matchedAlias.replacement))
+        : normalizePath(matchedAlias.replacement)
+
+      const endsWithSlash =
+        typeof matchedAlias.find === 'string'
+          ? matchedAlias.find.endsWith('/')
+          : importer.match(matchedAlias.find)![0].endsWith('/')
+      const truthPath = importer.replace(
+        matchedAlias.find,
+        replacement + (endsWithSlash ? '/' : '')
+      )
+      const normalizedPath = normalizePath(relative(dir, resolve(dir, truthPath)))
+
+      return normalizedPath.startsWith('.') ? normalizedPath : `./${normalizedPath}`
+    }
+  }
+
+  return importer
 }
 
-const globalImportRE =
-  /(?:(?:import|export)\s?(?:type)?\s?(?:(?:\{[^;\n]+\})|(?:[^;\n]+))\s?from\s?['"][^;\n]+['"])|(?:import\(['"][^;\n]+?['"]\))/g
-const staticImportRE = /(?:import|export)\s?(?:type)?\s?\{?.+\}?\s?from\s?['"](.+)['"]/
-const dynamicImportRE = /import\(['"]([^;\n]+?)['"]\)/
-const simpleStaticImportRE = /((?:import|export).+from\s?)['"](.+)['"]/
-const simpleDynamicImportRE = /(import\()['"](.+)['"]\)/
-
-export function transformAliasImport(
+export function transformCode(options: {
   filePath: string,
   content: string,
   aliases: Alias[],
-  exclude: (string | RegExp)[] = []
-) {
-  if (!aliases?.length) return content
+  aliasesExclude: (string | RegExp)[],
+  staticImport: boolean,
+  clearPureImport: boolean
+}) {
+  const s = new MagicString(options.content)
+  const ast = ts.createSourceFile('a.ts', options.content, ts.ScriptTarget.Latest)
 
-  return content.replace(globalImportRE, str => {
-    let matchResult = str.match(staticImportRE)
-    let isDynamic = false
+  const dir = dirname(options.filePath)
 
-    if (!matchResult) {
-      matchResult = str.match(dynamicImportRE)
-      isDynamic = true
-    }
+  const importMap = new Map<string, Set<string>>()
+  const usedDefault = new Map<string, string>()
 
-    if (matchResult?.[1]) {
-      const matchedAlias = aliases.find(alias => isAliasMatch(alias, matchResult![1]))
+  let indexCount = 0
 
-      if (matchedAlias) {
-        if (
-          exclude.some(e => (isRegExp(e) ? e.test(matchResult![1]) : String(e) === matchResult![1]))
-        ) {
-          return str
+  walkSourceFile(ast, (node, parent) => {
+    if (ts.isImportDeclaration(node)) {
+      if (!node.importClause) {
+        options.clearPureImport && s.remove(node.pos, node.end)
+      } else if (
+        ts.isStringLiteral(node.moduleSpecifier) &&
+        (node.importClause.name ||
+          (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)))
+      ) {
+        const libName = transformAlias(
+          node.moduleSpecifier.text,
+          dir,
+          options.aliases,
+          options.aliasesExclude
+        )
+        const importSet =
+          importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
+
+        if (node.importClause.name && !usedDefault.has(libName)) {
+          const usedType = node.importClause.name.escapedText as string
+
+          usedDefault.set(libName, usedType)
+          importSet.add(`default as ${usedType}`)
         }
 
-        const dir = dirname(filePath)
-        const replacement = isAbsolute(matchedAlias.replacement)
-          ? normalizePath(relative(dir, matchedAlias.replacement))
-          : normalizePath(matchedAlias.replacement)
+        if (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)) {
+          node.importClause.namedBindings.elements.forEach(element => {
+            importSet.add(element.name.escapedText as string)
+          })
+        }
 
-        const endSlash =
-          typeof matchedAlias.find === 'string'
-            ? matchedAlias.find.endsWith('/')
-            : matchResult[1].match(matchedAlias.find)![0].endsWith('/')
-        const truthPath = matchResult[1].replace(
-          matchedAlias.find,
-          replacement + (endSlash ? '/' : '')
-        )
-        const normalizedPath = normalizePath(relative(dir, resolve(dir, truthPath)))
+        s.remove(node.pos, node.end)
+      }
 
-        // for debug
-        // console.log(replacement, truthPath, filePath, resolve(dir, truthPath), normalizedPath)
+      return false
+    }
 
-        return str.replace(
-          isDynamic ? simpleDynamicImportRE : simpleStaticImportRE,
-          `$1'${ensureStartWithDot(normalizedPath)}'${isDynamic ? ')' : ''}`
-        )
+    if (
+      ts.isImportTypeNode(node) &&
+      node.qualifier &&
+      ts.isLiteralTypeNode(node.argument) &&
+      ts.isIdentifier(node.qualifier) &&
+      ts.isStringLiteral(node.argument.literal)
+    ) {
+      const libName = transformAlias(
+        node.argument.literal.text,
+        dir,
+        options.aliases,
+        options.aliasesExclude
+      )
+
+      if (!options.staticImport) {
+        s.update(node.argument.literal.pos, node.argument.literal.end, `'${libName}'`)
+
+        return false
+      }
+
+      const importSet =
+        importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
+
+      let usedType = node.qualifier.escapedText as string
+
+      if (usedType === 'default') {
+        usedType =
+          usedDefault.get(libName) ??
+          usedDefault.set(libName, `__DTS_DEFAULT_${indexCount++}__`).get(libName)!
+
+        importSet.add(`default as ${usedType}`)
+        s.update(node.qualifier.pos, node.qualifier.end, usedType)
+      } else {
+        importSet.add(usedType)
+      }
+
+      // s.update(node.pos, node.end, ` ${usedType}`)
+      if (ts.isImportTypeNode(parent) && parent.typeArguments && parent.typeArguments[0] === node) {
+        s.remove(node.pos, node.argument.end + 2)
+      } else {
+        s.update(node.pos, node.argument.end + 2, ' ')
+      }
+
+      return !!node.typeArguments
+    }
+
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      ts.isStringLiteral(node.arguments[0])
+    ) {
+      const libName = transformAlias(
+        node.arguments[0].text,
+        dir,
+        options.aliases,
+        options.aliasesExclude
+      )
+
+      s.update(node.arguments[0].pos, node.arguments[0].end, `'${libName}'`)
+
+      return false
+    }
+
+    if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      const libName = transformAlias(
+        node.moduleSpecifier.text,
+        dir,
+        options.aliases,
+        options.aliasesExclude
+      )
+
+      s.update(node.moduleSpecifier.pos, node.moduleSpecifier.end, ` '${libName}'`)
+
+      return false
+    }
+  })
+
+  importMap.forEach((importSet, libName) => {
+    s.prepend(`import { ${Array.from(importSet).join(', ')} } from '${libName}';\n`)
+  })
+
+  return s.toString()
+}
+
+export function hasExportDefault(content: string) {
+  const ast = ts.createSourceFile('a.ts', content, ts.ScriptTarget.Latest)
+
+  let has = false
+
+  walkSourceFile(ast, node => {
+    if (ts.isExportAssignment(node)) {
+      has = true
+    } else if (
+      ts.isExportDeclaration(node) &&
+      node.exportClause &&
+      ts.isNamedExports(node.exportClause)
+    ) {
+      for (const element of node.exportClause.elements) {
+        if (element.name.escapedText === 'default') {
+          has = true
+        }
       }
     }
 
-    return str
+    return false
   })
-}
 
-const pureImportRE = /^import\s?['"][^;\n]+?['"];?\n?/g
-
-export function removePureImport(content: string) {
-  return content.replace(pureImportRE, '')
-}
-
-const setupFunctionRE = /function setup\([\s\S]+\)\s+?\{[\s\S]+return __returned__\n\}/
-
-export function transferSetupPosition(content: string) {
-  const match = content.match(setupFunctionRE)
-
-  if (match) {
-    const setupFunction = match[0]
-
-    return content
-      .replace(setupFunction, '')
-      .replace('setup})', setupFunction.slice('function '.length) + '\n\r})')
-  }
-
-  return content
-}
-
-const asDefaultRE = /export\s*\{.*\w+\s*\bas\s+default\b.*\}\s*from\s*['"].+['"]/
-
-export function hasExportDefault(content: string) {
-  return content.includes('export default') || asDefaultRE.test(content)
+  return has
 }

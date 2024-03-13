@@ -21,6 +21,11 @@ export { default as App } from './App.vue'
 export { default as Setup } from '@/components/Setup.vue'
 export { Decorator } from './decorator'
 
+export const user: import('@/src/types').User = {
+  id: '',
+  name: ''
+}
+
 export type { User } from './types'
 export type { DtsType } from './dts-types'
 
