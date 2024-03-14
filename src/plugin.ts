@@ -472,7 +472,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       bundled = true
       bundleDebug('begin writeBundle')
-      logger.info(green(`\n${logPrefix} Start generate declaration files...`))
+      logger.info(green(`\n${logPrefix} Start generating declaration files...`))
 
       const startTime = Date.now()
 
@@ -636,7 +636,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         bundleDebug('insert index')
 
         if (rollupTypes) {
-          logger.info(green(`${logPrefix} Start rollup declaration files...`))
+          logger.info(green(`${logPrefix} Start generating rollup declaration files...`))
 
           let libFolder: string | undefined = resolve(root, 'node_modules/typescript')
 
