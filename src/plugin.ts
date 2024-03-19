@@ -478,6 +478,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
+      const declareModules: string[] = []
 
       const writeOutput = async (path: string, content: string, outDir: string, record = true) => {
         if (typeof beforeWriteFile === 'function') {
@@ -542,7 +543,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           const baseDir = dirname(filePath)
 
           if (!isMapFile && content) {
-            content = transformCode({
+            const result = transformCode({
               filePath,
               content,
               aliases,
@@ -550,6 +551,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               staticImport,
               clearPureImport
             })
+
+            content = result.content
+            declareModules.push(...result.declareModules)
           }
 
           filePath = resolve(
@@ -695,9 +699,15 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           removeDirIfEmpty(outDir)
           emittedFiles.clear()
 
-          for (const file of rollupFiles) {
-            emittedFiles.set(file, await readFile(file, 'utf-8'))
-          }
+          const declared = declareModules.join('\n')
+
+          await runParallel(cpus().length, [...rollupFiles], async filePath => {
+            await writeOutput(
+              filePath,
+              (await readFile(filePath, 'utf-8')) + (declared ? `\n${declared}\n` : ''),
+              dirname(filePath)
+            )
+          })
 
           bundleDebug('rollup output')
         }

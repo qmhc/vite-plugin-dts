@@ -28,6 +28,7 @@ export const user: import('@/src/types').User = {
 
 export type { User } from './types'
 export type { DtsType } from './dts-types'
+export type * from './modules'
 
 export type { AliasType } from '$alias/type'
 

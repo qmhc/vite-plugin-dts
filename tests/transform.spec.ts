@@ -33,7 +33,7 @@ describe('transform tests', () => {
     })
 
     expect(
-      transformCode(options('let data: import("vexip-ui/lib/tree").InitDataOptions[];'))
+      transformCode(options('let data: import("vexip-ui/lib/tree").InitDataOptions[];')).content
     ).toEqual("import { InitDataOptions } from 'vexip-ui/lib/tree';\nlet data: InitDataOptions[];")
 
     expect(
@@ -41,7 +41,7 @@ describe('transform tests', () => {
         options(
           'declare const _default: import("vue").DefineComponent<{}, {}, {}, {}, {}, import("vue").ComponentOptionsMixin>;\nexport default _default;\n'
         )
-      )
+      ).content
     ).toEqual(
       "import { DefineComponent, ComponentOptionsMixin } from 'vue';\ndeclare const _default: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin>;\nexport default _default;\n"
     )
@@ -49,7 +49,7 @@ describe('transform tests', () => {
     expect(
       transformCode(
         options('let a: A<B<C> & {} & {} & import("vue").ComponentCustomProperties) | null>;')
-      )
+      ).content
     ).toEqual(
       "import { ComponentCustomProperties } from 'vue';\nlet a: A<B<C> & {} & {} & ComponentCustomProperties) | null>;"
     )
@@ -59,13 +59,14 @@ describe('transform tests', () => {
         options(
           'declare const _default: import("./Service").ServiceConstructor<import("./Service").default>;'
         )
-      )
+      ).content
     ).toEqual(
       "import { ServiceConstructor, default as __DTS_DEFAULT_0__ } from './Service';\ndeclare const _default: ServiceConstructor<__DTS_DEFAULT_0__>;"
     )
 
     expect(
       transformCode(options('import { Type } from "./test";\nconst test: import("./test").Test;'))
+        .content
     ).toEqual("import { Type, Test } from './test';\n\nconst test: Test;")
   })
 
@@ -86,34 +87,34 @@ describe('transform tests', () => {
       clearPureImport: false
     })
 
-    expect(transformCode(options('import type { TestBase } from "@/src/test";'))).toEqual(
+    expect(transformCode(options('import type { TestBase } from "@/src/test";')).content).toEqual(
       "import { TestBase } from './test';\n"
     )
 
-    expect(transformCode(options('import("@/components/test").Test;'))).toEqual(
+    expect(transformCode(options('import("@/components/test").Test;')).content).toEqual(
       "import('../components/test').Test;"
     )
-    expect(transformCode(options('import type { TestBase } from "@/components/test";'))).toEqual(
-      "import { TestBase } from '../components/test';\n"
-    )
+    expect(
+      transformCode(options('import type { TestBase } from "@/components/test";')).content
+    ).toEqual("import { TestBase } from '../components/test';\n")
 
-    expect(transformCode(options('import("@/components/test").Test;\n'))).toEqual(
+    expect(transformCode(options('import("@/components/test").Test;\n')).content).toEqual(
       "import('../components/test').Test;\n"
     )
 
     expect(
       transformCode(
         options('import VContainer from "@components/layout/container/VContainer.vue";')
-      )
+      ).content
     ).toEqual(
       "import { default as VContainer } from './components/layout/container/VContainer.vue';\n"
     )
 
-    expect(transformCode(options('import type { TestBase } from "~/test";'))).toEqual(
+    expect(transformCode(options('import type { TestBase } from "~/test";')).content).toEqual(
       "import { TestBase } from './test';\n"
     )
 
-    expect(transformCode(options('import type { TestBase } from "$src/test";'))).toEqual(
+    expect(transformCode(options('import type { TestBase } from "$src/test";')).content).toEqual(
       "import { TestBase } from './test';\n"
     )
   })
@@ -128,12 +129,13 @@ describe('transform tests', () => {
       clearPureImport: true
     })
 
-    expect(transformCode(options('import "@/themes/common.scss";'))).toEqual('')
+    expect(transformCode(options('import "@/themes/common.scss";')).content).toEqual('')
     expect(
       transformCode(options('import "@/themes/common.scss";\nimport type { Ref } from "vue";'))
+        .content
     ).toEqual("import { Ref } from 'vue';\n")
     expect(
-      transformCode(options("{ 'database-import': import('vue').FunctionalComponent }"))
+      transformCode(options("{ 'database-import': import('vue').FunctionalComponent }")).content
     ).toEqual("{ 'database-import': import('vue').FunctionalComponent }")
   })
 

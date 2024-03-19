@@ -95,6 +95,7 @@ export function transformCode(options: {
 
   const importMap = new Map<string, Set<string>>()
   const usedDefault = new Map<string, string>()
+  const declareModules: string[] = []
 
   let indexCount = 0
 
@@ -214,13 +215,20 @@ export function transformCode(options: {
 
       return false
     }
+
+    if (ts.isModuleDeclaration(node)) {
+      declareModules.push(s.slice(node.pos, node.end + 1))
+    }
   })
 
   importMap.forEach((importSet, libName) => {
     s.prepend(`import { ${Array.from(importSet).join(', ')} } from '${libName}';\n`)
   })
 
-  return s.toString()
+  return {
+    content: s.toString(),
+    declareModules
+  }
 }
 
 export function hasExportDefault(content: string) {
