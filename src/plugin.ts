@@ -695,7 +695,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             rollupFiles.add(typesPath)
           }
 
-          await runParallel(cpus().length, Array.from(emittedFiles.keys()), f => unlink(f))
+          await runParallel(cpus().length, Array.from(emittedFiles.keys()), f => unlink(f).catch(noop))
           removeDirIfEmpty(outDir)
           emittedFiles.clear()
 
