@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
+    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build",
+    "build:api": "tsx ./api-build.ts"
   },
   "types": "dist/ts-test.d.ts",
   "devDependencies": {

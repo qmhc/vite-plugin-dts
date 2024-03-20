@@ -6,6 +6,8 @@ import dts from '../../src'
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
 
+console.log('a')
+
 export default defineConfig({
   resolve: {
     alias: {
