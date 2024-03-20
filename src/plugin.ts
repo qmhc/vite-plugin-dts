@@ -365,7 +365,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
-      const diagnostics = program.getDeclarationDiagnostics()
+      const diagnostics = [
+        ...program.getDeclarationDiagnostics(),
+        ...program.getSemanticDiagnostics(),
+        ...program.getSyntacticDiagnostics()
+      ]
 
       if (diagnostics?.length) {
         logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
