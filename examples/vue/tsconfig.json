@@ -8,6 +8,7 @@
     "outDir": "dist",
     "strict": true,
     "jsx": "preserve",
+    "jsxImportSource": "vue",
     "allowJs": true,
     "sourceMap": true,
     "resolveJsonModule": true,

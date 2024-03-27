@@ -44,7 +44,7 @@ export default defineConfig({
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       // staticImport: true,
-      rollupTypes: true,
+      // rollupTypes: true,
       // insertTypesEntry: true,
       compilerOptions: {
         declarationMap: true

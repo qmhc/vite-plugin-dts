@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import HelloWorld from './HelloWorld.vue'
 
-const props = defineProps({
-  count: {
+defineProps({
+  max: {
     type: Number,
-    default: 0
+    default: 1000
   }
 })
 
+const count = defineModel('count', { type: Number, default: 0 })
+
 const emit = defineEmits(['on-add'])
 
-const currentCount = ref(props.count)
-
 const inc = () => {
-  currentCount.value++
-  emit('on-add', currentCount.value)
+  count.value++
+  emit('on-add', count.value)
 }
 </script>
 
