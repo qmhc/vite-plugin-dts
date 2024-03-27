@@ -1,3 +1,13 @@
+# [3.8.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.3...v3.8.0) (2024-03-27)
+
+### Bug Fixes
+
+- add syntactic and semantic diagnostics ([#310](https://github.com/qmhc/vite-plugin-dts/issues/310)) ([7c10782](https://github.com/qmhc/vite-plugin-dts/commit/7c10782284ebe728ab0d8850269fcc1ecae8310e))
+
+### Features
+
+- collect declared modules when rollup types ([39606bd](https://github.com/qmhc/vite-plugin-dts/commit/39606bd34534e2783300e351ba8bbed7f70d6d6a)), closes [#240](https://github.com/qmhc/vite-plugin-dts/issues/240)
+
 ## [3.7.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.2...v3.7.3) (2024-02-21)
 
 ### Bug Fixes
