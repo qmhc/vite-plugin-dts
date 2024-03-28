@@ -126,7 +126,11 @@ export function transformCode(options: {
 
         if (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)) {
           node.importClause.namedBindings.elements.forEach(element => {
-            importSet.add(element.name.escapedText as string)
+            if (element.propertyName) {
+              importSet.add(`${element.propertyName.escapedText} as ${element.name.escapedText}`)
+            } else {
+              importSet.add(element.name.escapedText as string)
+            }
           })
         }
 
