@@ -1,3 +1,9 @@
+## [3.8.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.0...v3.8.1) (2024-03-28)
+
+### Bug Fixes
+
+- correct process property names in imports ([fb320fb](https://github.com/qmhc/vite-plugin-dts/commit/fb320fb8140cd7559f4a8c3f8277927720b6936d)), closes [#316](https://github.com/qmhc/vite-plugin-dts/issues/316)
+
 # [3.8.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.7.3...v3.8.0) (2024-03-27)
 
 ### Bug Fixes
