@@ -221,7 +221,17 @@ export function transformCode(options: {
     }
 
     if (ts.isModuleDeclaration(node)) {
-      declareModules.push(s.slice(node.pos, node.end + 1))
+      if (
+        node.body &&
+        ts.isModuleBlock(node.body) &&
+        !node.body.statements.some(
+          s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
+        )
+      ) {
+        declareModules.push(s.slice(node.pos, node.end + 1))
+      }
+
+      return false
     }
   })
 

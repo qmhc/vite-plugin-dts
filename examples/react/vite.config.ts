@@ -29,7 +29,7 @@ export default defineConfig({
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],
       staticImport: true,
-      rollupTypes: true,
+      // rollupTypes: true,
       insertTypesEntry: true
     })
   ]
