@@ -1,3 +1,10 @@
+## [3.8.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.1...v3.8.2) (2024-04-12)
+
+### Bug Fixes
+
+- correctly process aliases which are inside generic types ([0d204d9](https://github.com/qmhc/vite-plugin-dts/commit/0d204d9cfb4738588290bd4e5f443622d75607e9)), closes [#317](https://github.com/qmhc/vite-plugin-dts/issues/317)
+- ignore walk for module declaration node ([1d65015](https://github.com/qmhc/vite-plugin-dts/commit/1d65015cba51e2911fd8cb01a1fd853bd77590e5)), closes [#318](https://github.com/qmhc/vite-plugin-dts/issues/318)
+
 ## [3.8.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.0...v3.8.1) (2024-03-28)
 
 ### Bug Fixes
