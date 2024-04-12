@@ -68,6 +68,15 @@ describe('transform tests', () => {
       transformCode(options('import { Type } from "./test";\nconst test: import("./test").Test;'))
         .content
     ).toEqual("import { Type, Test } from './test';\n\nconst test: Test;")
+
+    expect(
+      transformCode(options("const a: import('foo').A<{ b: import('foo').B<import('foo').C> }>"))
+        .content
+    ).toEqual("import { A, B, C } from 'foo';\nconst a: A<{ b: B<C> }>")
+
+    expect(
+      transformCode(options("function d(param: import('foo').E): import('foo').F")).content
+    ).toEqual("import { E, F } from 'foo';\nfunction d(param: E): F")
   })
 
   it('test: transformCode (process aliases)', () => {
@@ -83,7 +92,7 @@ describe('transform tests', () => {
       filePath,
       aliases,
       aliasesExclude: [],
-      staticImport: true,
+      staticImport: false,
       clearPureImport: false
     })
 
@@ -117,6 +126,16 @@ describe('transform tests', () => {
     expect(transformCode(options('import type { TestBase } from "$src/test";')).content).toEqual(
       "import { TestBase } from './test';\n"
     )
+
+    expect(
+      transformCode(
+        options("const a: import('~/test').A<{ b: import('~/test').B<import('~/test').C> }>")
+      ).content
+    ).toEqual("const a: import('./test').A<{ b: import('./test').B<import('./test').C> }>")
+
+    expect(
+      transformCode(options("function d(param: import('~/test').E): import('~/test').F")).content
+    ).toEqual("function d(param: import('./test').E): import('./test').F")
   })
 
   it('test: transformCode (remove pure imports)', () => {

@@ -157,7 +157,7 @@ export function transformCode(options: {
       if (!options.staticImport) {
         s.update(node.argument.literal.pos, node.argument.literal.end, `'${libName}'`)
 
-        return false
+        return !!node.typeArguments
       }
 
       const importSet =
