@@ -261,6 +261,17 @@ export function hasExportDefault(content: string) {
       for (const element of node.exportClause.elements) {
         if (element.name.escapedText === 'default') {
           has = true
+          break
+        }
+      }
+    } else if ('modifiers' in node && Array.isArray(node.modifiers) && node.modifiers.length > 1) {
+      for (let i = 0, len = node.modifiers.length; i < len; ++i) {
+        if (
+          node.modifiers[i].kind === ts.SyntaxKind.ExportKeyword &&
+          node.modifiers[i + 1]?.kind === ts.SyntaxKind.DefaultKeyword
+        ) {
+          has = true
+          break
         }
       }
     }
