@@ -1,3 +1,9 @@
+## [3.8.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.2...v3.8.3) (2024-04-15)
+
+### Bug Fixes
+
+- correctly test export default ([b84c6e2](https://github.com/qmhc/vite-plugin-dts/commit/b84c6e298e3bb7f6922aa9abf6ff9ce6268eb552)), closes [#319](https://github.com/qmhc/vite-plugin-dts/issues/319)
+
 ## [3.8.2](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.1...v3.8.2) (2024-04-12)
 
 ### Bug Fixes
