@@ -1,3 +1,9 @@
+# [3.9.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.3...v3.9.0) (2024-04-23)
+
+### Features
+
+- add afterRollup option ([791a1b7](https://github.com/qmhc/vite-plugin-dts/commit/791a1b7455e8715e068aef84e4c9877157d8cf22)), closes [#322](https://github.com/qmhc/vite-plugin-dts/issues/322)
+
 ## [3.8.3](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.2...v3.8.3) (2024-04-15)
 
 ### Bug Fixes
