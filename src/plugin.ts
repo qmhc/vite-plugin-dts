@@ -85,6 +85,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     strictOutput = true,
     afterDiagnostic = noop,
     beforeWriteFile = noop,
+    afterRollup = noop,
     afterBuild = noop
   } = options
 
@@ -663,40 +664,33 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             ? getTsConfig(configPath, host.readFile).compilerOptions
             : rawCompilerOptions
 
-          if (multiple) {
-            for (const name of entryNames) {
-              const path = cleanPath(resolve(outDir, tsToDts(name)))
-
-              rollupDeclarationFiles({
-                root,
-                configPath,
-                compilerOptions,
-                outDir,
-                entryPath: path,
-                fileName: basename(path),
-                libFolder,
-                rollupConfig,
-                rollupOptions
-              })
-
-              emittedFiles.delete(path)
-              rollupFiles.add(path)
-            }
-          } else {
-            rollupDeclarationFiles({
+          const rollup = async (path: string) => {
+            const result = rollupDeclarationFiles({
               root,
               configPath,
               compilerOptions,
               outDir,
-              entryPath: typesPath,
-              fileName: basename(typesPath),
+              entryPath: path,
+              fileName: basename(path),
               libFolder,
               rollupConfig,
               rollupOptions
             })
 
-            emittedFiles.delete(typesPath)
-            rollupFiles.add(typesPath)
+            emittedFiles.delete(path)
+            rollupFiles.add(path)
+
+            if (typeof afterRollup === 'function') {
+              await unwrapPromise(afterRollup(result))
+            }
+          }
+
+          if (multiple) {
+            await runParallel(cpus().length, entryNames, async name => {
+              await rollup(cleanPath(resolve(outDir, tsToDts(name))))
+            })
+          } else {
+            await rollup(typesPath)
           }
 
           await runParallel(cpus().length, Array.from(emittedFiles.keys()), f => unlink(f))

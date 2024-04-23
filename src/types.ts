@@ -1,5 +1,6 @@
 import type ts from 'typescript'
 import type {
+  ExtractorResult,
   IExtractorConfigPrepareOptions,
   IExtractorInvokeOptions
 } from '@microsoft/api-extractor'
@@ -248,6 +249,13 @@ export interface PluginOptions {
       content?: string
     }
   >,
+
+  /**
+   * Hook called after rolling up declaration files
+   *
+   * @default () => {}
+   */
+  afterRollup?: (result: ExtractorResult) => MaybePromise<void>,
 
   /**
    * Hook called after all declaration files are written

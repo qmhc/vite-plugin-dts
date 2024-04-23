@@ -269,7 +269,7 @@ export interface PluginOptions {
   insertTypesEntry?: boolean,
 
   /**
-   * 设置是否在发出类型文件后将其打包
+   * 设置是否将发出的类型文件打包进单个文件
    *
    * 基于 `@microsoft/api-extractor`，过程将会消耗一些时间
    *
@@ -356,7 +356,14 @@ export interface PluginOptions {
   >,
 
   /**
-   * 在所有类型文件被写入后调用的钩子
+   * 类型文件被打包进单个文件后的钩子
+   *
+   * @default () => {}
+   */
+  afterRollup?: (result: ExtractorResult) => MaybePromise<void>,
+
+  /**
+   * 在所有类型文件被写入后的钩子
    *
    * 它会接收一个记录了那些最终被写入的文件的映射（path -> content）
    *

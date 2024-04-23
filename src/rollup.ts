@@ -85,13 +85,11 @@ export function rollupDeclarationFiles({
     packageJsonFullPath: tryGetPkgPath(configObjectFullPath)
   })
 
-  const result = Extractor.invoke(extractorConfig, {
+  return Extractor.invoke(extractorConfig, {
     localBuild: false,
     showVerboseMessages: false,
     showDiagnostics: false,
     typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined,
     ...rollupOptions
   })
-
-  return result.succeeded
 }
