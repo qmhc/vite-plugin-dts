@@ -1,3 +1,9 @@
+## [3.9.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.9.0...v3.9.1) (2024-05-05)
+
+### Bug Fixes
+
+- correctly process cleaning .vue paths ([0a3ad73](https://github.com/qmhc/vite-plugin-dts/commit/0a3ad732f269eeaf838ee44604e143595ac60916)), closes [#325](https://github.com/qmhc/vite-plugin-dts/issues/325)
+
 # [3.9.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.8.3...v3.9.0) (2024-04-23)
 
 ### Features
