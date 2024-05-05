@@ -538,7 +538,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       bundleDebug('emit output patch')
 
       const currentDir = host.getCurrentDirectory()
-      const vuePathRE = /['"](.+)\.vue['"]/g
 
       await runParallel(
         cpus().length,
@@ -554,7 +553,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               aliases,
               aliasesExclude,
               staticImport,
-              clearPureImport
+              clearPureImport,
+              cleanVueFileName
             })
 
             content = result.content
@@ -568,7 +568,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
             )
           )
-          content = cleanVueFileName ? content.replace(vuePathRE, '"$1"') : content
 
           if (isMapFile) {
             try {

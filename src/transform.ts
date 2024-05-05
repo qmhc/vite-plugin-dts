@@ -86,7 +86,8 @@ export function transformCode(options: {
   aliases: Alias[],
   aliasesExclude: (string | RegExp)[],
   staticImport: boolean,
-  clearPureImport: boolean
+  clearPureImport: boolean,
+  cleanVueFileName: boolean
 }) {
   const s = new MagicString(options.content)
   const ast = ts.createSourceFile('a.ts', options.content, ts.ScriptTarget.Latest)
@@ -96,6 +97,12 @@ export function transformCode(options: {
   const importMap = new Map<string, Set<string>>()
   const usedDefault = new Map<string, string>()
   const declareModules: string[] = []
+
+  const toLibName = (origin: string) => {
+    const name = transformAlias(origin, dir, options.aliases, options.aliasesExclude)
+
+    return options.cleanVueFileName ? name.replace(/\.vue$/, '') : name
+  }
 
   let indexCount = 0
 
@@ -108,12 +115,7 @@ export function transformCode(options: {
         (node.importClause.name ||
           (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)))
       ) {
-        const libName = transformAlias(
-          node.moduleSpecifier.text,
-          dir,
-          options.aliases,
-          options.aliasesExclude
-        )
+        const libName = toLibName(node.moduleSpecifier.text)
         const importSet =
           importMap.get(libName) ?? importMap.set(libName, new Set<string>()).get(libName)!
 
@@ -147,12 +149,7 @@ export function transformCode(options: {
       ts.isIdentifier(node.qualifier) &&
       ts.isStringLiteral(node.argument.literal)
     ) {
-      const libName = transformAlias(
-        node.argument.literal.text,
-        dir,
-        options.aliases,
-        options.aliasesExclude
-      )
+      const libName = toLibName(node.argument.literal.text)
 
       if (!options.staticImport) {
         s.update(node.argument.literal.pos, node.argument.literal.end, `'${libName}'`)
@@ -191,14 +188,11 @@ export function transformCode(options: {
       node.expression.kind === ts.SyntaxKind.ImportKeyword &&
       ts.isStringLiteral(node.arguments[0])
     ) {
-      const libName = transformAlias(
-        node.arguments[0].text,
-        dir,
-        options.aliases,
-        options.aliasesExclude
+      s.update(
+        node.arguments[0].pos,
+        node.arguments[0].end,
+        `'${toLibName(node.arguments[0].text)}'`
       )
-
-      s.update(node.arguments[0].pos, node.arguments[0].end, `'${libName}'`)
 
       return false
     }
@@ -208,14 +202,11 @@ export function transformCode(options: {
       node.moduleSpecifier &&
       ts.isStringLiteral(node.moduleSpecifier)
     ) {
-      const libName = transformAlias(
-        node.moduleSpecifier.text,
-        dir,
-        options.aliases,
-        options.aliasesExclude
+      s.update(
+        node.moduleSpecifier.pos,
+        node.moduleSpecifier.end,
+        ` '${toLibName(node.moduleSpecifier.text)}'`
       )
-
-      s.update(node.moduleSpecifier.pos, node.moduleSpecifier.end, ` '${libName}'`)
 
       return false
     }
@@ -235,9 +226,13 @@ export function transformCode(options: {
     }
   })
 
+  let prependImports = ''
+
   importMap.forEach((importSet, libName) => {
-    s.prepend(`import { ${Array.from(importSet).join(', ')} } from '${libName}';\n`)
+    prependImports += `import { ${Array.from(importSet).join(', ')} } from '${libName}';\n`
   })
+
+  s.prepend(prependImports)
 
   return {
     content: s.toString(),

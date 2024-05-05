@@ -29,7 +29,8 @@ describe('transform tests', () => {
       aliases: [],
       aliasesExclude: [],
       staticImport: true,
-      clearPureImport: false
+      clearPureImport: false,
+      cleanVueFileName: false
     })
 
     expect(
@@ -93,7 +94,8 @@ describe('transform tests', () => {
       aliases,
       aliasesExclude: [],
       staticImport: false,
-      clearPureImport: false
+      clearPureImport: false,
+      cleanVueFileName: false
     })
 
     expect(transformCode(options('import type { TestBase } from "@/src/test";')).content).toEqual(
@@ -145,7 +147,8 @@ describe('transform tests', () => {
       aliases: [],
       aliasesExclude: [],
       staticImport: false,
-      clearPureImport: true
+      clearPureImport: true,
+      cleanVueFileName: false
     })
 
     expect(transformCode(options('import "@/themes/common.scss";')).content).toEqual('')
@@ -156,6 +159,37 @@ describe('transform tests', () => {
     expect(
       transformCode(options("{ 'database-import': import('vue').FunctionalComponent }")).content
     ).toEqual("{ 'database-import': import('vue').FunctionalComponent }")
+  })
+
+  it('test: transformCode (clean .vue)', () => {
+    const options = (content: string) => ({
+      content,
+      filePath: '',
+      aliases: [],
+      aliasesExclude: [],
+      staticImport: false,
+      clearPureImport: false,
+      cleanVueFileName: true
+    })
+
+    expect(transformCode(options('import { App } from "./App.vue";')).content).toEqual(
+      "import { App } from './App';\n"
+    )
+    console.log(
+      transformCode(options('import { App } "./App.vue";\nimport { foo } from "./foo.vue";'))
+        .content
+    )
+    expect(
+      transformCode(options('import { App } "./App.vue";\nimport { foo } from "./foo.vue";'))
+        .content
+    ).toEqual("import { App } from './App';\nimport { foo } from './foo';\n")
+    expect(transformCode(options("export * from './abc.vue'")).content).toEqual(
+      "export * from './abc'"
+    )
+    expect(
+      transformCode(options("const foo: import('./foo.vue').Foo<import('./baz.vue').Baz[]>"))
+        .content
+    ).toEqual("const foo: import('./foo').Foo<import('./baz').Baz[]>")
   })
 
   it('test: hasExportDefault', () => {
