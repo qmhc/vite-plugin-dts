@@ -109,6 +109,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let program: Program | undefined
   let filter: ReturnType<typeof createFilter>
 
+  const contexts = new Map<
+    string,
+    {
+      host: ts.CompilerHost,
+      program: Program
+    }
+  >()
+
   let bundled = false
   let timeRecord = 0
 
@@ -248,7 +256,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     async buildStart() {
-      if (program) return
+      if (contexts.size) return
 
       bundleDebug('begin buildStart')
       timeRecord = 0

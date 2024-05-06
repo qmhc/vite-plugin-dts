@@ -210,6 +210,8 @@ export function getTsConfig(
   tsConfigPath: string,
   readFileSync: (filePath: string, encoding?: string | undefined) => string | undefined
 ) {
+  const baseConfig = ts.readConfigFile(tsConfigPath, readFileSync).config ?? {}
+
   // #95 Should parse include or exclude from the base config when they are missing from
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
   // should get them from the parent config.
@@ -219,8 +221,8 @@ export function getTsConfig(
     exclude?: string[],
     extends?: string | string[]
   } = {
-    compilerOptions: {},
-    ...(ts.readConfigFile(tsConfigPath, readFileSync).config ?? {})
+    ...baseConfig,
+    compilerOptions: {}
   }
 
   if (tsConfig.extends) {
@@ -238,6 +240,8 @@ export function getTsConfig(
       }
     })
   }
+
+  Object.assign(tsConfig.compilerOptions, baseConfig.compilerOptions)
 
   return tsConfig
 }
@@ -275,11 +279,11 @@ export function base64VLQEncode(numbers: number[]) {
     do {
       digit = vlq & VLQ_BASE_MASK
       vlq >>>= VLQ_BASE_SHIFT
+
       if (vlq > 0) {
-        // There are still more digits in this value, so we must make sure the
-        // continuation bit is marked.
         digit |= VLQ_CONTINUATION_BIT
       }
+
       encoded += base64Encode(digit)
     } while (vlq > 0)
   }
