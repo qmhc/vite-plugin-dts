@@ -629,7 +629,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           let fromPath = normalizePath(relative(dirname(entryDtsPath), sourceEntry))
 
-          fromPath = fromPath.replace(dtsRE, '')
+          fromPath = fromPath.replace(dtsRE, `.${extPrefix(entryDtsPath)}js`)
           fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
 
           let content = `export * from '${fromPath}'\n`
