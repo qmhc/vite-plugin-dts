@@ -15,7 +15,7 @@ export function VueResolver(): Resolver {
     supports(id) {
       return vueRE.test(id)
     },
-    transform({ id, code, program, service }) {
+    transform({ id, code, program }) {
       const sourceFile =
         program.getSourceFile(id) ||
         program.getSourceFile(id + '.ts') ||
@@ -25,12 +25,23 @@ export function VueResolver(): Resolver {
 
       if (!sourceFile) return []
 
-      const outputs = service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(file => {
-        return {
-          path: file.name,
-          content: file.text
-        }
-      })
+      const outputs: { path: string, content: string }[] = []
+
+      program.emit(
+        sourceFile,
+        (path, content) => {
+          outputs.push({ path, content })
+        },
+        undefined,
+        true
+      )
+
+      // const outputs = service.getEmitOutput(sourceFile.fileName, true).outputFiles.map(file => {
+      //   return {
+      //     path: file.name,
+      //     content: file.text
+      //   }
+      // })
 
       if (!program.getCompilerOptions().declarationMap) return outputs
 

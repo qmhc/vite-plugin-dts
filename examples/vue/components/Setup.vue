@@ -8,7 +8,7 @@ defineProps({
   }
 })
 
-const count = defineModel('count', { type: Number, default: 0 })
+const count = defineModel<number>('count', { default: 0 })
 
 const emit = defineEmits(['on-add'])
 

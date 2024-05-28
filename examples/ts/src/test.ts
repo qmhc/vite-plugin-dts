@@ -2,6 +2,9 @@ export interface TestBase {
   name: string
 }
 
+/**
+ * Comment
+ */
 export interface Component {
   name: string,
   type: string

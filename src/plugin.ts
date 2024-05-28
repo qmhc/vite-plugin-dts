@@ -3,11 +3,17 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
 
-import { createParsedCommandLine } from '@vue/language-core'
+import {
+  createParsedCommandLine,
+  createVueLanguagePlugin,
+  resolveVueCompilerOptions
+} from '@vue/language-core'
+
+import { proxyCreateProgram } from '@volar/typescript'
 
 import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
-import { createProgram } from 'vue-tsc'
+import { removeEmitGlobalTypes } from 'vue-tsc'
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
@@ -22,6 +28,7 @@ import {
   isNativeObj,
   isRegExp,
   normalizePath,
+  parseTsAliases,
   queryPublicPath,
   removeDirIfEmpty,
   resolve,
@@ -33,8 +40,35 @@ import {
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
-import type { _Program as Program } from 'vue-tsc'
 import type { PluginOptions, Resolver } from './types'
+
+const createProgram = proxyCreateProgram(ts, ts.createProgram, (ts, options) => {
+  const { configFilePath } = options.options
+  const vueOptions =
+    typeof configFilePath === 'string'
+      ? createParsedCommandLine(ts, ts.sys, configFilePath.replace(/\\/g, '/')).vueOptions
+      : resolveVueCompilerOptions({})
+
+  if (options.host) {
+    const writeFile = options.host.writeFile.bind(options.host)
+    options.host.writeFile = (fileName, contents, ...args) => {
+      return writeFile(fileName, removeEmitGlobalTypes(contents), ...args)
+    }
+  }
+
+  const vueLanguagePlugin = createVueLanguagePlugin(
+    ts,
+    id => id,
+    options.host?.useCaseSensitiveFileNames?.() ?? false,
+    () => '',
+    () => options.rootNames.map(rootName => rootName.replace(/\\/g, '/')),
+    options.options,
+    vueOptions
+  )
+  return [vueLanguagePlugin]
+})
+
+type Program = ReturnType<typeof createProgram>
 
 const jsRE = /\.(m|c)?jsx?$/
 const tsRE = /\.(m|c)?tsx?$/
@@ -64,9 +98,6 @@ const fixedCompilerOptions: ts.CompilerOptions = {
 const noop = () => {}
 const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
 const tsToDts = (path: string) => `${path.replace(tsRE, '')}.d.ts`
-
-const regexpSymbolRE = /([$.\\+?()[\]!<=|{}^,])/g
-const asteriskRE = /[*]+/g
 
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
@@ -121,6 +152,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
+
+  const setOutputFile = (path: string, content: string) => {
+    outputFiles.set(path, content)
+  }
 
   const rollupConfig = { ...(options.rollupConfig || {}) }
   rollupConfig.bundledPackages = rollupConfig.bundledPackages || options.bundledPackages || []
@@ -287,23 +322,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const { baseUrl, paths } = compilerOptions
 
       if (pathsToAliases && baseUrl && paths) {
-        const basePath = ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root)
-
-        for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
-          const find = new RegExp(
-            `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')}$`
-          )
-
-          let index = 1
-
-          aliases.push({
-            find,
-            replacement: ensureAbsolute(
-              replacements[0].replace(asteriskRE, () => `$${index++}`),
-              basePath
-            )
-          })
-        }
+        aliases.push(
+          ...parseTsAliases(ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root), paths)
+        )
       }
 
       const computeGlobs = (
@@ -329,17 +350,33 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         ...new Set(
           Object.values(entries)
             .map(entry => ensureAbsolute(entry, root))
-            .concat(content?.fileNames.filter(filter) || [])
+            .concat(
+              content?.fileNames.filter(filter) || []
+              // refContexts.map(context => context.fileNames).flat(1)
+            )
             .map(normalizePath)
         )
       ]
+
+      // filter = path => {
+      //   for (const context of refContexts) {
+      //     if (context.filter(path)) {
+      //       return true
+      //     }
+      //   }
+
+      //   return rootFilter(path)
+      // }
 
       host = ts.createCompilerHost(compilerOptions)
       program = createProgram({
         host,
         rootNames,
-        options: compilerOptions
+        options: compilerOptions,
+        projectReferences: content?.projectReferences
       })
+
+      // refContexts.push({ filter: rootFilter, aliases: aliases, fileNames: rootNames, host, program, configPath })
 
       libName = toCapitalCase(libName || '_default')
       indexName = indexName || defaultIndex
@@ -363,6 +400,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               .map(sourceFile => sourceFile.fileName)
           )
       publicRoot = normalizePath(publicRoot)
+
       entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
@@ -393,6 +431,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       let resolver: Resolver | undefined
       id = normalizePath(id)
 
+      // const { filter, host, program } = getContext(id)
+
       if (
         !host ||
         !program ||
@@ -402,9 +442,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         return
       }
 
+      // if (!id.includes('TypeProps.vue')) return
       const startTime = Date.now()
       const outDir = outDirs[0]
-      const service = program.__vue.languageService as unknown as ts.LanguageService
+      // const service = program.__vue?.languageService as unknown as ts.LanguageService
 
       id = id.split('?')[0]
       rootFiles.delete(id)
@@ -416,12 +457,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           root: publicRoot,
           outDir,
           host,
-          program,
-          service
+          program
         })
 
         for (const { path, content } of result) {
-          outputFiles.set(
+          setOutputFile(
             resolve(publicRoot, relative(outDir, ensureAbsolute(path, outDir))),
             content
           )
@@ -430,12 +470,17 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const sourceFile = program.getSourceFile(id)
 
         if (sourceFile) {
-          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(
-              resolve(publicRoot, relative(outDir, ensureAbsolute(outputFile.name, outDir))),
-              outputFile.text
-            )
-          }
+          program.emit(
+            sourceFile,
+            (name, text) => {
+              setOutputFile(
+                resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))),
+                text
+              )
+            },
+            undefined,
+            true
+          )
         }
       }
 
@@ -444,7 +489,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       dtsSourceFile &&
         filter(dtsSourceFile.fileName) &&
-        outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
+        setOutputFile(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
 
       timeRecord += Date.now() - startTime
     },
@@ -466,7 +511,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (sourceFile) {
         rootFiles.add(sourceFile.fileName)
-        program.__vue.projectVersion++
+        // program.__vue.projectVersion++
         bundled = false
         timeRecord = 0
       }
@@ -513,23 +558,27 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         record && emittedFiles.set(path, content)
       }
 
-      const service = program.__vue.languageService
       const sourceFiles = program.getSourceFiles()
 
       for (const sourceFile of sourceFiles) {
         if (!filter(sourceFile.fileName)) continue
 
         if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
-          outputFiles.set(normalizePath(sourceFile.fileName), sourceFile.getFullText())
+          setOutputFile(normalizePath(sourceFile.fileName), sourceFile.getFullText())
         }
 
         if (rootFiles.has(sourceFile.fileName)) {
-          for (const outputFile of service.getEmitOutput(sourceFile.fileName, true).outputFiles) {
-            outputFiles.set(
-              resolve(publicRoot, relative(outDir, ensureAbsolute(outputFile.name, outDir))),
-              outputFile.text
-            )
-          }
+          program.emit(
+            sourceFile,
+            (name, text) => {
+              setOutputFile(
+                resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))),
+                text
+              )
+            },
+            undefined,
+            true
+          )
 
           rootFiles.delete(sourceFile.fileName)
         }
