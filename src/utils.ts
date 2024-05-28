@@ -12,6 +12,7 @@ import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 import ts from 'typescript'
 
 import type { CompilerOptions } from 'typescript'
+import type { Alias } from 'vite'
 
 const windowsSlashRE = /\\+/g
 
@@ -397,4 +398,29 @@ export function editSourceMapDir(content: string, fromDir: string, toDir: string
   }
 
   return true
+}
+
+const regexpSymbolRE = /([$.\\+?()[\]!<=|{}^,])/g
+const asteriskRE = /[*]+/g
+
+export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
+  const result: Alias[] = []
+
+  for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
+    const find = new RegExp(
+      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')}$`
+    )
+
+    let index = 1
+
+    result.push({
+      find,
+      replacement: ensureAbsolute(
+        replacements[0].replace(asteriskRE, () => `$${index++}`),
+        basePath
+      )
+    })
+  }
+
+  return result
 }

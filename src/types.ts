@@ -35,8 +35,8 @@ export interface Resolver {
     root: string,
     outDir: string,
     host: ts.CompilerHost,
-    program: ts.Program,
-    service: ts.LanguageService
+    program: ts.Program
+    // service: ts.LanguageService
   }) => MaybePromise<{ path: string, content: string }[]>
 }
 
