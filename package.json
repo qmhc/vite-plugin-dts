@@ -58,7 +58,7 @@
     "volar"
   ],
   "dependencies": {
-    "@microsoft/api-extractor": "7.43.0",
+    "@microsoft/api-extractor": "7.47.0",
     "@rollup/pluginutils": "^5.1.0",
     "@vue/language-core": "^1.8.27",
     "debug": "^4.3.4",
@@ -104,11 +104,6 @@
   "peerDependenciesMeta": {
     "vite": {
       "optional": true
-    }
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@microsoft/api-extractor@7.43.0": "patches/@microsoft__api-extractor@7.43.0.patch"
     }
   }
 }
