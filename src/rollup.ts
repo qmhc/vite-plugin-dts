@@ -19,7 +19,7 @@ export interface BundleOptions {
   rollupOptions?: IExtractorInvokeOptions
 }
 
-const dtsRE = /\.d\.tsx?$/
+const dtsRE = /\.d\.(m|c)?tsx?$/
 
 export function rollupDeclarationFiles({
   root,
