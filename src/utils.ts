@@ -337,7 +337,7 @@ export function findTypesPath(...pkgs: Record<any, any>[]) {
   for (const pkg of pkgs) {
     if (typeof pkg !== 'object') continue
 
-    path = pkg.types || pkg.typings || pkg.exports?.['.']?.types || pkg.exports?.['./']?.types
+    path = pkg.types || pkg.typings || pkg.exports?.types || pkg.exports?.['.']?.types || pkg.exports?.['./']?.types
 
     if (path) return path
   }
