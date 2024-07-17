@@ -8,6 +8,7 @@ defineProps({
   }
 })
 
+// Must specify the generic type for defineModel to infer correct type
 const count = defineModel<number>('count', { default: 0 })
 
 const emit = defineEmits(['on-add'])

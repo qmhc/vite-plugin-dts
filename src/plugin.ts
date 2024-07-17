@@ -139,6 +139,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let host: ts.CompilerHost | undefined
   let program: Program | undefined
   let filter: ReturnType<typeof createFilter>
+  let rebuildProgram: () => Program
 
   let bundled = false
   let timeRecord = 0
@@ -350,33 +351,19 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         ...new Set(
           Object.values(entries)
             .map(entry => ensureAbsolute(entry, root))
-            .concat(
-              content?.fileNames.filter(filter) || []
-              // refContexts.map(context => context.fileNames).flat(1)
-            )
+            .concat(content?.fileNames.filter(filter) || [])
             .map(normalizePath)
         )
       ]
 
-      // filter = path => {
-      //   for (const context of refContexts) {
-      //     if (context.filter(path)) {
-      //       return true
-      //     }
-      //   }
-
-      //   return rootFilter(path)
-      // }
-
       host = ts.createCompilerHost(compilerOptions)
-      program = createProgram({
-        host,
-        rootNames,
-        options: compilerOptions,
-        projectReferences: content?.projectReferences
-      })
-
-      // refContexts.push({ filter: rootFilter, aliases: aliases, fileNames: rootNames, host, program, configPath })
+      program = (rebuildProgram = () =>
+        createProgram({
+          host,
+          rootNames,
+          options: compilerOptions,
+          projectReferences: content?.projectReferences
+        }))()
 
       libName = toCapitalCase(libName || '_default')
       indexName = indexName || defaultIndex
@@ -431,8 +418,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       let resolver: Resolver | undefined
       id = normalizePath(id)
 
-      // const { filter, host, program } = getContext(id)
-
       if (
         !host ||
         !program ||
@@ -442,10 +427,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         return
       }
 
-      // if (!id.includes('TypeProps.vue')) return
       const startTime = Date.now()
       const outDir = outDirs[0]
-      // const service = program.__vue?.languageService as unknown as ts.LanguageService
 
       id = id.split('?')[0]
       rootFiles.delete(id)
@@ -511,9 +494,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (sourceFile) {
         rootFiles.add(sourceFile.fileName)
-        // program.__vue.projectVersion++
+
         bundled = false
         timeRecord = 0
+        // We lose the fast way to trigger source file re-emit in Volar 1,
+        // so now we have to rebuild the program to get the latest declaration
+        // files of those changed files.
+        program = rebuildProgram()
       }
     },
 

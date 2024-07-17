@@ -23,6 +23,7 @@ export default defineConfig({
     ]
   },
   build: {
+    // watch: {},
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'Test',

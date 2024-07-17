@@ -354,9 +354,9 @@ export function setModuleResolution(options: CompilerOptions) {
   const module =
     typeof options.module === 'number'
       ? options.module
-      : options.target ?? ts.ScriptTarget.ES5 >= 2
-        ? ts.ModuleKind.ES2015
-        : ts.ModuleKind.CommonJS
+      : (options.target ?? ts.ScriptTarget.ES5 >= 2)
+          ? ts.ModuleKind.ES2015
+          : ts.ModuleKind.CommonJS
 
   let moduleResolution: ts.ModuleResolutionKind
 
@@ -408,7 +408,7 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
 
   for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
     const find = new RegExp(
-      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(.+)')}$`
+      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '([^\\/]+)')}$`
     )
 
     let index = 1
