@@ -1,3 +1,14 @@
+# [4.0.0-beta.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.9.1...v4.0.0-beta.0) (2024-07-17)
+
+### Bug Fixes
+
+- support module extension for rollup types ([#339](https://github.com/qmhc/vite-plugin-dts/issues/339)) ([bd1b52a](https://github.com/qmhc/vite-plugin-dts/commit/bd1b52a7ce275843976a2674a84f2b2e28a89bb9))
+
+### Features
+
+- support export sugared syntax in package.json ([#340](https://github.com/qmhc/vite-plugin-dts/issues/340)) ([2fd3c6b](https://github.com/qmhc/vite-plugin-dts/commit/2fd3c6bd6c9c305c76cd50cfe5b0c56211de60c4))
+- upgrade Volar to 2 ([#336](https://github.com/qmhc/vite-plugin-dts/issues/336)) ([7a5fe9a](https://github.com/qmhc/vite-plugin-dts/commit/7a5fe9a55d8503f4af88e935f4b7d3399a4a832e))
+
 ## [3.9.1](https://github.com/qmhc/vite-plugin-dts/compare/v3.9.0...v3.9.1) (2024-05-05)
 
 ### Bug Fixes
