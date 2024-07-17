@@ -6,8 +6,7 @@ import { execa } from 'execa'
 import semver from 'semver'
 import { lightBlue } from 'kolorist'
 import prompts from 'prompts'
-// @ts-ignore
-import { logger } from './logger.ts'
+import { logger } from './logger'
 
 const args = minimist<{
   d?: boolean,
