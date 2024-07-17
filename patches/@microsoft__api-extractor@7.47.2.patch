@@ -1,9 +1,9 @@
 diff --git a/lib/api/Extractor.js b/lib/api/Extractor.js
-index c57e4abc8f5497a9b0260cd9e3eacc1233a252c5..9442a3c9cbf21f5925bb5b78f6cab049361ed0ca 100644
+index d125dff6b2741441e2f38c43704abd86b1209e8d..3cfbd58755d910dc2181eacc235adf148ce7e088 100644
 --- a/lib/api/Extractor.js
 +++ b/lib/api/Extractor.js
-@@ -259,7 +259,7 @@ class Extractor {
-         });
+@@ -281,7 +281,7 @@ class Extractor {
+         return apiReportChanged;
      }
      static _checkCompilerCompatibility(extractorConfig, messageRouter) {
 -        messageRouter.logInfo(ConsoleMessageId_1.ConsoleMessageId.Preamble, `Analysis will use the bundled TypeScript version ${ts.version}`);
@@ -11,7 +11,7 @@ index c57e4abc8f5497a9b0260cd9e3eacc1233a252c5..9442a3c9cbf21f5925bb5b78f6cab049
          try {
              const typescriptPath = resolve.sync('typescript', {
                  basedir: extractorConfig.projectFolder,
-@@ -274,8 +274,8 @@ class Extractor {
+@@ -296,8 +296,8 @@ class Extractor {
                  const theirMajor = semver.major(packageJson.version);
                  const theirMinor = semver.minor(packageJson.version);
                  if (theirMajor > ourMajor || (theirMajor === ourMajor && theirMinor > ourMinor)) {

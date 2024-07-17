@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 export type Props = {
-  color: 'blue' | 'red' | 'purple',
+  color: 'blue' | 'red' | 'purple' | 'yellow',
   array?: { foo: number }[]
 }
 

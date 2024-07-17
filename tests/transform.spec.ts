@@ -175,10 +175,6 @@ describe('transform tests', () => {
     expect(transformCode(options('import { App } from "./App.vue";')).content).toEqual(
       "import { App } from './App';\n"
     )
-    console.log(
-      transformCode(options('import { App } "./App.vue";\nimport { foo } from "./foo.vue";'))
-        .content
-    )
     expect(
       transformCode(options('import { App } "./App.vue";\nimport { foo } from "./foo.vue";'))
         .content

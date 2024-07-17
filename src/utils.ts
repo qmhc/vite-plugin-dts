@@ -12,6 +12,7 @@ import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 import ts from 'typescript'
 
 import type { CompilerOptions } from 'typescript'
+import type { Alias } from 'vite'
 
 const windowsSlashRE = /\\+/g
 
@@ -210,6 +211,8 @@ export function getTsConfig(
   tsConfigPath: string,
   readFileSync: (filePath: string, encoding?: string | undefined) => string | undefined
 ) {
+  const baseConfig = ts.readConfigFile(tsConfigPath, readFileSync).config ?? {}
+
   // #95 Should parse include or exclude from the base config when they are missing from
   // the inheriting config. If the inherit config doesn't have `include` or `exclude` field,
   // should get them from the parent config.
@@ -219,8 +222,8 @@ export function getTsConfig(
     exclude?: string[],
     extends?: string | string[]
   } = {
-    compilerOptions: {},
-    ...(ts.readConfigFile(tsConfigPath, readFileSync).config ?? {})
+    ...baseConfig,
+    compilerOptions: {}
   }
 
   if (tsConfig.extends) {
@@ -238,6 +241,8 @@ export function getTsConfig(
       }
     })
   }
+
+  Object.assign(tsConfig.compilerOptions, baseConfig.compilerOptions)
 
   return tsConfig
 }
@@ -275,11 +280,11 @@ export function base64VLQEncode(numbers: number[]) {
     do {
       digit = vlq & VLQ_BASE_MASK
       vlq >>>= VLQ_BASE_SHIFT
+
       if (vlq > 0) {
-        // There are still more digits in this value, so we must make sure the
-        // continuation bit is marked.
         digit |= VLQ_CONTINUATION_BIT
       }
+
       encoded += base64Encode(digit)
     } while (vlq > 0)
   }
@@ -349,9 +354,9 @@ export function setModuleResolution(options: CompilerOptions) {
   const module =
     typeof options.module === 'number'
       ? options.module
-      : options.target ?? ts.ScriptTarget.ES5 >= 2
-        ? ts.ModuleKind.ES2015
-        : ts.ModuleKind.CommonJS
+      : (options.target ?? ts.ScriptTarget.ES5 >= 2)
+          ? ts.ModuleKind.ES2015
+          : ts.ModuleKind.CommonJS
 
   let moduleResolution: ts.ModuleResolutionKind
 
@@ -393,4 +398,29 @@ export function editSourceMapDir(content: string, fromDir: string, toDir: string
   }
 
   return true
+}
+
+const regexpSymbolRE = /([$.\\+?()[\]!<=|{}^,])/g
+const asteriskRE = /[*]+/g
+
+export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
+  const result: Alias[] = []
+
+  for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
+    const find = new RegExp(
+      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '([^\\/]+)')}$`
+    )
+
+    let index = 1
+
+    result.push({
+      find,
+      replacement: ensureAbsolute(
+        replacements[0].replace(asteriskRE, () => `$${index++}`),
+        basePath
+      )
+    })
+  }
+
+  return result
 }
