@@ -62,8 +62,10 @@
     "@rollup/pluginutils": "^5.1.0",
     "@volar/typescript": "^2.3.4",
     "@vue/language-core": "2.0.19",
+    "compare-versions": "^6.1.1",
     "debug": "^4.3.5",
     "kolorist": "^1.8.0",
+    "local-pkg": "^0.5.0",
     "magic-string": "^0.30.10",
     "vue-tsc": "2.0.19"
   },

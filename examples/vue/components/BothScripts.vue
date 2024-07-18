@@ -28,6 +28,12 @@ defineExpose({ inc })
 <script lang="ts">
 // do not use defineComponent
 
+export interface BothScriptsProps {
+  /** comment */
+  tag: string
+  count: number
+}
+
 export default {
   name: 'BothScripts',
   customOptions: {}
