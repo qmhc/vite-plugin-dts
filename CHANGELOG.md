@@ -1,3 +1,13 @@
+# [4.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.0...v4.0.0-beta.1) (2024-07-18)
+
+### Bug Fixes
+
+- should parse files option into include ([b219453](https://github.com/qmhc/vite-plugin-dts/commit/b219453f9aea53c5690509bd77ed0cb1c1d11248)), closes [#337](https://github.com/qmhc/vite-plugin-dts/issues/337)
+
+### Features
+
+- dynamic query svelte version ([1769133](https://github.com/qmhc/vite-plugin-dts/commit/1769133f3fc77ae88bc726e37836f649962d6518)), closes [#299](https://github.com/qmhc/vite-plugin-dts/issues/299)
+
 # [4.0.0-beta.0](https://github.com/qmhc/vite-plugin-dts/compare/v3.9.1...v4.0.0-beta.0) (2024-07-17)
 
 ### Bug Fixes
