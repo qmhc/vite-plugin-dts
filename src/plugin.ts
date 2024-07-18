@@ -342,7 +342,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         )
       }
 
-      include = computeGlobs(options.include, content?.raw.include, '**/*')
+      include = computeGlobs(
+        options.include,
+        [...ensureArray(content?.raw.include ?? []), ...ensureArray(content?.raw.files ?? [])],
+        '**/*'
+      )
       exclude = computeGlobs(options.exclude, content?.raw.exclude, 'node_modules/**')
 
       filter = createFilter(include, exclude)
