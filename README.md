@@ -84,6 +84,14 @@ For example: `baseUrl: 'src'` is specified and importing from `<root>/src/compon
 
 Currently, you need to avoid the above situation, or use aliases instead (with the `paths` option).
 
+### Get module not found errors during build
+
+This is likely due to incorrect configuration of the `include` property in your default `tsconfig.json`.
+
+Due to some limitations, the plugin relies on the top-level `tsconfig.json` to resolve the files to include. Therefore, you need to specify the correct `include` property in the top-level `tsconfig.json`, or you can specify a configuration file path with the correct `include` property using the `tsconfigPath` option of the plugin. For example, in the Vite initial template, it is `tsconfig.app.json`.
+
+You can refer to this [comment](https://github.com/qmhc/vite-plugin-dts/issues/343#issuecomment-2198111439).
+
 <details>
   <summary>Legacy</summary>
 

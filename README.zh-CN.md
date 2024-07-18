@@ -84,6 +84,14 @@ export default defineConfig({
 
 目前想要正常打包，需要规避上述情况，或使用别名代替（配合 `paths` 属性）。
 
+### 打包时出现找不到模块的错误
+
+这很有可能是因为在你的默认 `tsconfig.json` 中未有正确配置 `include` 导致的。
+
+由于一些局限性，插件依赖最上层的 `tsconfig.json` 来解析需要包含的文件，所以你需要在最上层的 `tsconfig.json` 中指定正确的 `include`，或者通过插件的 `tsconfigPath` 选项指定一个包含了正确 `include` 的配置文件路径，例如在 Vite 初始模板中它是 `tsconfig.app.json`。
+
+可以参考这个 [评论](https://github.com/qmhc/vite-plugin-dts/issues/343#issuecomment-2198111439).
+
 <details>
   <summary>过时的</summary>
 
