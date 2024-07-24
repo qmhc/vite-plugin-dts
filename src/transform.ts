@@ -213,6 +213,8 @@ export function transformCode(options: {
 
     if (ts.isModuleDeclaration(node)) {
       if (
+        node.modifiers?.[0] &&
+        node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
         node.body &&
         ts.isModuleBlock(node.body) &&
         !node.body.statements.some(

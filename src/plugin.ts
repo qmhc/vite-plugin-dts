@@ -741,7 +741,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           await runParallel(cpus().length, [...rollupFiles], async filePath => {
             await writeOutput(
               filePath,
-              (await readFile(filePath, 'utf-8')) + (declared ? `\n${declared}\n` : ''),
+              (await readFile(filePath, 'utf-8')) + (declared ? `\n${declared}` : ''),
               dirname(filePath)
             )
           })

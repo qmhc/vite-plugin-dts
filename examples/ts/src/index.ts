@@ -19,3 +19,6 @@ export default data
 
 export type { User as MyUser } from './types'
 export type { AliasType } from '@alias/type'
+
+export type * from './namespace'
+export type * from './modules'

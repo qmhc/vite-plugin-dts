@@ -6,8 +6,6 @@ import dts from '../../src'
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
 
-console.log('a')
-
 export default defineConfig({
   resolve: {
     alias: {
@@ -29,7 +27,7 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // insertTypesEntry: true,
-      // rollupTypes: true,
+      rollupTypes: true,
       declarationOnly: true
     })
   ]
