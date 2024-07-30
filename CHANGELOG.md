@@ -1,3 +1,14 @@
+# [4.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.1...v4.0.0-beta.2) (2024-07-30)
+
+### Bug Fixes
+
+- ignore namespace from declaration collect ([b9c3947](https://github.com/qmhc/vite-plugin-dts/commit/b9c394707e74908364284630f1a8c905abadc7f4)), closes [#352](https://github.com/qmhc/vite-plugin-dts/issues/352)
+- more accurately generate index file ([e080ce5](https://github.com/qmhc/vite-plugin-dts/commit/e080ce5410468ff6659b5a06a390a6f818216a38)), closes [#345](https://github.com/qmhc/vite-plugin-dts/issues/345)
+
+### Features
+
+- upgrade volar ([1935414](https://github.com/qmhc/vite-plugin-dts/commit/193541411dfefa5c002a9db4e129200e3fa665d2)), closes [#354](https://github.com/qmhc/vite-plugin-dts/issues/354) [#355](https://github.com/qmhc/vite-plugin-dts/issues/355)
+
 # [4.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.0...v4.0.0-beta.1) (2024-07-18)
 
 ### Bug Fixes
