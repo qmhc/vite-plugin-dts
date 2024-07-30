@@ -3,17 +3,10 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
 
-import {
-  createParsedCommandLine,
-  createVueLanguagePlugin,
-  resolveVueCompilerOptions
-} from '@vue/language-core'
-
-import { proxyCreateProgram } from '@volar/typescript'
-
+import { createParsedCommandLine, createProgram } from './program'
 import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
-import { removeEmitGlobalTypes } from 'vue-tsc'
+
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
@@ -41,34 +34,6 @@ import {
 
 import type { Alias, Logger } from 'vite'
 import type { PluginOptions, Resolver } from './types'
-
-const createProgram = proxyCreateProgram(ts, ts.createProgram, (ts, options) => {
-  const { configFilePath } = options.options
-  const vueOptions =
-    typeof configFilePath === 'string'
-      ? createParsedCommandLine(ts, ts.sys, configFilePath.replace(/\\/g, '/')).vueOptions
-      : resolveVueCompilerOptions({})
-
-  if (options.host) {
-    const writeFile = options.host.writeFile.bind(options.host)
-    options.host.writeFile = (fileName, contents, ...args) => {
-      return writeFile(fileName, removeEmitGlobalTypes(contents), ...args)
-    }
-  }
-
-  const vueLanguagePlugin = createVueLanguagePlugin(
-    ts,
-    id => id,
-    options.host?.useCaseSensitiveFileNames?.() ?? false,
-    () => '',
-    () => options.rootNames.map(rootName => rootName.replace(/\\/g, '/')),
-    options.options,
-    vueOptions
-  )
-  return [vueLanguagePlugin]
-})
-
-type Program = ReturnType<typeof createProgram>
 
 const jsRE = /\.(m|c)?jsx?$/
 const tsRE = /\.(m|c)?tsx?$/
@@ -137,9 +102,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let indexName: string
   let logger: Logger
   let host: ts.CompilerHost | undefined
-  let program: Program | undefined
+  let program: ts.Program | undefined
   let filter: ReturnType<typeof createFilter>
-  let rebuildProgram: () => Program
+  let rebuildProgram: () => ts.Program
 
   let bundled = false
   let timeRecord = 0
