@@ -11,7 +11,7 @@ import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
-import { hasExportDefault, normalizeGlob, transformCode } from './transform'
+import { hasExportDefault, hasNamedExport, normalizeGlob, transformCode } from './transform'
 import {
   editSourceMapDir,
   ensureAbsolute,
@@ -637,10 +637,16 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           fromPath = fromPath.replace(dtsRE, '')
           fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
 
-          let content = `export * from '${fromPath}'\n`
+          let content = ''
 
-          if (emittedFiles.has(sourceEntry) && hasExportDefault(emittedFiles.get(sourceEntry)!)) {
-            content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
+          if (emittedFiles.has(sourceEntry)) {
+            if (hasNamedExport(emittedFiles.get(sourceEntry)!)) {
+              content += `export * from '${fromPath}'\n`
+            }
+
+            if (hasExportDefault(emittedFiles.get(sourceEntry)!)) {
+              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
+            }
           }
 
           await writeOutput(cleanPath(entryDtsPath), content, outDir)
