@@ -12,7 +12,7 @@ import { removeEmitGlobalTypes } from 'vue-tsc'
 
 export { createParsedCommandLine }
 
-export const createProgram = proxyCreateProgram(ts, ts.createProgram, (ts, options) => {
+const _createProgram = proxyCreateProgram(ts, ts.createProgram, (ts, options) => {
   const { configFilePath } = options.options
   const vueOptions =
     typeof configFilePath === 'string'
@@ -39,3 +39,41 @@ export const createProgram = proxyCreateProgram(ts, ts.createProgram, (ts, optio
   )
   return [vueLanguagePlugin]
 })
+
+export const createProgram = (options: ts.CreateProgramOptions) => {
+  const program = _createProgram(options)
+
+  const emit = program.emit
+  program.emit = (
+    targetSourceFile,
+    writeFile,
+    cancellationToken,
+    emitOnlyDtsFiles,
+    customTransformers
+  ) => {
+    if (writeFile) {
+      return emit(
+        targetSourceFile,
+        (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
+          if (fileName.endsWith('.d.ts')) {
+            data = removeEmitGlobalTypes(data)
+          }
+          return writeFile(fileName, data, writeByteOrderMark, onError, sourceFiles)
+        },
+        cancellationToken,
+        emitOnlyDtsFiles,
+        customTransformers
+      )
+    }
+
+    return emit(
+      targetSourceFile,
+      writeFile,
+      cancellationToken,
+      emitOnlyDtsFiles,
+      customTransformers
+    )
+  }
+
+  return program
+}

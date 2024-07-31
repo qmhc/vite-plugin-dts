@@ -1,11 +1,11 @@
 {
   "name": "vue-example",
   "version": "0.0.0",
-  "auth": "qmhc",
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
+    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build",
+    "tsc": "vue-tsc --declaration --emitDeclarationOnly --outDir tsc-dist"
   },
   "dependencies": {
     "vue": "^3.4.32"
@@ -16,5 +16,6 @@
     "tslib": "^2.6.2",
     "typescript": "5.5.3",
     "vite": "^5.3.4"
-  }
+  },
+  "auth": "qmhc"
 }
