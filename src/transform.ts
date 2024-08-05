@@ -105,11 +105,13 @@ export function transformCode(options: {
   }
 
   let indexCount = 0
+  let importCount = 0
 
   walkSourceFile(ast, (node, parent) => {
     if (ts.isImportDeclaration(node)) {
       if (!node.importClause) {
         options.clearPureImport && s.remove(node.pos, node.end)
+        ++importCount
       } else if (
         ts.isStringLiteral(node.moduleSpecifier) &&
         (node.importClause.name ||
@@ -137,6 +139,7 @@ export function transformCode(options: {
         }
 
         s.remove(node.pos, node.end)
+        ++importCount
       }
 
       return false
@@ -234,11 +237,13 @@ export function transformCode(options: {
     prependImports += `import { ${Array.from(importSet).join(', ')} } from '${libName}';\n`
   })
 
-  s.prepend(prependImports)
+  s.trimStart('\n').prepend(prependImports)
 
   return {
     content: s.toString(),
-    declareModules
+    declareModules,
+    diffLineCount:
+      importMap.size && importCount < importMap.size ? importMap.size - importCount : null
   }
 }
 

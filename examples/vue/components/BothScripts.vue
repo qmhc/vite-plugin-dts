@@ -30,7 +30,7 @@ defineExpose({ inc })
 
 export interface BothScriptsProps {
   /** comment */
-  tag: string
+  tag: string,
   count: number
 }
 

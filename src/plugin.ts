@@ -543,15 +543,31 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       bundleDebug('emit output patch')
 
       const currentDir = host.getCurrentDirectory()
+      const declarationFiles = new Map<string, string>()
+      const mapFiles = new Map<string, string>()
+      const prependMappings = new Map<string, string>()
+
+      for (const [filePath, content] of outputFiles.entries()) {
+        if (filePath.endsWith('.map')) {
+          mapFiles.set(filePath, content)
+        } else {
+          declarationFiles.set(filePath, content)
+        }
+      }
 
       await runParallel(
         cpus().length,
-        Array.from(outputFiles.entries()),
+        Array.from(declarationFiles.entries()),
         async ([filePath, content]) => {
-          const isMapFile = filePath.endsWith('.map')
-          const baseDir = dirname(filePath)
+          const newFilePath = resolve(
+            outDir,
+            relative(
+              entryRoot,
+              cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
+            )
+          )
 
-          if (!isMapFile && content) {
+          if (content) {
             const result = transformCode({
               filePath,
               content,
@@ -564,7 +580,21 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
             content = result.content
             declareModules.push(...result.declareModules)
+
+            if (result.diffLineCount) {
+              prependMappings.set(`${newFilePath}.map`, ';'.repeat(result.diffLineCount))
+            }
           }
+
+          await writeOutput(newFilePath, content, outDir)
+        }
+      )
+
+      await runParallel(
+        cpus().length,
+        Array.from(mapFiles.entries()),
+        async ([filePath, content]) => {
+          const baseDir = dirname(filePath)
 
           filePath = resolve(
             outDir,
@@ -574,22 +604,25 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             )
           )
 
-          if (isMapFile) {
-            try {
-              const sourceMap: { sources: string[] } = JSON.parse(content)
+          try {
+            const sourceMap: { sources: string[], mappings: string } = JSON.parse(content)
 
-              sourceMap.sources = sourceMap.sources.map(source => {
-                return normalizePath(
-                  relative(
-                    dirname(filePath),
-                    resolve(currentDir, relative(publicRoot, baseDir), source)
-                  )
+            sourceMap.sources = sourceMap.sources.map(source => {
+              return normalizePath(
+                relative(
+                  dirname(filePath),
+                  resolve(currentDir, relative(publicRoot, baseDir), source)
                 )
-              })
-              content = JSON.stringify(sourceMap)
-            } catch (e) {
-              logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${filePath}`)
+              )
+            })
+
+            if (prependMappings.has(filePath)) {
+              sourceMap.mappings = `${prependMappings.get(filePath)}${sourceMap.mappings}`
             }
+
+            content = JSON.stringify(sourceMap)
+          } catch (e) {
+            logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${filePath}`)
           }
 
           await writeOutput(filePath, content, outDir)

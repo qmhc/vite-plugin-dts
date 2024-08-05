@@ -68,7 +68,7 @@ describe('transform tests', () => {
     expect(
       transformCode(options('import { Type } from "./test";\nconst test: import("./test").Test;'))
         .content
-    ).toEqual("import { Type, Test } from './test';\n\nconst test: Test;")
+    ).toEqual("import { Type, Test } from './test';\nconst test: Test;")
 
     expect(
       transformCode(options("const a: import('foo').A<{ b: import('foo').B<import('foo').C> }>"))

@@ -27,8 +27,11 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // insertTypesEntry: true,
-      rollupTypes: true,
-      declarationOnly: true
+      rollupTypes: false,
+      declarationOnly: true,
+      compilerOptions: {
+        declarationMap: true
+      }
     })
   ]
 })

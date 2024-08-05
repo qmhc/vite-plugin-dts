@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build",
-    "tsc": "vue-tsc --declaration --emitDeclarationOnly --outDir tsc-dist"
+    "tsc": "vue-tsc --declaration --emitDeclarationOnly --declarationMap --outDir tsc-dist"
   },
   "dependencies": {
     "vue": "^3.4.32"
