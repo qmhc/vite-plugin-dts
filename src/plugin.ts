@@ -18,6 +18,7 @@ import {
   ensureArray,
   findTypesPath,
   getTsConfig,
+  getTsLibFolder,
   isNativeObj,
   isRegExp,
   normalizePath,
@@ -690,18 +691,6 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         if (rollupTypes) {
           logger.info(green(`${logPrefix} Start rollup declaration files...`))
 
-          let libFolder: string | undefined = resolve(root, 'node_modules/typescript')
-
-          if (!existsSync(libFolder)) {
-            if (root !== entryRoot) {
-              libFolder = resolve(entryRoot, 'node_modules/typescript')
-
-              if (!existsSync(libFolder)) libFolder = undefined
-            }
-
-            libFolder = undefined
-          }
-
           const rollupFiles = new Set<string>()
           const compilerOptions = configPath
             ? getTsConfig(configPath, host.readFile).compilerOptions
@@ -715,7 +704,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               outDir,
               entryPath: path,
               fileName: basename(path),
-              libFolder,
+              libFolder: getTsLibFolder({ root, entryRoot }),
               rollupConfig,
               rollupOptions
             })
