@@ -3,14 +3,13 @@ import { resolve } from 'node:path'
 import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
 import { tryGetPkgPath } from './utils'
 
-import type ts from 'typescript'
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { RollupConfig } from './types'
 
 export interface BundleOptions {
   root: string,
   configPath?: string,
-  compilerOptions: ts.CompilerOptions,
+  compilerOptions: Record<string, any>,
   outDir: string,
   entryPath: string,
   fileName: string,
@@ -36,6 +35,11 @@ export function rollupDeclarationFiles({
 
   if (!dtsRE.test(fileName)) {
     fileName += '.d.ts'
+  }
+
+  // Refer to https://github.com/microsoft/rushstack/issues/4863
+  if (/preserve/i.test(compilerOptions.module)) {
+    compilerOptions = { ...compilerOptions, module: 'ESNext' }
   }
 
   const extractorConfig = ExtractorConfig.prepare({
