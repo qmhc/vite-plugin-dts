@@ -248,14 +248,9 @@ export function getTsConfig(
   return tsConfig
 }
 
-export function getTsLibFolder({
-  root,
-  entryRoot
-}: {
-  root: string,
-  entryRoot: string
-}): string | undefined {
-  let libFolder
+export function getTsLibFolder({ root, entryRoot }: { root: string, entryRoot: string }) {
+  let libFolder: string | undefined
+
   try {
     // try the `require.resolve` method first
     // @see https://stackoverflow.com/questions/54977743/do-require-resolve-for-es-modules
@@ -276,6 +271,7 @@ export function getTsLibFolder({
       libFolder = undefined
     }
   }
+
   return libFolder
 }
 
