@@ -1,3 +1,12 @@
+# [4.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.2...v4.0.0) (2024-08-06)
+
+### Bug Fixes
+
+- remove global types for vue declaration files ([e873107](https://github.com/qmhc/vite-plugin-dts/commit/e8731077f326a2fc1fbf304c6a2d77bd96c6b216)), closes [#354](https://github.com/qmhc/vite-plugin-dts/issues/354)
+- resolve module preserve to esnext for rollup ([710400a](https://github.com/qmhc/vite-plugin-dts/commit/710400a276c53960dd949243d26f555bf91a421f)), closes [#358](https://github.com/qmhc/vite-plugin-dts/issues/358)
+- sync diff line to mappings after transform ([cd5ba32](https://github.com/qmhc/vite-plugin-dts/commit/cd5ba32148ac43a380a24e56d10cf18be59e3e3c)), closes [#356](https://github.com/qmhc/vite-plugin-dts/issues/356)
+- typescript lib path resolution for rollup in monorepo ([#360](https://github.com/qmhc/vite-plugin-dts/issues/360)) ([da4af65](https://github.com/qmhc/vite-plugin-dts/commit/da4af6542ea5cf44bd36504ee1a9598dd5b2e92a))
+
 # [4.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.1...v4.0.0-beta.2) (2024-07-30)
 
 ### Bug Fixes
