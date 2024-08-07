@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0...v4.0.1) (2024-08-07)
+
+### Bug Fixes
+
+- correctly match normal export ([589901f](https://github.com/qmhc/vite-plugin-dts/commit/589901fead8b3aef589f0652b27277f6e0d0d2ac)), closes [#362](https://github.com/qmhc/vite-plugin-dts/issues/362)
+
 # [4.0.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0-beta.2...v4.0.0) (2024-08-06)
 
 ### Bug Fixes
