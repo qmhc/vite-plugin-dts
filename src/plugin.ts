@@ -11,7 +11,7 @@ import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
 import { rollupDeclarationFiles } from './rollup'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
-import { hasExportDefault, hasNamedExport, normalizeGlob, transformCode } from './transform'
+import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from './transform'
 import {
   editSourceMapDir,
   ensureAbsolute,
@@ -674,7 +674,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           let content = ''
 
           if (emittedFiles.has(sourceEntry)) {
-            if (hasNamedExport(emittedFiles.get(sourceEntry)!)) {
+            if (hasNormalExport(emittedFiles.get(sourceEntry)!)) {
               content += `export * from '${fromPath}'\n`
             }
 
