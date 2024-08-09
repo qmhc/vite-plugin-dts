@@ -1,3 +1,9 @@
+## [4.0.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.1...v4.0.2) (2024-08-09)
+
+### Bug Fixes
+
+- ensure inserted index file be a module ([f93e98c](https://github.com/qmhc/vite-plugin-dts/commit/f93e98cd84b486ba426c25304c6ce891acec7745)), closes [#365](https://github.com/qmhc/vite-plugin-dts/issues/365)
+
 ## [4.0.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.0...v4.0.1) (2024-08-07)
 
 ### Bug Fixes
