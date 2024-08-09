@@ -8,6 +8,7 @@ import {
   base64VLQEncode,
   ensureAbsolute,
   ensureArray,
+  getTsLibFolder,
   isNativeObj,
   isPromise,
   isRegExp,
@@ -170,5 +171,16 @@ describe('utils tests', () => {
     expect(toCapitalCase(' aa bb cc ')).toEqual('AaBbCc')
     expect(toCapitalCase('-aa bb cc ')).toEqual('AaBbCc')
     expect(toCapitalCase(' -aa bb cc -')).toEqual('AaBbCc')
+  })
+
+  it('test: getTsLibFolder', () => {
+    const root = normalizePath(resolve(__dirname, '..'))
+
+    expect(
+      getTsLibFolder({
+        root: root,
+        entryRoot: resolve(root, 'src')
+      })
+    ).toMatch(/node_modules\/typescript$/)
   })
 })
