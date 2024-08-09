@@ -671,15 +671,15 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           fromPath = fromPath.replace(dtsRE, '')
           fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
 
-          let content = ''
+          let content = 'export {}\n'
 
           if (emittedFiles.has(sourceEntry)) {
             if (hasNormalExport(emittedFiles.get(sourceEntry)!)) {
-              content += `export * from '${fromPath}'\n`
+              content = `export * from '${fromPath}'\n${content}`
             }
 
             if (hasExportDefault(emittedFiles.get(sourceEntry)!)) {
-              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n`
+              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n${content}`
             }
           }
 
