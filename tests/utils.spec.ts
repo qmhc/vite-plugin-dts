@@ -2,6 +2,7 @@
 /* eslint-disable promise/param-names */
 
 import { normalize, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -175,12 +176,16 @@ describe('utils tests', () => {
 
   it('test: getTsLibFolder', () => {
     const root = normalizePath(resolve(__dirname, '..'))
+    const entryRoot = resolve(root, 'src')
 
     expect(
-      getTsLibFolder({
-        root: root,
-        entryRoot: resolve(root, 'src')
-      })
+      getTsLibFolder({ root, entryRoot })
     ).toMatch(/node_modules\/typescript$/)
+
+    expect(
+      existsSync(
+        getTsLibFolder({ root, entryRoot }) || ''
+      )
+    ).toBe(true)
   })
 })
