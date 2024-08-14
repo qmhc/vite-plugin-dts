@@ -1,3 +1,9 @@
+## [4.0.3](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.2...v4.0.3) (2024-08-14)
+
+### Bug Fixes
+
+- normalize typescript lib path for rollup ([#366](https://github.com/qmhc/vite-plugin-dts/issues/366)) ([b0c63df](https://github.com/qmhc/vite-plugin-dts/commit/b0c63dfaf701dc11d2f9cbb2cef5079efe7402e7))
+
 ## [4.0.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.1...v4.0.2) (2024-08-09)
 
 ### Bug Fixes
