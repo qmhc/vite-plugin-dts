@@ -39,7 +39,13 @@ export default defineConfig({
       fileName: 'my-lib'
     }
   },
-  plugins: [dts()]
+  plugins: [
+    react(),
+    dts({
+      insertTypesEntry: true,
+      tsconfigPath: "./tsconfig.app.json",
+    }),
+  ]
 })
 ```
 
