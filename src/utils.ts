@@ -254,9 +254,10 @@ export function getTsLibFolder({ root, entryRoot }: { root: string, entryRoot: s
   try {
     // try the `require.resolve` method first
     // @see https://stackoverflow.com/questions/54977743/do-require-resolve-for-es-modules
-    libFolder = createRequire(import.meta.url)
-      .resolve('typescript')
-      .replace(/node_modules\/typescript.*/, 'node_modules/typescript')
+    libFolder = normalizePath(createRequire(import.meta.url).resolve('typescript')).replace(
+      /node_modules\/typescript.*/,
+      'node_modules/typescript'
+    )
   } catch {
     // fallback to legacy path method
     libFolder = resolve(root, 'node_modules/typescript')

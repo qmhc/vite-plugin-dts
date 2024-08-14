@@ -2,12 +2,14 @@
 /* eslint-disable promise/param-names */
 
 import { normalize, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 import {
   base64VLQEncode,
   ensureAbsolute,
   ensureArray,
+  getTsLibFolder,
   isNativeObj,
   isPromise,
   isRegExp,
@@ -170,5 +172,20 @@ describe('utils tests', () => {
     expect(toCapitalCase(' aa bb cc ')).toEqual('AaBbCc')
     expect(toCapitalCase('-aa bb cc ')).toEqual('AaBbCc')
     expect(toCapitalCase(' -aa bb cc -')).toEqual('AaBbCc')
+  })
+
+  it('test: getTsLibFolder', () => {
+    const root = normalizePath(resolve(__dirname, '..'))
+    const entryRoot = resolve(root, 'src')
+
+    expect(
+      getTsLibFolder({ root, entryRoot })
+    ).toMatch(/node_modules\/typescript$/)
+
+    expect(
+      existsSync(
+        getTsLibFolder({ root, entryRoot }) || ''
+      )
+    ).toBe(true)
   })
 })
