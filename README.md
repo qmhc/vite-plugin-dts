@@ -377,7 +377,7 @@ export interface PluginOptions {
    *
    * @default () => {}
    */
-  afterBuild?: () => MaybePromise<void>
+  afterBuild?: (emittedFiles: Map<string, string>) => MaybePromise<void>
 }
 ```
 
