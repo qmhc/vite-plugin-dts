@@ -17,7 +17,7 @@ function querySvelteVersion() {
       getPackageInfoSync('svelte')?.version ??
       getPackageInfoSync('svelte', { paths: [resolveModule('svelte') || process.cwd()] })?.version
     lowerVersion = version ? compare(version, '4.0.0', '<') : false
-  } catch {
+  } catch (e) {
     lowerVersion = false
   }
 }
