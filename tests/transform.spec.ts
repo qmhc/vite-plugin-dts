@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { hasExportDefault, normalizeGlob, transformCode } from '../src/transform'
+import { parseTsAliases } from '../src/utils'
 
 import type { Alias } from 'vite'
 
@@ -138,6 +139,35 @@ describe('transform tests', () => {
     expect(
       transformCode(options("function d(param: import('~/test').E): import('~/test').F")).content
     ).toEqual("function d(param: import('./test').E): import('./test').F")
+  })
+
+  it('test: transformCode (integration test)', () => {
+    const tsPaths = {
+      '@/*': ['src/*'],
+      '@components/*': ['src/components/*'],
+      '@src': ['src'],
+      '*': ['src/utils/*']
+    }
+
+    const aliases = parseTsAliases(resolve(__dirname), tsPaths)
+
+    const options = (content: string) => ({
+      content,
+      filePath: resolve(__dirname, './src/index.ts'),
+      aliases,
+      aliasesExclude: [],
+      staticImport: true,
+      clearPureImport: true,
+      cleanVueFileName: true
+    })
+
+    expect(transformCode(options('import { TestBase } from "@/test";')).content).toEqual(
+      "import { TestBase } from './test';\n"
+    )
+
+    expect(transformCode(options('import { TestNested } from "@/nested/test";')).content).toEqual(
+      "import { TestNested } from './nested/test';\n"
+    )
   })
 
   it('test: transformCode (remove pure imports)', () => {
