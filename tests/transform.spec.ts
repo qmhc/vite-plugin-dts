@@ -167,6 +167,12 @@ describe('transform tests', () => {
         filePath: './src/child/folder/test.ts',
         content: 'import { utilFunction } from "@/utils/test";',
         output: "import { utilFunction } from '../../../utils/test';\n"
+      },
+      {
+        description: 'alias as everything, relative import',
+        aliases: [{ find: /^(.+)$/, replacement: resolve(__dirname, '../src/$1') }],
+        content: 'import { TestBase } from "test";',
+        output: "import { TestBase } from './test';\n"
       }
     ]
 
@@ -203,6 +209,10 @@ describe('transform tests', () => {
 
     expect(transformCode(options('import { TestNested } from "@/nested/test";')).content).toEqual(
       "import { TestNested } from './nested/test';\n"
+    )
+
+    expect(transformCode(options('import { TestBase } from "./test";')).content).toEqual(
+      "import { TestBase } from './utils/test';\n"
     )
   })
 
