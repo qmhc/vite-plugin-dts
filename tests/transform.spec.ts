@@ -89,56 +89,92 @@ describe('transform tests', () => {
       { find: '$src', replacement: resolve(__dirname, '../src') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
-    const options = (content: string) => ({
+
+    const options = (
+      content: string,
+      optFilePath: string = filePath,
+      optAliases: Alias[] = aliases
+    ) => ({
       content,
-      filePath,
-      aliases,
+      filePath: optFilePath,
+      aliases: optAliases,
       aliasesExclude: [],
       staticImport: false,
       clearPureImport: false,
       cleanVueFileName: false
     })
 
-    expect(transformCode(options('import type { TestBase } from "@/src/test";')).content).toEqual(
-      "import { TestBase } from './test';\n"
-    )
+    const tests: Array<{
+      description: string,
+      content: string,
+      output: string,
+      filePath?: string,
+      aliases?: Alias[]
+    }> = [
+      {
+        description: 'type import alias at root level',
+        content: 'import type { TestBase } from "@/src/test";',
+        output: "import { TestBase } from './test';\n"
+      },
+      {
+        description: 'dynamic import inside subfolder with alias at root level',
+        content: 'import("@/components/test").Test;',
+        output: "import('../components/test').Test;"
+      },
+      {
+        description: 'import inside folder with named alias at subfolder',
+        content: 'import type { TestBase } from "@/components/test";',
+        output: "import { TestBase } from '../components/test';\n"
+      },
+      {
+        description: 'dynamic import inside subfolder with alias at root level',
+        content: 'import("@/components/test").Test;\n',
+        output: "import('../components/test').Test;\n"
+      },
+      {
+        description: 'named alias in subfolder with default import',
+        content: 'import VContainer from "@components/layout/container/VContainer.vue";',
+        output:
+          "import { default as VContainer } from './components/layout/container/VContainer.vue';\n"
+      },
+      {
+        description: 'alias at root level with tilde and no asterisk',
+        content: 'import { TestBase } from "~/test";',
+        output: "import { TestBase } from './test';\n"
+      },
+      {
+        description: 'named alias at root with tilde and no asterisk',
+        content: 'import type { TestBase } from "$src/test";',
+        output: "import { TestBase } from './test';\n"
+      },
+      {
+        description: 'type imports with alias at root level',
+        content: "const a: import('~/test').A<{ b: import('~/test').B<import('~/test').C> }>",
+        output: "const a: import('./test').A<{ b: import('./test').B<import('./test').C> }>"
+      },
+      {
+        description: 'function param and return type imports with alias at root level',
+        content: "function d(param: import('~/test').E): import('~/test').F",
+        output: "function d(param: import('./test').E): import('./test').F"
+      },
+      {
+        description: 'import inside subfolder with alias at root level',
+        content: 'import { NestedBase } from "@/test/nested";',
+        output: "import { NestedBase } from '../test/nested';\n"
+      },
+      {
+        description: 'alias at root level, file nested',
+        filePath: './src/child/folder/test.ts',
+        content: 'import { utilFunction } from "@/utils/test";',
+        output: "import { utilFunction } from '../../../utils/test';\n"
+      }
+    ]
 
-    expect(transformCode(options('import("@/components/test").Test;')).content).toEqual(
-      "import('../components/test').Test;"
-    )
-    expect(
-      transformCode(options('import type { TestBase } from "@/components/test";')).content
-    ).toEqual("import { TestBase } from '../components/test';\n")
-
-    expect(transformCode(options('import("@/components/test").Test;\n')).content).toEqual(
-      "import('../components/test').Test;\n"
-    )
-
-    expect(
-      transformCode(
-        options('import VContainer from "@components/layout/container/VContainer.vue";')
-      ).content
-    ).toEqual(
-      "import { default as VContainer } from './components/layout/container/VContainer.vue';\n"
-    )
-
-    expect(transformCode(options('import type { TestBase } from "~/test";')).content).toEqual(
-      "import { TestBase } from './test';\n"
-    )
-
-    expect(transformCode(options('import type { TestBase } from "$src/test";')).content).toEqual(
-      "import { TestBase } from './test';\n"
-    )
-
-    expect(
-      transformCode(
-        options("const a: import('~/test').A<{ b: import('~/test').B<import('~/test').C> }>")
-      ).content
-    ).toEqual("const a: import('./test').A<{ b: import('./test').B<import('./test').C> }>")
-
-    expect(
-      transformCode(options("function d(param: import('~/test').E): import('~/test').F")).content
-    ).toEqual("function d(param: import('./test').E): import('./test').F")
+    tests.forEach(({ description, content, filePath, aliases, output }) => {
+      expect(transformCode(options(content, filePath, aliases)).content, description).toEqual(
+        output
+      )
+    })
   })
 
   it('test: transformCode (integration test)', () => {
