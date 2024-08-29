@@ -53,6 +53,14 @@ export default defineConfig({
 }
 ```
 
+如果你从 Vite 官方模板开始，你应该指定 `tsconfigPath`：
+
+```ts
+{
+  plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
+}
+```
+
 从 `3.0.0` 开始，你可以在 Rollup 中使用该插件。
 
 ## 常见问题
@@ -230,6 +238,8 @@ export interface PluginOptions {
 
   /**
    * 是否将 '.vue.d.ts' 文件名转换为 '.d.ts'
+   *
+   * 如果转换后出现重名，将会回退到原来的名字。
    *
    * @default false
    */

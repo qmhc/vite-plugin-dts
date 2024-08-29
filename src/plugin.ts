@@ -128,7 +128,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   rollupConfig.bundledPackages = rollupConfig.bundledPackages || options.bundledPackages || []
 
   const cleanPath = (path: string, emittedFiles: Map<string, string>) => {
-    return !emittedFiles.has(path) && cleanVueFileName ? path.replace('.vue.d.ts', '.d.ts') : path
+    const newPath = path.replace('.vue.d.ts', '.d.ts')
+    return !emittedFiles.has(newPath) && cleanVueFileName ? newPath : path
   }
 
   return {
