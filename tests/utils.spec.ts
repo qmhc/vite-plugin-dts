@@ -159,6 +159,9 @@ describe('utils tests', () => {
   })
 
   it('test: parseTsAliases', () => {
+    const maybeWindowsPath = (path: string) =>
+      new RegExp('^([a-zA-Z]:)?' + path.replace('$', '\\$'))
+
     expect(
       parseTsAliases('/tmp/fake/project/root', {
         '@/*': ['./at/*']
@@ -166,14 +169,14 @@ describe('utils tests', () => {
     ).toStrictEqual([
       {
         find: /^@\/(.+)$/,
-        replacement: '/tmp/fake/project/root/at/$1'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/at/$1'))
       }
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { '~/*': ['./tilde/*'] })).toStrictEqual([
       {
         find: /^~\/(.+)$/,
-        replacement: '/tmp/fake/project/root/tilde/$1'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/tilde/$1'))
       }
     ])
 
@@ -182,7 +185,9 @@ describe('utils tests', () => {
     ).toStrictEqual([
       {
         find: /^@\/no-dot-prefix\/(.+)$/,
-        replacement: '/tmp/fake/project/root/no-dot-prefix/$1'
+        replacement: expect.stringMatching(
+          maybeWindowsPath('/tmp/fake/project/root/no-dot-prefix/$1')
+        )
       }
     ])
 
@@ -191,21 +196,23 @@ describe('utils tests', () => {
     ).toStrictEqual([
       {
         find: /^@\/components\/(.+)$/,
-        replacement: '/tmp/fake/project/root/at/components/$1'
+        replacement: expect.stringMatching(
+          maybeWindowsPath('/tmp/fake/project/root/at/components/$1')
+        )
       }
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { 'top/*': ['./top/*'] })).toStrictEqual([
       {
         find: /^top\/(.+)$/,
-        replacement: '/tmp/fake/project/root/top/$1'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/top/$1'))
       }
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { '@src': ['./src'] })).toStrictEqual([
       {
         find: /^@src$/,
-        replacement: '/tmp/fake/project/root/src'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src'))
       }
     ])
 
@@ -213,7 +220,7 @@ describe('utils tests', () => {
     expect(parseTsAliases('/tmp/fake/project/root', { '*': ['./src/*'] })).toStrictEqual([
       {
         find: /^(.+)$/,
-        replacement: '/tmp/fake/project/root/src/$1'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src/$1'))
       }
     ])
 
@@ -221,7 +228,7 @@ describe('utils tests', () => {
     expect(parseTsAliases('/tmp/fake/project/root', { '#*': ['./hashed/*'] })).toStrictEqual([
       {
         find: /^#(.+)$/,
-        replacement: '/tmp/fake/project/root/hashed/$1'
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/hashed/$1'))
       }
     ])
   })
