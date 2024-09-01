@@ -1,6 +1,3 @@
-/* eslint-disable prefer-regex-literals */
-/* eslint-disable promise/param-names */
-
 import { normalize, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
@@ -15,6 +12,7 @@ import {
   isRegExp,
   mergeObjects,
   normalizePath,
+  parseTsAliases,
   queryPublicPath,
   toCapitalCase,
   unwrapPromise
@@ -160,6 +158,81 @@ describe('utils tests', () => {
     }
   })
 
+  it('test: parseTsAliases', () => {
+    const maybeWindowsPath = (path: string) =>
+      new RegExp('^([a-zA-Z]:)?' + path.replace('$', '\\$'))
+
+    expect(
+      parseTsAliases('/tmp/fake/project/root', {
+        '@/*': ['./at/*']
+      })
+    ).toStrictEqual([
+      {
+        find: /^@\/(.+)$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/at/$1'))
+      }
+    ])
+
+    expect(parseTsAliases('/tmp/fake/project/root', { '~/*': ['./tilde/*'] })).toStrictEqual([
+      {
+        find: /^~\/(.+)$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/tilde/$1'))
+      }
+    ])
+
+    expect(
+      parseTsAliases('/tmp/fake/project/root', { '@/no-dot-prefix/*': ['no-dot-prefix/*'] })
+    ).toStrictEqual([
+      {
+        find: /^@\/no-dot-prefix\/(.+)$/,
+        replacement: expect.stringMatching(
+          maybeWindowsPath('/tmp/fake/project/root/no-dot-prefix/$1')
+        )
+      }
+    ])
+
+    expect(
+      parseTsAliases('/tmp/fake/project/root', { '@/components/*': ['./at/components/*'] })
+    ).toStrictEqual([
+      {
+        find: /^@\/components\/(.+)$/,
+        replacement: expect.stringMatching(
+          maybeWindowsPath('/tmp/fake/project/root/at/components/$1')
+        )
+      }
+    ])
+
+    expect(parseTsAliases('/tmp/fake/project/root', { 'top/*': ['./top/*'] })).toStrictEqual([
+      {
+        find: /^top\/(.+)$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/top/$1'))
+      }
+    ])
+
+    expect(parseTsAliases('/tmp/fake/project/root', { '@src': ['./src'] })).toStrictEqual([
+      {
+        find: /^@src$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src'))
+      }
+    ])
+
+    // https://github.com/qmhc/vite-plugin-dts/issues/330
+    expect(parseTsAliases('/tmp/fake/project/root', { '*': ['./src/*'] })).toStrictEqual([
+      {
+        find: /^(.+)$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src/$1'))
+      }
+    ])
+
+    // https://github.com/qmhc/vite-plugin-dts/issues/290#issuecomment-1872495764
+    expect(parseTsAliases('/tmp/fake/project/root', { '#*': ['./hashed/*'] })).toStrictEqual([
+      {
+        find: /^#(.+)$/,
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/hashed/$1'))
+      }
+    ])
+  })
+
   it('test: toCapitalCase', () => {
     expect(toCapitalCase('abc')).toEqual('Abc')
     expect(toCapitalCase('aa-bb-cc')).toEqual('AaBbCc')
@@ -178,14 +251,8 @@ describe('utils tests', () => {
     const root = normalizePath(resolve(__dirname, '..'))
     const entryRoot = resolve(root, 'src')
 
-    expect(
-      getTsLibFolder({ root, entryRoot })
-    ).toMatch(/node_modules\/typescript$/)
+    expect(getTsLibFolder({ root, entryRoot })).toMatch(/node_modules\/typescript$/)
 
-    expect(
-      existsSync(
-        getTsLibFolder({ root, entryRoot }) || ''
-      )
-    ).toBe(true)
+    expect(existsSync(getTsLibFolder({ root, entryRoot }) || '')).toBe(true)
   })
 })
