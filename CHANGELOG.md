@@ -1,3 +1,14 @@
+# [4.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.3...v4.1.0) (2024-09-01)
+
+### Bug Fixes
+
+- correctly parse tsconfig paths with nested imports ([#376](https://github.com/qmhc/vite-plugin-dts/issues/376)) ([10118ae](https://github.com/qmhc/vite-plugin-dts/commit/10118aea62fa1ec70b4d93a9d02f05e8642bd891)), closes [#330](https://github.com/qmhc/vite-plugin-dts/issues/330)
+- only clean vue suffix when no duplicated name ([068e711](https://github.com/qmhc/vite-plugin-dts/commit/068e7119ef6d8e1c99ea18d6a0f56194f32be77d)), closes [#372](https://github.com/qmhc/vite-plugin-dts/issues/372)
+
+### Features
+
+- auto switch to original program if no Vue ([a04a191](https://github.com/qmhc/vite-plugin-dts/commit/a04a191566e996defc071344f59cc76414fce61d)), closes [#363](https://github.com/qmhc/vite-plugin-dts/issues/363)
+
 ## [4.0.3](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.2...v4.0.3) (2024-08-14)
 
 ### Bug Fixes
