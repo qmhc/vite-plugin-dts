@@ -35,6 +35,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    // @ts-ignore
     dts({
       copyDtsFiles: true,
       outDir: [

@@ -710,7 +710,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               outDir,
               entryPath: path,
               fileName: basename(path),
-              libFolder: getTsLibFolder({ root, entryRoot }),
+              libFolder: getTsLibFolder(),
               rollupConfig,
               rollupOptions
             })

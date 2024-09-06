@@ -156,8 +156,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       typescript:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       vite:
         specifier: ^5.3.4
         version: 5.3.4(@types/node@20.14.11)
@@ -180,8 +180,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       typescript:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       vite:
         specifier: ^5.3.4
         version: 5.3.4(@types/node@20.14.11)
@@ -192,8 +192,8 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
       typescript:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       vite:
         specifier: ^5.3.4
         version: 5.3.4(@types/node@20.14.11)
@@ -202,20 +202,20 @@ importers:
     dependencies:
       vue:
         specifier: ^3.4.32
-        version: 3.4.32(typescript@5.5.3)
+        version: 3.4.32(typescript@5.5.4)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.4
-        version: 5.0.4(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.3))
+        version: 5.0.4(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.4))
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.1.0
-        version: 3.1.0(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.3))
+        version: 3.1.0(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.4))
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
       typescript:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       vite:
         specifier: ^5.3.4
         version: 5.3.4(@types/node@20.14.11)
@@ -3896,11 +3896,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.5.3:
-    resolution: {integrity: sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.5.4:
     resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
     engines: {node: '>=14.17'}
@@ -5381,20 +5376,20 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-vue-jsx@3.1.0(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.3))':
+  '@vitejs/plugin-vue-jsx@3.1.0(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.4))':
     dependencies:
       '@babel/core': 7.23.6
       '@babel/plugin-transform-typescript': 7.23.6(@babel/core@7.23.6)
       '@vue/babel-plugin-jsx': 1.1.5(@babel/core@7.23.6)
       vite: 5.3.4(@types/node@20.14.11)
-      vue: 3.4.32(typescript@5.5.3)
+      vue: 3.4.32(typescript@5.5.4)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-vue@5.0.4(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.3))':
+  '@vitejs/plugin-vue@5.0.4(vite@5.3.4(@types/node@20.14.11))(vue@3.4.32(typescript@5.5.4))':
     dependencies:
       vite: 5.3.4(@types/node@20.14.11)
-      vue: 3.4.32(typescript@5.5.3)
+      vue: 3.4.32(typescript@5.5.4)
 
   '@vitest/expect@2.0.4':
     dependencies:
@@ -5574,11 +5569,11 @@ snapshots:
       '@vue/shared': 3.4.32
       csstype: 3.1.3
 
-  '@vue/server-renderer@3.4.32(vue@3.4.32(typescript@5.5.3))':
+  '@vue/server-renderer@3.4.32(vue@3.4.32(typescript@5.5.4))':
     dependencies:
       '@vue/compiler-ssr': 3.4.32
       '@vue/shared': 3.4.32
-      vue: 3.4.32(typescript@5.5.3)
+      vue: 3.4.32(typescript@5.5.4)
 
   '@vue/shared@3.4.32': {}
 
@@ -8094,8 +8089,8 @@ snapshots:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 4.2.12
-      svelte-preprocess: 5.1.3(@babel/core@7.23.6)(postcss@8.4.39)(svelte@4.2.12)(typescript@5.5.3)
-      typescript: 5.5.3
+      svelte-preprocess: 5.1.3(@babel/core@7.23.6)(postcss@8.4.39)(svelte@4.2.12)(typescript@5.5.4)
+      typescript: 5.5.4
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -8111,7 +8106,7 @@ snapshots:
     dependencies:
       svelte: 4.2.12
 
-  svelte-preprocess@5.1.3(@babel/core@7.23.6)(postcss@8.4.39)(svelte@4.2.12)(typescript@5.5.3):
+  svelte-preprocess@5.1.3(@babel/core@7.23.6)(postcss@8.4.39)(svelte@4.2.12)(typescript@5.5.4):
     dependencies:
       '@types/pug': 2.0.6
       detect-indent: 6.1.0
@@ -8122,7 +8117,7 @@ snapshots:
     optionalDependencies:
       '@babel/core': 7.23.6
       postcss: 8.4.39
-      typescript: 5.5.3
+      typescript: 5.5.4
 
   svelte@4.2.12:
     dependencies:
@@ -8243,8 +8238,6 @@ snapshots:
       is-typed-array: 1.1.10
 
   typescript@5.4.2: {}
-
-  typescript@5.5.3: {}
 
   typescript@5.5.4: {}
 
@@ -8447,15 +8440,15 @@ snapshots:
       semver: 7.6.3
       typescript: 5.5.4
 
-  vue@3.4.32(typescript@5.5.3):
+  vue@3.4.32(typescript@5.5.4):
     dependencies:
       '@vue/compiler-dom': 3.4.32
       '@vue/compiler-sfc': 3.4.32
       '@vue/runtime-dom': 3.4.32
-      '@vue/server-renderer': 3.4.32(vue@3.4.32(typescript@5.5.3))
+      '@vue/server-renderer': 3.4.32(vue@3.4.32(typescript@5.5.4))
       '@vue/shared': 3.4.32
     optionalDependencies:
-      typescript: 5.5.3
+      typescript: 5.5.4
 
   which-boxed-primitive@1.0.2:
     dependencies:

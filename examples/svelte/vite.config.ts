@@ -23,6 +23,7 @@ export default defineConfig({
   },
   plugins: [
     svelte(),
+    // @ts-ignore
     dts({
       outDir: ['dist', 'types'],
       staticImport: true,

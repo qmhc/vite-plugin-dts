@@ -23,6 +23,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // @ts-ignore
     dts({
       outDir: ['dist', 'types'],
       // include: ['src/index.ts'],

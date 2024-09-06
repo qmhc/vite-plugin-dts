@@ -1,7 +1,7 @@
 import { relative } from 'node:path'
 
-import { getPackageInfoSync, resolveModule } from 'local-pkg'
 import { compare } from 'compare-versions'
+import { tryGetPackageInfo } from '../utils'
 
 import type { Resolver } from '../types'
 
@@ -13,9 +13,7 @@ function querySvelteVersion() {
   if (typeof lowerVersion === 'boolean') return
 
   try {
-    const version =
-      getPackageInfoSync('svelte')?.version ??
-      getPackageInfoSync('svelte', { paths: [resolveModule('svelte') || process.cwd()] })?.version
+    const version = tryGetPackageInfo('svelte')?.version
     lowerVersion = version ? compare(version, '4.0.0', '<') : false
   } catch (e) {
     lowerVersion = false

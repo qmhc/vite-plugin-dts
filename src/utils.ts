@@ -8,9 +8,9 @@ import {
   sep
 } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
-import { createRequire } from 'node:module'
 
 import ts from 'typescript'
+import { getPackageInfoSync, resolveModule } from 'local-pkg'
 
 import type { CompilerOptions } from 'typescript'
 import type { Alias } from 'vite'
@@ -248,32 +248,10 @@ export function getTsConfig(
   return tsConfig
 }
 
-export function getTsLibFolder({ root, entryRoot }: { root: string, entryRoot: string }) {
-  let libFolder: string | undefined
+export function getTsLibFolder() {
+  const libFolder = tryGetPackageInfo('typescript')?.rootPath
 
-  try {
-    // try the `require.resolve` method first
-    // @see https://stackoverflow.com/questions/54977743/do-require-resolve-for-es-modules
-    libFolder = normalizePath(createRequire(import.meta.url).resolve('typescript')).replace(
-      /node_modules\/typescript.*/,
-      'node_modules/typescript'
-    )
-  } catch {
-    // fallback to legacy path method
-    libFolder = resolve(root, 'node_modules/typescript')
-
-    if (!existsSync(libFolder)) {
-      if (root !== entryRoot) {
-        libFolder = resolve(entryRoot, 'node_modules/typescript')
-
-        if (!existsSync(libFolder)) libFolder = undefined
-      }
-
-      libFolder = undefined
-    }
-  }
-
-  return libFolder
+  return libFolder && normalizePath(libFolder)
 }
 
 /**
@@ -457,4 +435,13 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
   }
 
   return result
+}
+
+export function tryGetPackageInfo(name: string) {
+  try {
+    return (
+      getPackageInfoSync(name) ??
+      getPackageInfoSync(name, { paths: [resolveModule(name) || process.cwd()] })
+    )
+  } catch (e) {}
 }

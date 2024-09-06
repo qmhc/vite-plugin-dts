@@ -7,19 +7,12 @@ import {
 
 import { proxyCreateProgram } from '@volar/typescript'
 import ts from 'typescript'
-import { getPackageInfoSync, resolveModule } from 'local-pkg'
 import { removeEmitGlobalTypes } from 'vue-tsc'
+import { tryGetPackageInfo } from './utils'
 
 export { createParsedCommandLine }
 
-let hasVue = false
-
-try {
-  hasVue = !!(
-    getPackageInfoSync('vue') ??
-    getPackageInfoSync('svelte', { paths: [resolveModule('svelte') || process.cwd()] })
-  )
-} catch (e) {}
+const hasVue = !!tryGetPackageInfo('vue')
 
 // If there has no Vue dependency, we think it's a normal TypeScript project.
 // So we use the original createProgram of TypeScript.

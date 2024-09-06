@@ -1,7 +1,5 @@
-import { resolve } from 'node:path'
-
 import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
-import { tryGetPkgPath } from './utils'
+import { resolve, tryGetPkgPath } from './utils'
 
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { RollupConfig } from './types'
@@ -93,7 +91,7 @@ export function rollupDeclarationFiles({
     localBuild: false,
     showVerboseMessages: false,
     showDiagnostics: false,
-    typescriptCompilerFolder: libFolder ? resolve(libFolder) : undefined,
+    typescriptCompilerFolder: libFolder,
     ...rollupOptions
   })
 }

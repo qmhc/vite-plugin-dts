@@ -20,6 +20,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    // @ts-ignore
     dts({
       outDir: ['dist', 'types'],
       // include: ['src/index.ts'],
@@ -27,7 +28,7 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // insertTypesEntry: true,
-      rollupTypes: false,
+      rollupTypes: true,
       declarationOnly: true,
       compilerOptions: {
         declarationMap: true
