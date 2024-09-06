@@ -1,3 +1,9 @@
+## [4.1.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.1.0...v4.1.1) (2024-09-06)
+
+### Bug Fixes
+
+- correct resolve Vue when create program ([0621332](https://github.com/qmhc/vite-plugin-dts/commit/0621332f46606b20365f1b2efdd45ef826e32186)), closes [#380](https://github.com/qmhc/vite-plugin-dts/issues/380)
+
 # [4.1.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.0.3...v4.1.0) (2024-09-01)
 
 ### Bug Fixes
