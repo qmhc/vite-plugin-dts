@@ -439,9 +439,13 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
 
 export function tryGetPackageInfo(name: string) {
   try {
-    return (
-      getPackageInfoSync(name) ??
-      getPackageInfoSync(name, { paths: [resolveModule(name) || process.cwd()] })
-    )
+    return (getPackageInfoSync(name) ??
+      getPackageInfoSync(name, { paths: [resolveModule(name) || process.cwd()] })) as {
+      name: string,
+      version: string | undefined,
+      rootPath: string,
+      packageJsonPath: string,
+      packageJson: any
+    }
   } catch (e) {}
 }

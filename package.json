@@ -11,7 +11,7 @@
     "dev": "unbuild --stub",
     "postinstall": "is-ci || husky install",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx \"{src,tests}/**\"",
-    "precommit": "lint-staged -c ./.husky/.lintstagedrc -q",
+    "precommit": "lint-staged -c ./.husky/.lintstagedrc -q --allow-empty",
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged && pnpm run lint",
     "postpublish": "pinst --enable",
