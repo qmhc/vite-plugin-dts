@@ -60,8 +60,8 @@
   "dependencies": {
     "@microsoft/api-extractor": "7.47.4",
     "@rollup/pluginutils": "^5.1.0",
-    "@volar/typescript": "^2.3.4",
-    "@vue/language-core": "2.0.29",
+    "@volar/typescript": "^2.4.4",
+    "@vue/language-core": "2.1.6",
     "compare-versions": "^6.1.1",
     "debug": "^4.3.6",
     "kolorist": "^1.8.0",
