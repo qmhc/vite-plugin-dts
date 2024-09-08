@@ -1,3 +1,9 @@
+# [4.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.1.1...v4.2.0) (2024-09-08)
+
+### Features
+
+- upgrade vue language tools to v2.1 ([#382](https://github.com/qmhc/vite-plugin-dts/issues/382)) ([b76fe5e](https://github.com/qmhc/vite-plugin-dts/commit/b76fe5e9f116d6e4397187b1d037ceea6394edf7))
+
 ## [4.1.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.1.0...v4.1.1) (2024-09-06)
 
 ### Bug Fixes
