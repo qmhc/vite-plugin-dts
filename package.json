@@ -58,7 +58,7 @@
     "url": "https://github.com/qmhc/vite-plugin-dts/issues"
   },
   "dependencies": {
-    "@microsoft/api-extractor": "7.47.4",
+    "@microsoft/api-extractor": "7.47.7",
     "@rollup/pluginutils": "^5.1.0",
     "@volar/typescript": "^2.4.4",
     "@vue/language-core": "2.1.6",
@@ -66,8 +66,7 @@
     "debug": "^4.3.6",
     "kolorist": "^1.8.0",
     "local-pkg": "^0.5.0",
-    "magic-string": "^0.30.11",
-    "vue-tsc": "2.0.29"
+    "magic-string": "^0.30.11"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",

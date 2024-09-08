@@ -6,7 +6,6 @@ import {
 
 import { proxyCreateProgram } from '@volar/typescript'
 import ts from 'typescript'
-import { removeEmitGlobalTypes } from 'vue-tsc'
 import { tryGetPackageInfo } from './utils'
 
 export { createParsedCommandLine }
@@ -23,13 +22,6 @@ const _createProgram = !hasVue
         typeof configFilePath === 'string'
           ? createParsedCommandLine(ts, ts.sys, configFilePath.replace(/\\/g, '/')).vueOptions
           : resolveVueCompilerOptions({})
-
-    if (options.host) {
-      const writeFile = options.host.writeFile.bind(options.host)
-      options.host.writeFile = (fileName, contents, ...args) => {
-        return writeFile(fileName, removeEmitGlobalTypes(contents), ...args)
-      }
-    }
 
     const vueLanguagePlugin = createVueLanguagePlugin<string>(
       ts,
@@ -58,7 +50,7 @@ export const createProgram = !hasVue
             targetSourceFile,
             (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
               if (fileName.endsWith('.d.ts')) {
-                data = removeEmitGlobalTypes(data)
+                // data = removeVolarGlobalTypes(data)
               }
               return writeFile(fileName, data, writeByteOrderMark, onError, sourceFiles)
             },
@@ -79,3 +71,9 @@ export const createProgram = !hasVue
 
       return program
     }
+
+// const removeVolarGlobalTypesRegexp = /^[^\n]*__VLS_globalTypesStart[\w\W]*__VLS_globalTypesEnd[^\n]*\n?$/mg
+
+// export function removeVolarGlobalTypes(dts: string) {
+//   return dts.replace(removeVolarGlobalTypesRegexp, '')
+// }

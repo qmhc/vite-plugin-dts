@@ -1,4 +1,3 @@
-import { removeEmitGlobalTypes } from 'vue-tsc'
 import { base64VLQEncode } from '../utils'
 
 import type { Resolver } from '../types'
@@ -31,7 +30,7 @@ export function VueResolver(): Resolver {
       program.emit(
         sourceFile,
         (path, content) => {
-          outputs.push({ path, content: removeEmitGlobalTypes(content) })
+          outputs.push({ path, content })
         },
         undefined,
         true
