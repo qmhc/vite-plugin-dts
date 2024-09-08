@@ -1,7 +1,6 @@
 import {
   createParsedCommandLine,
-  createRootFileChecker,
-  createVueLanguagePlugin2,
+  createVueLanguagePlugin,
   resolveVueCompilerOptions
 } from '@vue/language-core'
 
@@ -32,16 +31,11 @@ const _createProgram = !hasVue
       }
     }
 
-    const vueLanguagePlugin = createVueLanguagePlugin2<string>(
+    const vueLanguagePlugin = createVueLanguagePlugin<string>(
       ts,
-      id => id,
-      createRootFileChecker(
-        undefined,
-        () => options.rootNames.map(rootName => rootName.replace(/\\/g, '/')),
-        options.host?.useCaseSensitiveFileNames?.() ?? false
-      ),
       options.options,
-      vueOptions
+      vueOptions,
+      id => id
     )
     return [vueLanguagePlugin]
   })
