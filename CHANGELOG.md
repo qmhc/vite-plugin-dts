@@ -1,3 +1,9 @@
+## [4.2.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.0...v4.2.1) (2024-09-08)
+
+### Bug Fixes
+
+- remove api-extractor patch ([770d5b1](https://github.com/qmhc/vite-plugin-dts/commit/770d5b175c8512a0472bceacf10ba425a9ffb2ae))
+
 # [4.2.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.1.1...v4.2.0) (2024-09-08)
 
 ### Features
