@@ -12,6 +12,7 @@ import OutsideProps from '@/components/outside-props'
 import NoDirectExport from '@/components/NoDirectExport.vue'
 
 import OutsideTsProps from '@/components/outside-ts-props'
+import GenericProps from '@/components/GenericProps.vue'
 
 import JsSetup from '../components/JsSetup.vue'
 import CssVar from '../components/CssVar.vue'
@@ -45,7 +46,8 @@ export {
   NoDirectExport,
   JsSetup,
   CssVar,
-  OutsideTsProps
+  OutsideTsProps,
+  GenericProps
 }
 
 export default DefaultImport

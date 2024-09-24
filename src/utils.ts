@@ -8,6 +8,7 @@ import {
   sep
 } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
+import { createRequire } from 'node:module'
 
 import ts from 'typescript'
 import { getPackageInfoSync, resolveModule } from 'local-pkg'
@@ -438,6 +439,16 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
 }
 
 export function tryGetPackageInfo(name: string) {
+  if (process.versions.pnp) {
+    const targetRequire = createRequire(import.meta.url)
+
+    try {
+      return getPackageInfoSync(
+        targetRequire.resolve(`${name}/package.json`, { paths: [process.cwd()] })
+      )
+    } catch (e) {}
+  }
+
   try {
     return (getPackageInfoSync(name) ??
       getPackageInfoSync(name, { paths: [resolveModule(name) || process.cwd()] })) as {
