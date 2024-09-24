@@ -1,3 +1,9 @@
+## [4.2.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.1...v4.2.2) (2024-09-24)
+
+### Bug Fixes
+
+- correctly get package info in pnp mode ([984f487](https://github.com/qmhc/vite-plugin-dts/commit/984f487457691ed6fde1e25cb15dc1dc123511f9)), closes [#384](https://github.com/qmhc/vite-plugin-dts/issues/384)
+
 ## [4.2.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.0...v4.2.1) (2024-09-08)
 
 ### Bug Fixes
