@@ -80,6 +80,24 @@ function transformAlias(
   return importer
 }
 
+function isVLSNode(node: ts.Node) {
+  if (ts.isVariableStatement(node)) {
+    return node.declarationList.declarations.some(
+      d => ts.isIdentifier(d.name) && `${d.name.escapedText}`.startsWith('__VLS_')
+    )
+  }
+
+  if (ts.isTypeAliasDeclaration(node)) {
+    return `${node.name.escapedText}`.startsWith('__VLS_')
+  }
+
+  if (ts.isFunctionDeclaration(node)) {
+    return !!node.name && `${node.name.escapedText}`.startsWith('__VLS_')
+  }
+
+  return false
+}
+
 export function transformCode(options: {
   filePath: string,
   content: string,
@@ -226,6 +244,19 @@ export function transformCode(options: {
       ) {
         declareModules.push(s.slice(node.pos, node.end + 1))
       }
+
+      return false
+    }
+
+    if (
+      ts.isModuleDeclaration(node) &&
+      node.body &&
+      ts.isModuleBlock(node.body) &&
+      ts.isIdentifier(node.name) &&
+      node.name.escapedText === 'global' &&
+      node.body.statements.some(isVLSNode)
+    ) {
+      s.remove(node.pos, node.end + 1)
 
       return false
     }
