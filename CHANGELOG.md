@@ -1,3 +1,9 @@
+## [4.2.3](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.2...v4.2.3) (2024-09-30)
+
+### Bug Fixes
+
+- patch for volar with pnp mode ([3bc780a](https://github.com/qmhc/vite-plugin-dts/commit/3bc780abdfec43ec4ae89d9b60877793564e051c)), closes [#385](https://github.com/qmhc/vite-plugin-dts/issues/385)
+
 ## [4.2.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.1...v4.2.2) (2024-09-24)
 
 ### Bug Fixes
