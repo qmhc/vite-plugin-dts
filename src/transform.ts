@@ -232,31 +232,22 @@ export function transformCode(options: {
       return false
     }
 
-    if (ts.isModuleDeclaration(node)) {
+    if (ts.isModuleDeclaration(node) && node.body && ts.isModuleBlock(node.body)) {
       if (
+        ts.isIdentifier(node.name) &&
+        node.name.escapedText === 'global' &&
+        node.body.statements.some(isVLSNode)
+      ) {
+        s.remove(node.pos, node.end + 1)
+      } else if (
         node.modifiers?.[0] &&
         node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
-        node.body &&
-        ts.isModuleBlock(node.body) &&
         !node.body.statements.some(
           s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
         )
       ) {
         declareModules.push(s.slice(node.pos, node.end + 1))
       }
-
-      return false
-    }
-
-    if (
-      ts.isModuleDeclaration(node) &&
-      node.body &&
-      ts.isModuleBlock(node.body) &&
-      ts.isIdentifier(node.name) &&
-      node.name.escapedText === 'global' &&
-      node.body.statements.some(isVLSNode)
-    ) {
-      s.remove(node.pos, node.end + 1)
 
       return false
     }
