@@ -80,19 +80,21 @@ function transformAlias(
   return importer
 }
 
+const vlsRE = /^_?__VLS_/
+
 function isVLSNode(node: ts.Node) {
   if (ts.isVariableStatement(node)) {
     return node.declarationList.declarations.some(
-      d => ts.isIdentifier(d.name) && `${d.name.escapedText}`.startsWith('__VLS_')
+      d => ts.isIdentifier(d.name) && vlsRE.test(`${d.name.escapedText}`)
     )
   }
 
   if (ts.isTypeAliasDeclaration(node)) {
-    return `${node.name.escapedText}`.startsWith('__VLS_')
+    return vlsRE.test(`${node.name.escapedText}`)
   }
 
   if (ts.isFunctionDeclaration(node)) {
-    return !!node.name && `${node.name.escapedText}`.startsWith('__VLS_')
+    return !!node.name && vlsRE.test(`${node.name.escapedText}`)
   }
 
   return false

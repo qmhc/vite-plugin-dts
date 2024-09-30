@@ -1,3 +1,5 @@
+## [4.2.3-dev.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.3-dev.1...v4.2.3-dev.2) (2024-09-30)
+
 ## [4.2.3-dev.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.3-dev.0...v4.2.3-dev.1) (2024-09-30)
 
 ## [4.2.3-dev.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.2...v4.2.3-dev.0) (2024-09-30)
