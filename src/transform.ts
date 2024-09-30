@@ -80,6 +80,26 @@ function transformAlias(
   return importer
 }
 
+const vlsRE = /^_?__VLS_/
+
+function isVLSNode(node: ts.Node) {
+  if (ts.isVariableStatement(node)) {
+    return node.declarationList.declarations.some(
+      d => ts.isIdentifier(d.name) && vlsRE.test(`${d.name.escapedText}`)
+    )
+  }
+
+  if (ts.isTypeAliasDeclaration(node)) {
+    return vlsRE.test(`${node.name.escapedText}`)
+  }
+
+  if (ts.isFunctionDeclaration(node)) {
+    return !!node.name && vlsRE.test(`${node.name.escapedText}`)
+  }
+
+  return false
+}
+
 export function transformCode(options: {
   filePath: string,
   content: string,
@@ -214,12 +234,16 @@ export function transformCode(options: {
       return false
     }
 
-    if (ts.isModuleDeclaration(node)) {
+    if (ts.isModuleDeclaration(node) && node.body && ts.isModuleBlock(node.body)) {
       if (
+        ts.isIdentifier(node.name) &&
+        node.name.escapedText === 'global' &&
+        node.body.statements.some(isVLSNode)
+      ) {
+        s.remove(node.pos, node.end)
+      } else if (
         node.modifiers?.[0] &&
         node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
-        node.body &&
-        ts.isModuleBlock(node.body) &&
         !node.body.statements.some(
           s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
         )
