@@ -105,6 +105,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let host: ts.CompilerHost | undefined
   let program: ts.Program | undefined
   let filter: ReturnType<typeof createFilter>
+  let rootNames: string[] = []
   let rebuildProgram: () => ts.Program
 
   let bundled = false
@@ -318,7 +319,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       filter = createFilter(include, exclude)
 
-      const rootNames = [
+      rootNames = [
         ...new Set(
           Object.values(entries)
             .map(entry => ensureAbsolute(entry, root))
@@ -376,10 +377,10 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         await unwrapPromise(afterDiagnostic(diagnostics))
       }
 
-      rootNames.forEach(file => {
+      for (const file of rootNames) {
         this.addWatchFile(file)
         rootFiles.add(file)
-      })
+      }
 
       bundleDebug('create ts program')
       timeRecord += Date.now() - startTime
@@ -464,7 +465,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const sourceFile = host.getSourceFile(id, ts.ScriptTarget.ESNext)
 
       if (sourceFile) {
-        rootFiles.add(sourceFile.fileName)
+        for (const file of rootNames) {
+          rootFiles.add(file)
+        }
+
+        rootFiles.add(normalizePath(sourceFile.fileName))
 
         bundled = false
         timeRecord = 0
