@@ -83,14 +83,14 @@ describe('transform tests', () => {
 
   it('test: transformCode (process aliases)', () => {
     const aliases: Alias[] = [
-      { find: /^@\/(?!\.\/)([^*]+)/, replacement: resolve(__dirname, '../$1') },
+      { find: /^@\/(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../$1') },
       {
-        find: /^@components\/(?!\.\/)([^*]+)/,
+        find: /^@components\/(?!\.{1,2}\/)([^*]+)/,
         replacement: resolve(__dirname, '../src/components/$1')
       },
       { find: /^~\//, replacement: resolve(__dirname, '../src/') },
       { find: '$src', replacement: resolve(__dirname, '../src') },
-      { find: /^(?!\.\/)([^*]+)$/, replacement: resolve(__dirname, '../src/$1') }
+      { find: /^(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../src/$1') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
 
@@ -137,6 +137,12 @@ describe('transform tests', () => {
         filePath: './src/components/Sample/index.ts',
         content: 'import { Sample } from "./test.data";',
         output: "import { Sample } from './test.data';\n"
+      },
+      {
+        description: 'wildcard alias at root level with relative parent import and dot in name',
+        filePath: './src/components/Sample/index.ts',
+        content: 'import { Sample } from "../test.data";',
+        output: "import { Sample } from '../test.data';\n"
       },
       {
         description: 'wildcard alias at root level with relative import and dot in name',
@@ -193,7 +199,6 @@ describe('transform tests', () => {
       },
       {
         description: 'alias as everything, relative import',
-        aliases: [{ find: /^(.+)$/, replacement: resolve(__dirname, '../src/$1') }],
         content: 'import { TestBase } from "test";',
         output: "import { TestBase } from './test';\n"
       }
@@ -248,6 +253,10 @@ describe('transform tests', () => {
 
     expect(transformCode(options('import { TestBase } from "./test.path";')).content).toEqual(
       "import { TestBase } from './test.path';\n"
+    )
+
+    expect(transformCode(options('import { TestBase } from "../test.path";')).content).toEqual(
+      "import { TestBase } from '../test.path';\n"
     )
   })
 

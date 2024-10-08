@@ -168,14 +168,14 @@ describe('utils tests', () => {
       })
     ).toStrictEqual([
       {
-        find: /^@\/(?!\.\/)([^*]+)$/,
+        find: /^@\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/at/$1'))
       }
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { '~/*': ['./tilde/*'] })).toStrictEqual([
       {
-        find: /^~\/(?!\.\/)([^*]+)$/,
+        find: /^~\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/tilde/$1'))
       }
     ])
@@ -184,7 +184,7 @@ describe('utils tests', () => {
       parseTsAliases('/tmp/fake/project/root', { '@/no-dot-prefix/*': ['no-dot-prefix/*'] })
     ).toStrictEqual([
       {
-        find: /^@\/no-dot-prefix\/(?!\.\/)([^*]+)$/,
+        find: /^@\/no-dot-prefix\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(
           maybeWindowsPath('/tmp/fake/project/root/no-dot-prefix/$1')
         )
@@ -195,7 +195,7 @@ describe('utils tests', () => {
       parseTsAliases('/tmp/fake/project/root', { '@/components/*': ['./at/components/*'] })
     ).toStrictEqual([
       {
-        find: /^@\/components\/(?!\.\/)([^*]+)$/,
+        find: /^@\/components\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(
           maybeWindowsPath('/tmp/fake/project/root/at/components/$1')
         )
@@ -204,7 +204,7 @@ describe('utils tests', () => {
 
     expect(parseTsAliases('/tmp/fake/project/root', { 'top/*': ['./top/*'] })).toStrictEqual([
       {
-        find: /^top\/(?!\.\/)([^*]+)$/,
+        find: /^top\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/top/$1'))
       }
     ])
@@ -219,7 +219,7 @@ describe('utils tests', () => {
     // https://github.com/qmhc/vite-plugin-dts/issues/330
     expect(parseTsAliases('/tmp/fake/project/root', { '*': ['./src/*'] })).toStrictEqual([
       {
-        find: /^(?!\.\/)([^*]+)$/,
+        find: /^(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src/$1'))
       }
     ])
@@ -227,7 +227,7 @@ describe('utils tests', () => {
     // https://github.com/qmhc/vite-plugin-dts/issues/290#issuecomment-1872495764
     expect(parseTsAliases('/tmp/fake/project/root', { '#*': ['./hashed/*'] })).toStrictEqual([
       {
-        find: /^#(?!\.\/)([^*]+)$/,
+        find: /^#(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/hashed/$1'))
       }
     ])
