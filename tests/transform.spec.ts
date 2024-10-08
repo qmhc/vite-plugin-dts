@@ -86,7 +86,8 @@ describe('transform tests', () => {
       { find: /^@\/(.+)/, replacement: resolve(__dirname, '../$1') },
       { find: /^@components\/(.+)/, replacement: resolve(__dirname, '../src/components/$1') },
       { find: /^~\//, replacement: resolve(__dirname, '../src/') },
-      { find: '$src', replacement: resolve(__dirname, '../src') }
+      { find: '$src', replacement: resolve(__dirname, '../src') },
+      { find: /^(.+)$/, replacement: resolve(__dirname, '../src/$1') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
 
@@ -120,6 +121,13 @@ describe('transform tests', () => {
         description: 'dynamic import inside subfolder with alias at root level',
         content: 'import("@/components/test").Test;',
         output: "import('../components/test').Test;"
+      },
+      {
+        // https://github.com/qmhc/vite-plugin-dts/issues/330
+        description: 'dynamic import with inside subfolder with wildcard alias at root level',
+        filePath: './src/components/Sample/index.ts',
+        content: 'import {Sample} from "./test";',
+        output: "import {Sample} from './test';"
       },
       {
         description: 'import inside folder with named alias at subfolder',

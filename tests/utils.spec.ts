@@ -248,11 +248,8 @@ describe('utils tests', () => {
   })
 
   it('test: getTsLibFolder', () => {
-    const root = normalizePath(resolve(__dirname, '..'))
-    const entryRoot = resolve(root, 'src')
+    expect(getTsLibFolder()).toMatch(/node_modules\/typescript$/)
 
-    expect(getTsLibFolder({ root, entryRoot })).toMatch(/node_modules\/typescript$/)
-
-    expect(existsSync(getTsLibFolder({ root, entryRoot }) || '')).toBe(true)
+    expect(existsSync(getTsLibFolder() || '')).toBe(true)
   })
 })
