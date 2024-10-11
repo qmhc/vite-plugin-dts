@@ -1,3 +1,10 @@
+## [4.2.4](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.3...v4.2.4) (2024-10-11)
+
+### Bug Fixes
+
+- provide default baseUrl and correctly parse tsconfig paths ([#386](https://github.com/qmhc/vite-plugin-dts/issues/386)) ([dc3cbfe](https://github.com/qmhc/vite-plugin-dts/commit/dc3cbfe3451c548fa928bd666c5b467a5fc03a1a)), closes [#330](https://github.com/qmhc/vite-plugin-dts/issues/330) [#330](https://github.com/qmhc/vite-plugin-dts/issues/330)
+- should re-emit all source files when change in watch mode ([a7e1c0c](https://github.com/qmhc/vite-plugin-dts/commit/a7e1c0cb80cf25056e02e04414af9412eeeea750)), closes [#383](https://github.com/qmhc/vite-plugin-dts/issues/383)
+
 ## [4.2.3](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.2...v4.2.3) (2024-09-30)
 
 ### Bug Fixes
