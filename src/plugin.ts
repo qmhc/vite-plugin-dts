@@ -288,7 +288,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           : [ensureAbsolute(content?.raw.compilerOptions?.outDir || 'dist', root)]
       }
 
-      const { baseUrl, paths } = compilerOptions
+      const {
+        // Here we are using the default value to set the `baseUrl` to the current directory if no value exists. This is
+        // the same behavior as the TS Compiler. See TS source:
+        // https://github.com/microsoft/TypeScript/blob/3386e943215613c40f68ba0b108cda1ddb7faee1/src/compiler/utilities.ts#L6493-L6501
+        baseUrl = compilerOptions.paths ? process.cwd() : undefined,
+        paths
+      } = compilerOptions
 
       if (pathsToAliases && baseUrl && paths) {
         aliases.push(
