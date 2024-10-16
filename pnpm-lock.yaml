@@ -19,9 +19,6 @@ importers:
       '@volar/typescript':
         specifier: ^2.4.4
         version: 2.4.4
-      '@vue/language-core':
-        specifier: 2.1.6
-        version: 2.1.6(typescript@5.5.4)
       compare-versions:
         specifier: ^6.1.1
         version: 6.1.1
@@ -71,6 +68,9 @@ importers:
       '@vue/eslint-config-typescript':
         specifier: ^13.0.0
         version: 13.0.0(eslint-plugin-vue@9.24.0(eslint@8.57.0))(eslint@8.57.0)(typescript@5.5.4)
+      '@vue/language-core':
+        specifier: 2.1.6
+        version: 2.1.6(typescript@5.5.4)
       conventional-changelog-cli:
         specifier: ^5.0.0
         version: 5.0.0(conventional-commits-filter@5.0.0)
