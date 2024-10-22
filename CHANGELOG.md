@@ -1,3 +1,9 @@
+# [4.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.4...v4.3.0) (2024-10-22)
+
+### Features
+
+- upgrade api-extractor and typescript ([#390](https://github.com/qmhc/vite-plugin-dts/issues/390)) ([94cdb59](https://github.com/qmhc/vite-plugin-dts/commit/94cdb59f02ec71348492fbca79dc4a324e607a95))
+
 ## [4.2.4](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.3...v4.2.4) (2024-10-11)
 
 ### Bug Fixes
