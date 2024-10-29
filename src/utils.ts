@@ -26,8 +26,8 @@ export function normalizePath(id: string): string {
   return posix.normalize(slash(id))
 }
 
-export function resolve(...paths: string[]) {
-  return normalizePath(_resolve(...paths))
+export function resolve(root: string, path: string) {
+  return normalizePath(_resolve(root, path.replace('${configDir}', root)))
 }
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(

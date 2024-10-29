@@ -1,4 +1,4 @@
-import { basename, dirname, relative } from 'node:path'
+import path, { basename, dirname, relative } from 'node:path'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
@@ -167,7 +167,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       for (const alias of aliases) {
-        alias.replacement = resolve(alias.replacement)
+        alias.replacement = normalizePath(path.resolve(alias.replacement))
       }
     },
 
@@ -624,7 +624,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               return normalizePath(
                 relative(
                   dirname(filePath),
-                  resolve(currentDir, relative(publicRoot, baseDir), source)
+                  path.resolve(currentDir, relative(publicRoot, baseDir), source)
                 )
               )
             })

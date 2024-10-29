@@ -83,6 +83,7 @@ describe('utils tests', () => {
     )
     expect(ensureAbsolute('/src/index.ts', root)).toBe('/src/index.ts')
     expect(ensureAbsolute('/vite-plugin-dts', root)).toBe('/vite-plugin-dts')
+    expect(ensureAbsolute('${configDir}/src/index.ts', root)).toBe(root + '/src/index.ts')
   })
 
   it('test: ensureArray', () => {
