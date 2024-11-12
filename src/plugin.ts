@@ -120,6 +120,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
+  const transformedFiles = new Set<string>()
 
   const setOutputFile = (path: string, content: string) => {
     outputFiles.set(path, content)
@@ -394,13 +395,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
     async transform(code, id) {
       let resolver: Resolver | undefined
-      id = normalizePath(id)
+      id = normalizePath(id).split('?')[0]
 
       if (
         !host ||
         !program ||
         !filter(id) ||
-        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id))
+        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id)) ||
+        transformedFiles.has(id)
       ) {
         return
       }
@@ -408,8 +410,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       const startTime = Date.now()
       const outDir = outDirs[0]
 
-      id = id.split('?')[0]
       rootFiles.delete(id)
+      transformedFiles.add(id)
 
       if (resolver) {
         const result = await resolver.transform({
@@ -487,6 +489,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     async writeBundle() {
+      transformedFiles.clear()
+
       if (!host || !program || bundled) return
 
       bundled = true

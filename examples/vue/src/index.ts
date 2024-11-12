@@ -13,6 +13,7 @@ import NoDirectExport from '@/components/NoDirectExport.vue'
 
 import OutsideTsProps from '@/components/outside-ts-props'
 import GenericProps from '@/components/GenericProps.vue'
+import CustomSFC from '@/components/CustomSFC.vue'
 
 import JsSetup from '../components/JsSetup.vue'
 import CssVar from '../components/CssVar.vue'
@@ -47,7 +48,8 @@ export {
   JsSetup,
   CssVar,
   OutsideTsProps,
-  GenericProps
+  GenericProps,
+  CustomSFC
 }
 
 export default DefaultImport
