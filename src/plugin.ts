@@ -1,4 +1,4 @@
-import path, { basename, dirname, relative } from 'node:path'
+import { basename, dirname, relative } from 'node:path'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
@@ -26,6 +26,7 @@ import {
   queryPublicPath,
   removeDirIfEmpty,
   resolve,
+  resolveConfigDir,
   runParallel,
   setModuleResolution,
   toCapitalCase,
@@ -167,7 +168,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       for (const alias of aliases) {
-        alias.replacement = normalizePath(path.resolve(alias.replacement))
+        alias.replacement = resolve(alias.replacement)
       }
     },
 
@@ -285,7 +286,12 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       if (!outDirs) {
         outDirs = options.outDir
           ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
-          : [ensureAbsolute(content?.raw.compilerOptions?.outDir || 'dist', root)]
+          : [
+              ensureAbsolute(
+                resolveConfigDir(content?.raw.compilerOptions?.outDir, 'root') || 'dist',
+                root
+              )
+            ]
       }
 
       const {
@@ -298,7 +304,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       if (pathsToAliases && baseUrl && paths) {
         aliases.push(
-          ...parseTsAliases(ensureAbsolute(baseUrl, configPath ? dirname(configPath) : root), paths)
+          ...parseTsAliases(
+            ensureAbsolute(
+              resolveConfigDir(baseUrl, root),
+              configPath ? dirname(configPath) : root
+            ),
+            paths
+          )
         )
       }
 
@@ -308,11 +320,15 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         defaultGlob: string | string[]
       ) => {
         if (rootGlobs?.length) {
-          return ensureArray(rootGlobs).map(glob => normalizeGlob(ensureAbsolute(glob, root)))
+          return ensureArray(rootGlobs).map(glob =>
+            normalizeGlob(ensureAbsolute(resolveConfigDir(glob, root), root))
+          )
         }
 
         return ensureArray(tsGlobs?.length ? tsGlobs : defaultGlob).map(glob =>
-          normalizeGlob(ensureAbsolute(glob, configPath ? dirname(configPath) : root))
+          normalizeGlob(
+            ensureAbsolute(resolveConfigDir(glob, root), configPath ? dirname(configPath) : root)
+          )
         )
       }
 
@@ -355,7 +371,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       }
 
       publicRoot = compilerOptions.rootDir
-        ? ensureAbsolute(compilerOptions.rootDir, root)
+        ? ensureAbsolute(resolveConfigDir(compilerOptions.rootDir, root), root)
         : compilerOptions.composite && compilerOptions.configFilePath
           ? dirname(compilerOptions.configFilePath as string)
           : queryPublicPath(
@@ -624,7 +640,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
               return normalizePath(
                 relative(
                   dirname(filePath),
-                  path.resolve(currentDir, relative(publicRoot, baseDir), source)
+                  resolve(currentDir, relative(publicRoot, baseDir), source)
                 )
               )
             })

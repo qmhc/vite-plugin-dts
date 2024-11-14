@@ -14,6 +14,7 @@ import {
   normalizePath,
   parseTsAliases,
   queryPublicPath,
+  resolveConfigDir,
   toCapitalCase,
   unwrapPromise
 } from '../src/utils'
@@ -83,7 +84,14 @@ describe('utils tests', () => {
     )
     expect(ensureAbsolute('/src/index.ts', root)).toBe('/src/index.ts')
     expect(ensureAbsolute('/vite-plugin-dts', root)).toBe('/vite-plugin-dts')
-    expect(ensureAbsolute('${configDir}/src/index.ts', root)).toBe(root + '/src/index.ts')
+  })
+
+  it('test: resolveConfigDir', () => {
+    const root = normalizePath(resolve(__dirname, '..'))
+
+    expect(resolveConfigDir('')).toBe('')
+    expect(resolveConfigDir('./some/path')).toBe('./some/path')
+    expect(resolveConfigDir('${configDir}/some/path', root)).toBe(`${root}/some/path`)
   })
 
   it('test: ensureArray', () => {

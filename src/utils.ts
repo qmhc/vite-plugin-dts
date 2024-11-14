@@ -22,12 +22,16 @@ export function slash(p: string): string {
   return p.replace(windowsSlashRE, '/')
 }
 
+export function resolveConfigDir(path: string, root = process.cwd()) {
+  return path.replace('${configDir}', root)
+}
+
 export function normalizePath(id: string): string {
   return posix.normalize(slash(id))
 }
 
-export function resolve(root: string, path: string) {
-  return normalizePath(_resolve(root, path.replace('${configDir}', root)))
+export function resolve(...paths: string[]) {
+  return normalizePath(_resolve(...paths))
 }
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
