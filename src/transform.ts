@@ -2,7 +2,7 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path'
 
 import MagicString from 'magic-string'
 import ts from 'typescript'
-import { isRegExp, normalizePath } from './utils'
+import { importResolves, isAliasGlobal, isRegExp, normalizePath } from './utils'
 
 import type { Alias } from 'vite'
 
@@ -71,9 +71,13 @@ function transformAlias(
         matchedAlias.find,
         replacement + (endsWithSlash ? '/' : '')
       )
-      const normalizedPath = normalizePath(relative(dir, resolve(dir, truthPath)))
 
-      return normalizedPath.startsWith('.') ? normalizedPath : `./${normalizedPath}`
+      const absolutePath = resolve(dir, truthPath)
+      const normalizedPath = normalizePath(relative(dir, absolutePath))
+      const resultPath = normalizedPath.startsWith('.') ? normalizedPath : `./${normalizedPath}`
+
+      if (!isAliasGlobal(matchedAlias)) return resultPath
+      if (importResolves(absolutePath)) return resultPath
     }
   }
 

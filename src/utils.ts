@@ -442,6 +442,41 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
   return result
 }
 
+const rootAsteriskImportRE = /^(?!\.{1,2}\/)([^*]+)$/
+export function isAliasGlobal(alias: Alias) {
+  return alias.find.toString() === rootAsteriskImportRE.toString()
+}
+
+export function importResolves(path: string) {
+  const files = [
+    // js
+    '.js',
+    '.jsx',
+    '.mjs',
+    '.cjs',
+    // ts
+    '.ts',
+    '.tsx',
+    '.mts',
+    '.cts',
+    '.d.ts',
+    // json
+    '.json',
+    // vue
+    '.vue',
+    '.vue.d.ts',
+    // svelte
+    '.svelte'
+  ]
+
+  for (const ext of files) {
+    if (existsSync(path + ext)) {
+      return true
+    }
+  }
+  return false
+}
+
 export function tryGetPackageInfo(name: string) {
   if (process.versions.pnp) {
     const targetRequire = createRequire(import.meta.url)

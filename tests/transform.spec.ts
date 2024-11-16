@@ -94,7 +94,7 @@ describe('transform tests', () => {
       { find: /^~\//, replacement: resolve(__dirname, '../src/') },
       // '$src/*' -> '/src/*'
       { find: '$src', replacement: resolve(__dirname, '../src') },
-      // '*' -> '/*'
+      // '*' -> '/tests/__fixtures__/*' (needs real path here to test if local file exists)
       {
         find: /^(?!\.{1,2}\/)([^*]+)$/,
         replacement: resolve(__dirname, '../tests/__fixtures__/$1')
@@ -125,8 +125,8 @@ describe('transform tests', () => {
     }> = [
       {
         description: 'type import alias at root level',
-        content: 'import type { TestBase } from "@/test";',
-        output: "import { TestBase } from '../test';\n"
+        content: 'import type { TestBase } from "@/src/test";',
+        output: "import { TestBase } from './test';\n"
       },
       {
         description: 'dynamic import inside subfolder with alias at root level',
@@ -207,7 +207,7 @@ describe('transform tests', () => {
       },
       {
         description: 'wildcard alias at root, relative import',
-        filePath: './tests/__fixtures__/resolvePath.ts',
+        filePath: './tests/__fixtures__/index.ts',
         content: 'import { TestBase } from "resolvePath";',
         output: "import { TestBase } from './resolvePath';\n"
       },
