@@ -83,13 +83,18 @@ describe('transform tests', () => {
 
   it('test: transformCode (process aliases)', () => {
     const aliases: Alias[] = [
+      // '@/*' -> '/*'
       { find: /^@\/(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../$1') },
+      // '@components/*' -> '/src/components/*'
       {
         find: /^@components\/(?!\.{1,2}\/)([^*]+)/,
         replacement: resolve(__dirname, '../src/components/$1')
       },
+      // '~/*' -> '/src/*'
       { find: /^~\//, replacement: resolve(__dirname, '../src/') },
+      // '$src/*' -> '/src/*'
       { find: '$src', replacement: resolve(__dirname, '../src') },
+      // '*' -> '/*'
       { find: /^(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../src/$1') }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
@@ -117,8 +122,8 @@ describe('transform tests', () => {
     }> = [
       {
         description: 'type import alias at root level',
-        content: 'import type { TestBase } from "@/src/test";',
-        output: "import { TestBase } from './test';\n"
+        content: 'import type { TestBase } from "@/test";',
+        output: "import { TestBase } from '../test';\n"
       },
       {
         description: 'dynamic import inside subfolder with alias at root level',
