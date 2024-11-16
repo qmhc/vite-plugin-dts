@@ -438,6 +438,33 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
   return result
 }
 
+const rootAsteriskImportRE = /^(?!\.{1,2}\/)([^*]+)$/
+export function isAliasGlobal(alias: Alias) {
+  return alias.find.toString() === rootAsteriskImportRE.toString()
+}
+
+export function importResolves(path: string) {
+  const files = [
+    '.js',
+    '.jsx',
+    '.ts',
+    '.tsx',
+    '.json',
+    '.mjs',
+    '.cjs',
+    '.d.ts',
+    '.vue',
+    '.vue.d.ts'
+  ]
+
+  for (const ext of files) {
+    if (existsSync(path + ext)) {
+      return true
+    }
+  }
+  return false
+}
+
 export function tryGetPackageInfo(name: string) {
   if (process.versions.pnp) {
     const targetRequire = createRequire(import.meta.url)
