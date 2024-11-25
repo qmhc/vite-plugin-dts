@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useCount } from '@/hooks/useCount'
 
 interface Props {
   count?: number
 }
 
 function HelloWorld(props: Props) {
-  const [count, setCount] = useState(props.count || 0)
+  const [count, setCount] = useCount(props.count)
 
   return (
     <div className="hello-world">

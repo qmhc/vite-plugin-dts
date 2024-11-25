@@ -21,9 +21,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["${configDir}/src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable"]
   },
-  "include": ["src", "*.d.ts"]
+  "include": ["${configDir}/src", "*.d.ts"]
 }
