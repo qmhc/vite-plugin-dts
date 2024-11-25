@@ -89,8 +89,8 @@ describe('utils tests', () => {
   it('test: resolveConfigDir', () => {
     const root = normalizePath(resolve(__dirname, '..'))
 
-    expect(resolveConfigDir('')).toBe('')
-    expect(resolveConfigDir('./some/path')).toBe('./some/path')
+    expect(resolveConfigDir('', root)).toBe('')
+    expect(resolveConfigDir('./some/path', root)).toBe('./some/path')
     expect(resolveConfigDir('${configDir}/some/path', root)).toBe(`${root}/some/path`)
   })
 

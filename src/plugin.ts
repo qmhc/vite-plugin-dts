@@ -288,7 +288,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
           : [
               ensureAbsolute(
-                resolveConfigDir(content?.raw.compilerOptions?.outDir, 'root') || 'dist',
+                content?.raw.compilerOptions?.outDir
+                  ? resolveConfigDir(content.raw.compilerOptions.outDir, root)
+                  : 'dist',
                 root
               )
             ]

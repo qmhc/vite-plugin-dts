@@ -22,8 +22,8 @@ export function slash(p: string): string {
   return p.replace(windowsSlashRE, '/')
 }
 
-export function resolveConfigDir(path: string, root = process.cwd()) {
-  return path.replace('${configDir}', root)
+export function resolveConfigDir(path: string, configDir: string) {
+  return path.replace('${configDir}', configDir)
 }
 
 export function normalizePath(id: string): string {
