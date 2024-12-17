@@ -83,14 +83,22 @@ describe('transform tests', () => {
 
   it('test: transformCode (process aliases)', () => {
     const aliases: Alias[] = [
+      // '@/*' -> '/*'
       { find: /^@\/(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../$1') },
+      // '@components/*' -> '/src/components/*'
       {
         find: /^@components\/(?!\.{1,2}\/)([^*]+)/,
         replacement: resolve(__dirname, '../src/components/$1')
       },
+      // '~/*' -> '/src/*'
       { find: /^~\//, replacement: resolve(__dirname, '../src/') },
+      // '$src/*' -> '/src/*'
       { find: '$src', replacement: resolve(__dirname, '../src') },
-      { find: /^(?!\.{1,2}\/)([^*]+)/, replacement: resolve(__dirname, '../src/$1') }
+      // '*' -> '/tests/__fixtures__/*' (needs real path here to test if local file exists)
+      {
+        find: /^(?!\.{1,2}\/)([^*]+)$/,
+        replacement: resolve(__dirname, '../tests/__fixtures__/$1')
+      }
     ]
     const filePath = resolve(__dirname, '../src/index.ts')
 
@@ -148,7 +156,7 @@ describe('transform tests', () => {
         description: 'wildcard alias at root level with relative import and dot in name',
         filePath: './src/components/Sample/index.ts',
         content: 'import { Sample } from "utils/test.data";',
-        output: "import { Sample } from '../../utils/test.data';\n"
+        output: "import { Sample } from '../../../tests/__fixtures__/utils/test.data';\n"
       },
       {
         description: 'import inside folder with named alias at subfolder',
@@ -198,9 +206,15 @@ describe('transform tests', () => {
         output: "import { utilFunction } from '../../../utils/test';\n"
       },
       {
-        description: 'alias as everything, relative import',
-        content: 'import { TestBase } from "test";',
-        output: "import { TestBase } from './test';\n"
+        description: 'wildcard alias at root, relative import',
+        filePath: './tests/__fixtures__/index.ts',
+        content: 'import { TestBase } from "resolvePath";',
+        output: "import { TestBase } from './resolvePath';\n"
+      },
+      {
+        description: 'wildcard alias at root, import is likely installed dependency',
+        content: 'import { nothingReal } from "someDependency";',
+        output: "import { nothingReal } from 'someDependency';\n"
       }
     ]
 
@@ -216,14 +230,14 @@ describe('transform tests', () => {
       '@/*': ['src/*'],
       '@components/*': ['src/components/*'],
       '@src': ['src'],
-      '*': ['src/utils/*']
+      '*': ['tests/__fixtures__/*']
     }
 
-    const aliases = parseTsAliases(resolve(__dirname), tsPaths)
+    const aliases = parseTsAliases(resolve(__dirname, '..'), tsPaths)
 
     const options = (content: string) => ({
       content,
-      filePath: resolve(__dirname, './src/index.ts'),
+      filePath: resolve(__dirname, '../src/index.ts'),
       aliases,
       aliasesExclude: [],
       staticImport: true,
@@ -243,12 +257,12 @@ describe('transform tests', () => {
       "import { TestBase } from './test';\n"
     )
 
-    expect(transformCode(options('import { TestBase } from "test";')).content).toEqual(
-      "import { TestBase } from './utils/test';\n"
+    expect(transformCode(options('import { TestBase } from "resolvePath";')).content).toEqual(
+      "import { TestBase } from '../tests/__fixtures__/resolvePath';\n"
     )
 
-    expect(transformCode(options('import { TestBase } from "test.path";')).content).toEqual(
-      "import { TestBase } from './utils/test.path';\n"
+    expect(transformCode(options('import { TestBase } from "test.resolvePath";')).content).toEqual(
+      "import { TestBase } from '../tests/__fixtures__/test.resolvePath';\n"
     )
 
     expect(transformCode(options('import { TestBase } from "./test.path";')).content).toEqual(
@@ -258,6 +272,10 @@ describe('transform tests', () => {
     expect(transformCode(options('import { TestBase } from "../test.path";')).content).toEqual(
       "import { TestBase } from '../test.path';\n"
     )
+
+    expect(
+      transformCode(options('import { someFutureImport } from "installedDependency";')).content
+    ).toEqual("import { someFutureImport } from 'installedDependency';\n")
   })
 
   it('test: transformCode (remove pure imports)', () => {
