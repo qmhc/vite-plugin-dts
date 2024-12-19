@@ -1,3 +1,14 @@
+# [4.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.3.0...v4.4.0) (2024-12-19)
+
+### Bug Fixes
+
+- correctly generate declaration for custom SFC ([acf627d](https://github.com/qmhc/vite-plugin-dts/commit/acf627dc5ffe7eb392436a9952381f466d306d6b)), closes [#394](https://github.com/qmhc/vite-plugin-dts/issues/394)
+
+### Features
+
+- add support for `${configDir}` in path ([#393](https://github.com/qmhc/vite-plugin-dts/issues/393)) ([97e19c0](https://github.com/qmhc/vite-plugin-dts/commit/97e19c07f0c7bc740c93b98b93b27d4862036f9f))
+- resolve file if wildcard element is used ([#396](https://github.com/qmhc/vite-plugin-dts/issues/396)) ([bb4650d](https://github.com/qmhc/vite-plugin-dts/commit/bb4650d0f2fc39982822dfeb8fd4197e706b8e55)), closes [#330](https://github.com/qmhc/vite-plugin-dts/issues/330)
+
 # [4.3.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.2.4...v4.3.0) (2024-10-22)
 
 ### Features
