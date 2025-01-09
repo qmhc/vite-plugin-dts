@@ -8,15 +8,15 @@
     "tsc": "vue-tsc --declaration --emitDeclarationOnly --declarationMap --outDir tsc-dist"
   },
   "dependencies": {
-    "vue": "^3.4.32"
+    "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.0.4",
-    "@vitejs/plugin-vue-jsx": "^3.1.0",
-    "tslib": "^2.6.2",
-    "typescript": "5.6.3",
-    "vite": "^5.3.4",
-    "vue-tsc": "^2.1.6"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue-jsx": "^4.1.1",
+    "tslib": "^2.8.1",
+    "typescript": "5.7.3",
+    "vite": "^6.0.7",
+    "vue-tsc": "^2.2.0"
   },
   "auth": "qmhc"
 }
