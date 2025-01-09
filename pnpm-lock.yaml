@@ -65,6 +65,9 @@ importers:
       '@vexip-ui/prettier-config':
         specifier: ^1.0.0
         version: 1.0.0(prettier@3.4.2)
+      '@vexip-ui/scripts':
+        specifier: ^1.1.4
+        version: 1.1.4
       '@vue/eslint-config-standard':
         specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.7.3))(eslint-plugin-vue@9.24.0(eslint@8.57.1))(eslint@8.57.1)
@@ -1485,6 +1488,13 @@ packages:
     peerDependencies:
       prettier: '>=3.0.0'
 
+  '@vexip-ui/scripts@1.1.4':
+    resolution: {integrity: sha512-CKwSuLbhVZCtYKxauXiqkaRxy+NS4OgeOj5K9XmAYtsC7mJZQ5sYRct6zCcZH39sXX0evd8/GdgmMfMdQobr2g==}
+    hasBin: true
+
+  '@vexip-ui/utils@2.13.1':
+    resolution: {integrity: sha512-OKeI2wGUhcJj54kVFGlor8HpDyBIIeUmBpHqomXcxoid8GmWhuHKBrvyGcrBo46FLPIwLg5EeDwKM/fNbbBG6w==}
+
   '@vitejs/plugin-react@4.3.4':
     resolution: {integrity: sha512-SCCPBJtYLdE8PX/7ZQAs1QAZ8Jqwih+0VBLum1EGqmCCQal+MIUqLCzj3ZUy8ufbC0cAM4LRlSTm7IQJwWT4ug==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -2850,6 +2860,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -4511,6 +4522,10 @@ packages:
     resolution: {integrity: sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw==}
     engines: {node: '>=12'}
 
+  yargs@17.7.2:
+    resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
+    engines: {node: '>=12'}
+
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
@@ -5701,6 +5716,19 @@ snapshots:
     dependencies:
       prettier: 3.4.2
       prettier-plugin-packagejson: 2.5.1(prettier@3.4.2)
+
+  '@vexip-ui/scripts@1.1.4':
+    dependencies:
+      '@vexip-ui/utils': 2.13.1
+      compare-versions: 6.1.1
+      execa: 8.0.1
+      kolorist: 1.8.0
+      local-pkg: 0.5.1
+      prompts: 2.4.2
+      semver: 7.6.3
+      yargs: 17.7.2
+
+  '@vexip-ui/utils@2.13.1': {}
 
   '@vitejs/plugin-react@4.3.4(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(tsx@4.19.2)(yaml@2.6.1))':
     dependencies:
@@ -7105,7 +7133,7 @@ snapshots:
 
   execa@8.0.1:
     dependencies:
-      cross-spawn: 7.0.3
+      cross-spawn: 7.0.6
       get-stream: 8.0.1
       human-signals: 5.0.0
       is-stream: 3.0.0
@@ -9164,6 +9192,16 @@ snapshots:
     dependencies:
       cliui: 8.0.1
       escalade: 3.1.1
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 21.1.1
+
+  yargs@17.7.2:
+    dependencies:
+      cliui: 8.0.1
+      escalade: 3.2.0
       get-caller-file: 2.0.5
       require-directory: 2.1.1
       string-width: 4.2.3
