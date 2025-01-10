@@ -1,3 +1,5 @@
+# [4.5.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.4.0...v4.5.0) (2025-01-10)
+
 # [4.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.3.0...v4.4.0) (2024-12-19)
 
 ### Bug Fixes
