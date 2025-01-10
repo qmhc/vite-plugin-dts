@@ -15,6 +15,7 @@
     "prepublishOnly": "pinst --disable",
     "prettier": "pretty-quick --staged && pnpm run lint",
     "postpublish": "pinst --enable",
+    "publish:ci": "tsx scripts/publish.ts",
     "release": "tsx scripts/release.ts",
     "test": "vitest run",
     "test:dev": "vitest",

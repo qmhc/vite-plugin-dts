@@ -1,8 +1,6 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import minimist from 'minimist'
-import { logger } from './logger'
-import { release, run } from '@vexip-ui/scripts'
+import { logger, release, run } from '@vexip-ui/scripts'
+import { rootDir } from './constant'
 
 const args = minimist<{
   d?: boolean,
@@ -15,8 +13,6 @@ const args = minimist<{
 
 const isDryRun = args.dry || args.d
 const preId = args.preid || args.p
-
-const rootDir = path.resolve(fileURLToPath(import.meta.url), '../..')
 
 release({
   pkgDir: rootDir,

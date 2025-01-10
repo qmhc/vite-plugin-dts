@@ -6,19 +6,19 @@ on:
       - v*
 
 jobs:
-  build:
-    name: Create Release
+  release:
+    if: github.repository == 'qmhc/vite-plugin-dts'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@master
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Create Release for Tag
-        id: release_tag
-        uses: yyx990803/release-tag@master
+      - name: Set node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - run: npx changelogithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          body: |
-            Please refer to [CHANGELOG.md](https://github.com/qmhc/vite-plugin-dts/blob/main/CHANGELOG.md) for details.
