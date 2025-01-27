@@ -54,7 +54,6 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   noEmit: false,
   declaration: true,
   emitDeclarationOnly: true,
-  noUnusedParameters: false,
   checkJs: false,
   skipLibCheck: true,
   preserveSymlinks: false,
