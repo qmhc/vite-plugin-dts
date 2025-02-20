@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, relative, resolve } from 'node:path'
+import { dirname, extname, isAbsolute, relative, resolve } from 'node:path'
 
 import MagicString from 'magic-string'
 import ts from 'typescript'
@@ -46,40 +46,68 @@ function isAliasMatch(alias: Alias, importer: string) {
   )
 }
 
-function transformAlias(
+function normalizeRelativePath(path: string, dir: string) {
+  const normalizedPath = normalizePath(relative(dir, path))
+  return normalizedPath.startsWith('.') ? normalizedPath : `./${normalizedPath}`
+}
+
+export function transformAlias(
   importer: string,
   dir: string,
   aliases: Alias[],
   aliasesExclude: (string | RegExp)[]
 ) {
   if (
-    aliases.length &&
-    !aliasesExclude.some(e => (isRegExp(e) ? e.test(importer) : String(e) === importer))
+    !aliases.length ||
+    aliasesExclude.some(e => (isRegExp(e) ? e.test(importer) : String(e) === importer))
   ) {
-    const matchedAlias = aliases.find(alias => isAliasMatch(alias, importer))
+    return importer
+  }
 
-    if (matchedAlias) {
-      const replacement = isAbsolute(matchedAlias.replacement)
-        ? normalizePath(relative(dir, matchedAlias.replacement))
-        : normalizePath(matchedAlias.replacement)
+  const matchedAlias = aliases.find(alias => isAliasMatch(alias, importer))
+  if (!matchedAlias) return importer
 
-      const endsWithSlash =
-        typeof matchedAlias.find === 'string'
-          ? matchedAlias.find.endsWith('/')
-          : importer.match(matchedAlias.find)![0].endsWith('/')
-      const truthPath = importer.replace(
-        matchedAlias.find,
-        replacement + (endsWithSlash ? '/' : '')
+  if (matchedAlias.customResolver) {
+    let resolved: string | null = null
+    if (typeof matchedAlias.customResolver === 'function') {
+      // @ts-expect-error
+      const result = matchedAlias.customResolver(importer, dir, {})
+      resolved =
+        typeof result === 'string'
+          ? result
+          : result && typeof result === 'object' && 'id' in result
+            ? result.id
+            : null
+    } else if (typeof matchedAlias.customResolver === 'object') {
+      // @ts-expect-error
+      resolved = matchedAlias.customResolver.resolveId?.(importer, dir, {})
+    }
+    if (resolved) {
+      const ext = extname(resolved)
+      const pathWithoutExt = normalizePath(relative(dir, resolved)).replace(
+        new RegExp(`\\${ext}$`),
+        ''
       )
-
-      const absolutePath = resolve(dir, truthPath)
-      const normalizedPath = normalizePath(relative(dir, absolutePath))
-      const resultPath = normalizedPath.startsWith('.') ? normalizedPath : `./${normalizedPath}`
-
-      if (!isAliasGlobal(matchedAlias)) return resultPath
-      if (importResolves(absolutePath)) return resultPath
+      return normalizeRelativePath(pathWithoutExt, '')
     }
   }
+
+  const replacement = isAbsolute(matchedAlias.replacement)
+    ? normalizePath(relative(dir, matchedAlias.replacement))
+    : normalizePath(matchedAlias.replacement)
+
+  const endsWithSlash =
+    typeof matchedAlias.find === 'string'
+      ? matchedAlias.find.endsWith('/')
+      : importer.match(matchedAlias.find)![0].endsWith('/')
+
+  const truthPath = importer.replace(matchedAlias.find, replacement + (endsWithSlash ? '/' : ''))
+
+  const absolutePath = resolve(dir, truthPath)
+  const resultPath = normalizeRelativePath(absolutePath, dir)
+
+  if (!isAliasGlobal(matchedAlias)) return resultPath
+  if (importResolves(absolutePath)) return resultPath
 
   return importer
 }
@@ -200,7 +228,6 @@ export function transformCode(options: {
         importSet.add(usedType)
       }
 
-      // s.update(node.pos, node.end, ` ${usedType}`)
       if (ts.isImportTypeNode(parent) && parent.typeArguments && parent.typeArguments[0] === node) {
         s.remove(node.pos, node.argument.end + 2)
       } else {
