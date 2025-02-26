@@ -155,7 +155,7 @@ export function transformCode(options: {
         if (node.importClause.namedBindings && ts.isNamedImports(node.importClause.namedBindings)) {
           node.importClause.namedBindings.elements.forEach(element => {
             if (element.propertyName) {
-              importSet.add(`${element.propertyName.escapedText} as ${element.name.escapedText}`)
+              importSet.add(`${element.propertyName.getText(ast)} as ${element.name.escapedText}`)
             } else {
               importSet.add(element.name.escapedText as string)
             }
@@ -284,7 +284,7 @@ export function hasNormalExport(content: string) {
     if (ts.isExportDeclaration(node)) {
       if (node.exportClause && ts.isNamedExports(node.exportClause)) {
         for (const element of node.exportClause.elements) {
-          if (element.name.escapedText !== 'default') {
+          if (element.name.getText(ast) !== 'default') {
             has = true
             break
           }
@@ -324,7 +324,7 @@ export function hasExportDefault(content: string) {
       ts.isNamedExports(node.exportClause)
     ) {
       for (const element of node.exportClause.elements) {
-        if (element.name.escapedText === 'default') {
+        if (element.name.getText(ast) === 'default') {
           has = true
           break
         }
