@@ -25,3 +25,10 @@ export type { AliasType } from '@alias/type'
 
 export type * from './namespace'
 export type * from './modules'
+
+declare module '@/test' {
+  interface TestBase {
+    name: string,
+    mail?: string
+  }
+}

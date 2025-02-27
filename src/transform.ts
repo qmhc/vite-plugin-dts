@@ -53,7 +53,7 @@ function transformAlias(
   aliasesExclude: (string | RegExp)[]
 ) {
   if (
-    aliases.length &&
+    aliases?.length &&
     !aliasesExclude.some(e => (isRegExp(e) ? e.test(importer) : String(e) === importer))
   ) {
     const matchedAlias = aliases.find(alias => isAliasMatch(alias, importer))
@@ -245,14 +245,23 @@ export function transformCode(options: {
         node.body.statements.some(isVLSNode)
       ) {
         s.remove(node.pos, node.end)
-      } else if (
-        node.modifiers?.[0] &&
-        node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
-        !node.body.statements.some(
-          s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
-        )
-      ) {
-        declareModules.push(s.slice(node.pos, node.end + 1))
+      } else if (ts.isStringLiteral(node.name)) {
+        const libName = toLibName(node.name.text)
+
+        if (libName !== node.name.text) {
+          s.update(node.name.pos, node.name.end, ` '${libName}'`)
+        }
+
+        if (
+          !libName.startsWith('.') &&
+          node.modifiers?.[0] &&
+          node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
+          !node.body.statements.some(
+            s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
+          )
+        ) {
+          declareModules.push(s.slice(node.pos, node.end + 1))
+        }
       }
 
       return false
