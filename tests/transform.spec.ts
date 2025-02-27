@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { hasExportDefault, normalizeGlob, transformCode } from '../src/transform'
+import { hasExportDefault, normalizeGlob, transformAlias, transformCode } from '../src/transform'
 import { parseTsAliases } from '../src/utils'
 
 import type { Alias } from 'vite'
@@ -79,6 +79,33 @@ describe('transform tests', () => {
     expect(
       transformCode(options("function d(param: import('foo').E): import('foo').F")).content
     ).toEqual("import { E, F } from 'foo';\nfunction d(param: E): F")
+
+    expect(
+      transformCode(options('type Props = import("vue").ComponentPropsOptions<typeof Component>;'))
+        .content
+    ).toEqual(
+      "import { ComponentPropsOptions } from 'vue';\ntype Props = ComponentPropsOptions<typeof Component>;"
+    )
+
+    expect(
+      transformCode(
+        options(
+          'const foo: import("vue").Component & { bar: import("vue").ComponentPublicInstance };'
+        )
+      ).content
+    ).toEqual(
+      "import { Component, ComponentPublicInstance } from 'vue';\nconst foo: Component & { bar: ComponentPublicInstance };"
+    )
+
+    expect(
+      transformCode(
+        options(
+          'function createComponent<T extends import("vue").DefineComponent<any, any, any>>() {}'
+        )
+      ).content
+    ).toEqual(
+      "import { DefineComponent } from 'vue';\nfunction createComponent<T extends DefineComponent<any, any, any>>() {}"
+    )
   })
 
   it('test: transformCode (process aliases)', () => {
@@ -333,7 +360,7 @@ describe('transform tests', () => {
     expect(hasExportDefault("export { foo, sdk as default, baz } from './sdk'")).toBe(true)
     expect(hasExportDefault("export { foo as sdk, sdk as default, baz } from './sdk'")).toBe(true)
     expect(hasExportDefault('export { sdk as default } from "./sdk"')).toBe(true)
-    expect(hasExportDefault("export {sdk as default} from './sdk'")).toBe(true)
+    expect(hasExportDefault("export {sdk as default}from './sdk'")).toBe(true)
     expect(hasExportDefault("export{sdk as default}from'./sdk'")).toBe(true)
     expect(hasExportDefault("export { sdk  as  default } from './sdk'")).toBe(true)
     expect(hasExportDefault("export { sdk } from './sdk'")).toBe(false)
@@ -349,5 +376,106 @@ describe('transform tests', () => {
     expect(hasExportDefault('const a = 1\nexport default a')).toBe(true)
     expect(hasExportDefault('const a = 1\nexport { a }')).toBe(false)
     expect(hasExportDefault('const a = 1\nexport { a as default }')).toBe(true)
+  })
+
+  it('test: transformAlias', () => {
+    const baseDir = resolve(__dirname, '..')
+    const aliases: Alias[] = [
+      // basic path alias
+      { find: '@', replacement: resolve(baseDir, 'src') },
+      // path alias with trailing slash
+      { find: '@components/', replacement: resolve(baseDir, 'src/components/') },
+      // regex pattern alias
+      { find: /^~\/(.*)$/, replacement: resolve(baseDir, 'src/$1') },
+      // alias with custom resolver
+      {
+        find: '@custom/',
+        replacement: resolve(baseDir, 'custom'),
+        customResolver: (id: string) => {
+          const relativePath = id.replace('@custom/', '')
+          return resolve(baseDir, 'resolved', relativePath)
+        }
+      },
+      // alias with object-style custom resolver
+      {
+        find: '@resolver/',
+        replacement: resolve(baseDir, 'resolver'),
+        customResolver: {
+          resolveId: (id: string) => {
+            const relativePath = id.replace('@resolver/', '')
+            return resolve(baseDir, 'custom-resolved', relativePath)
+          }
+        }
+      }
+    ]
+
+    const tests: Array<{
+      description: string,
+      input: string,
+      dir: string,
+      expected: string,
+      excludes?: (string | RegExp)[]
+    }> = [
+      {
+        description: 'transform basic path alias',
+        input: '@/utils/helper',
+        dir: resolve(baseDir, 'src'),
+        expected: './utils/helper'
+      },
+      {
+        description: 'transform path alias with trailing slash',
+        input: '@components/button',
+        dir: resolve(baseDir, 'src'),
+        expected: './components/button'
+      },
+      {
+        description: 'transform regex pattern alias',
+        input: '~/utils/helper',
+        dir: resolve(baseDir, 'src'),
+        expected: './utils/helper'
+      },
+      {
+        description: 'transform path with custom resolver',
+        input: '@custom/utils',
+        dir: resolve(baseDir, 'src'),
+        expected: '../resolved/utils'
+      },
+      {
+        description: 'transform path with object-style custom resolver',
+        input: '@resolver/utils',
+        dir: resolve(baseDir, 'src'),
+        expected: '../custom-resolved/utils'
+      },
+      {
+        description: 'skip transform for excluded specific path',
+        input: '@/utils/helper',
+        dir: resolve(baseDir, 'src'),
+        expected: '@/utils/helper',
+        excludes: ['@/utils/helper']
+      },
+      {
+        description: 'skip transform for excluded regex pattern',
+        input: '@/utils/helper',
+        dir: resolve(baseDir, 'src'),
+        expected: '@/utils/helper',
+        excludes: [/^@\/utils/]
+      },
+      {
+        description: 'return original path when no alias matches',
+        input: './local/path',
+        dir: resolve(baseDir, 'src'),
+        expected: './local/path'
+      },
+      {
+        description: 'transform to relative path correctly',
+        input: '@/utils',
+        dir: resolve(baseDir, 'src/components'),
+        expected: '../utils'
+      }
+    ]
+
+    tests.forEach(({ description, input, dir, expected, excludes = [] }) => {
+      expect(transformAlias(input, dir, aliases, excludes), description).toEqual(expected)
+    })
   })
 })
