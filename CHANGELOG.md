@@ -1,3 +1,10 @@
+## [4.5.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.0...v4.5.1) (2025-02-28)
+
+### Bug Fixes
+
+- not overriding noUnusedParameters of compiler options ([#408](https://github.com/qmhc/vite-plugin-dts/issues/408)) ([76a5913](https://github.com/qmhc/vite-plugin-dts/commit/76a5913f4a57033706d9b75ff6a4a6495291a531))
+- should process alias for module declaration ([41167d5](https://github.com/qmhc/vite-plugin-dts/commit/41167d5853dbae36f93a466bc242bd9199709eca)), closes [#409](https://github.com/qmhc/vite-plugin-dts/issues/409)
+
 # [4.5.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.4.0...v4.5.0) (2025-01-10)
 
 # [4.4.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.3.0...v4.4.0) (2024-12-19)
