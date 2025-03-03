@@ -20,8 +20,8 @@ importers:
         specifier: ^2.4.11
         version: 2.4.11
       '@vue/language-core':
-        specifier: 2.2.4
-        version: 2.2.4(typescript@5.7.3)
+        specifier: 2.2.0
+        version: 2.2.0(typescript@5.7.3)
       compare-versions:
         specifier: ^6.1.1
         version: 6.1.1
@@ -1488,14 +1488,6 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@2.2.4':
-    resolution: {integrity: sha512-eGGdw7eWUwdIn9Fy/irJ7uavCGfgemuHQABgJ/hU1UgZFnbTg9VWeXvHQdhY+2SPQZWJqWXvRWIg67t4iWEa+Q==}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   '@vue/reactivity@3.5.13':
     resolution: {integrity: sha512-NaCwtw8o48B9I6L1zl2p41OHo/2Z4wqYGGIK1Khu5T7yxrn+ATOixn/Udn2m+6kZKB/J7cuT9DbWWhRxqixACg==}
 
@@ -1567,9 +1559,6 @@ packages:
 
   alien-signals@0.4.14:
     resolution: {integrity: sha512-itUAVzhczTmP2U5yX67xVpsbbOiquusbWVyA9N+sy6+r6YVbFkahXvNCeEPWEOMhwDYwbVbGHFkVL03N9I5g+Q==}
-
-  alien-signals@1.0.4:
-    resolution: {integrity: sha512-DJqqQD3XcsaQcQ1s+iE2jDUZmmQpXwHiR6fCAim/w87luaW+vmLY8fMlrdkmRwzaFXhkxf3rqPCR59tKVv1MDw==}
 
   ansi-escapes@7.0.0:
     resolution: {integrity: sha512-GdYO7a61mR0fOlAsvC9/rIHf7L96sBc6dEWzeOu+KAea5bZyQRPIpojrVoI4AXGJS/ycu/fBTdLrUkA4ODrvjw==}
@@ -5722,19 +5711,6 @@ snapshots:
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.13
       alien-signals: 0.4.14
-      minimatch: 9.0.3
-      muggle-string: 0.4.1
-      path-browserify: 1.0.1
-    optionalDependencies:
-      typescript: 5.7.3
-
-  '@vue/language-core@2.2.4(typescript@5.7.3)':
-    dependencies:
-      '@volar/language-core': 2.4.11
-      '@vue/compiler-dom': 3.5.13
-      '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.13
-      alien-signals: 1.0.4
       minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
@@ -5814,8 +5790,6 @@ snapshots:
       uri-js: 4.4.1
 
   alien-signals@0.4.14: {}
-
-  alien-signals@1.0.4: {}
 
   ansi-escapes@7.0.0:
     dependencies:

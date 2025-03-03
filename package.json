@@ -62,7 +62,7 @@
     "@microsoft/api-extractor": "^7.50.1",
     "@rollup/pluginutils": "^5.1.4",
     "@volar/typescript": "^2.4.11",
-    "@vue/language-core": "2.2.4",
+    "@vue/language-core": "2.2.0",
     "compare-versions": "^6.1.1",
     "debug": "^4.4.0",
     "kolorist": "^1.8.0",
