@@ -1,3 +1,9 @@
+## [4.5.2](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.1...v4.5.2) (2025-03-03)
+
+### Bug Fixes
+
+- degrade @vue/language-core version ([f47ec80](https://github.com/qmhc/vite-plugin-dts/commit/f47ec80baca800a7a5e95e129f325477e8f7fe6c))
+
 ## [4.5.1](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.0...v4.5.1) (2025-02-28)
 
 ### Bug Fixes
