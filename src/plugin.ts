@@ -450,7 +450,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const sourceFile = program.getSourceFile(id)
 
         if (sourceFile) {
-          program.emit(
+          const { diagnostics } = program.emit(
             sourceFile,
             (name, text) => {
               setOutputFile(
@@ -461,6 +461,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             undefined,
             true
           )
+          if (diagnostics.length) {
+            logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host!))
+          }
         }
       }
 
