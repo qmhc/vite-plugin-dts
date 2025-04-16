@@ -462,7 +462,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             true
           )
           if (diagnostics.length) {
-            logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host!))
+            logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
           }
         }
       }
