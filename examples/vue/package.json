@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build",
+    "build": "DEBUG=\"dts-debug\" vite build",
     "tsc": "vue-tsc --declaration --emitDeclarationOnly --declarationMap --outDir tsc-dist"
   },
   "dependencies": {
@@ -17,6 +17,5 @@
     "typescript": "5.7.3",
     "vite": "^6.0.7",
     "vue-tsc": "^2.2.0"
-  },
-  "auth": "qmhc"
+  }
 }

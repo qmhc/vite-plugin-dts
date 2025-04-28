@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
+    "build": "DEBUG=\"dts-debug\" vite build"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -17,6 +17,5 @@
     "tslib": "^2.8.1",
     "typescript": "5.7.3",
     "vite": "^6.0.7"
-  },
-  "auth": "qmhc"
+  }
 }

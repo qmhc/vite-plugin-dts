@@ -3,9 +3,8 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "author": "qmhc",
   "scripts": {
-    "build": "DEBUG=\"vite-plugin-dts:bundle\" vite build"
+    "build": "DEBUG=\"dts-debug\" vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

@@ -2,15 +2,15 @@ import { basename } from 'node:path'
 
 import ts from 'typescript'
 
-import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
-import { createRuntime, emitOutput, transform } from './core'
+import { createRuntimeContext, emitOutput, transform } from './core'
 import {
   defaultIndex,
   dtsRE,
   ensureAbsolute,
   ensureArray,
   getJsExtPrefix,
+  handleDebug,
   isNativeObj,
   isRegExp,
   normalizePath,
@@ -21,11 +21,10 @@ import {
 
 import type { Alias, Logger } from 'vite'
 import type { PluginOptions } from './types'
-import type { Runtime } from './core/types'
+import type { RuntimeContext } from './core/types'
 
 const pluginName = 'vite:dts'
 const logPrefix = cyan(`[${pluginName}]`)
-const bundleDebug = debug('vite-plugin-dts:bundle')
 
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
@@ -65,7 +64,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   let bundled = false
   let timeRecord = 0
 
-  let runtime: Runtime
+  let runtime: RuntimeContext
 
   return {
     name: pluginName,
@@ -157,7 +156,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         outDirs = [ensureAbsolute(config.build.outDir, root)]
       }
 
-      bundleDebug('parse vite config')
+      handleDebug('parse vite config')
     },
 
     options(options) {
@@ -182,17 +181,17 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       libName = '_default'
       indexName = defaultIndex
 
-      bundleDebug('parse options')
+      handleDebug('parse options')
     },
 
     async buildStart() {
       if (runtime) return
 
-      bundleDebug('begin buildStart')
+      handleDebug('begin buildStart')
       timeRecord = 0
       const startTime = Date.now()
 
-      runtime = await createRuntime({
+      runtime = await createRuntimeContext({
         root,
         outDirs: options.outDirs ?? outDirs,
         entryRoot,
@@ -214,7 +213,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         this.addWatchFile(file)
       }
 
-      bundleDebug('create ts program')
+      handleDebug('create ts program')
       timeRecord += Date.now() - startTime
     },
 
@@ -266,7 +265,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       if (!runtime || bundled) return
 
       bundled = true
-      bundleDebug('begin writeBundle')
+      handleDebug('begin writeBundle')
       logger.info(green(`\n${logPrefix} Start generate declaration files...`))
 
       const startTime = Date.now()
@@ -281,6 +280,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         insertTypesEntry,
         rollupTypes,
         rollupOptions,
+        logPrefix,
         beforeWriteFile,
         afterRollup
       })
@@ -289,7 +289,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         await unwrapPromise(afterBuild(emittedFiles))
       }
 
-      bundleDebug('finish')
+      handleDebug('finish')
       logger.info(
         green(`${logPrefix} Declaration files built in ${timeRecord + Date.now() - startTime}ms.\n`)
       )

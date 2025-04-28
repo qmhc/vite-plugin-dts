@@ -11,10 +11,13 @@ import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
 import ts from 'typescript'
+import debug from 'debug'
 import { getPackageInfoSync, resolveModule } from 'local-pkg'
 
 import type { CompilerOptions } from 'typescript'
 import type { Alias } from 'vite'
+
+export const handleDebug = debug('dts-debug')
 
 export const defaultIndex = 'index.d.ts'
 

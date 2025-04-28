@@ -21,6 +21,7 @@ import {
   getJsExtPrefix,
   getTsConfig,
   getTsLibFolder,
+  handleDebug,
   jsRE,
   normalizePath,
   parseTsAliases,
@@ -36,7 +37,7 @@ import {
   unwrapPromise
 } from '../utils'
 
-import type { CreateRuntimeOptions, EmitOptions, Resolver, Runtime } from './types'
+import type { CreateRuntimeOptions, EmitOptions, Resolver, RuntimeContext } from './types'
 
 const fixedCompilerOptions: ts.CompilerOptions = {
   noEmit: false,
@@ -49,7 +50,7 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext
 }
 
-export async function createRuntime(options: CreateRuntimeOptions): Promise<Runtime> {
+export async function createRuntimeContext(options: CreateRuntimeOptions): Promise<RuntimeContext> {
   const {
     root,
     tsconfigPath,
@@ -232,10 +233,10 @@ export async function createRuntime(options: CreateRuntimeOptions): Promise<Runt
     rootFiles,
     outputFiles: new Map(),
     transformedFiles: new Set()
-  } satisfies Runtime
+  } satisfies RuntimeContext
 }
 
-export async function transform(runtime: Runtime, id: string, code: string) {
+export async function transform(runtime: RuntimeContext, id: string, code: string) {
   const {
     host,
     program,
@@ -300,7 +301,7 @@ export async function transform(runtime: Runtime, id: string, code: string) {
     outputFiles.set(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
 }
 
-export async function emitOutput(runtime: Runtime, options: EmitOptions = {}) {
+export async function emitOutput(runtime: RuntimeContext, options: EmitOptions = {}) {
   const {
     outDirs,
     logger,
@@ -398,7 +399,7 @@ export async function emitOutput(runtime: Runtime, options: EmitOptions = {}) {
     }
   }
 
-  // debug
+  handleDebug('emit output patch')
 
   const currentDir = host.getCurrentDirectory()
   const declarationFiles = new Map<string, string>()
@@ -474,7 +475,7 @@ export async function emitOutput(runtime: Runtime, options: EmitOptions = {}) {
     await writeOutput(filePath, content, outDir)
   })
 
-  // bundleDebug('write output')
+  handleDebug('write output')
 
   if (insertTypesEntry || rollupTypes) {
     const pkgPath = tryGetPkgPath(root)
@@ -533,7 +534,7 @@ export async function emitOutput(runtime: Runtime, options: EmitOptions = {}) {
       await writeOutput(cleanPath(entryDtsPath, emittedFiles), content, outDir)
     }
 
-    // bundleDebug('insert index')
+    handleDebug('insert index')
 
     if (rollupTypes) {
       logger.info(green(`${logPrefix} Start rollup declaration files...`))
@@ -586,7 +587,7 @@ export async function emitOutput(runtime: Runtime, options: EmitOptions = {}) {
         )
       })
 
-      // bundleDebug('rollup output')
+      handleDebug('rollup output')
     }
   }
 

@@ -115,7 +115,14 @@ export interface CreateRuntimeOptions {
   libName?: string,
   indexName?: string,
   logger?: Logger,
-  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => void | Promise<void>
+  /**
+   * Hook called after diagnostic is emitted.
+   *
+   * According to the `diagnostics.length`, you can judge whether there is any type error.
+   *
+   * @default () => {}
+   */
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>
 }
 
 export interface EmitOptions {
@@ -230,7 +237,7 @@ export interface EmitOptions {
   afterRollup?: (result: ExtractorResult) => MaybePromise<void>
 }
 
-export interface Runtime {
+export interface RuntimeContext {
   root: string,
   publicRoot: string,
   entryRoot: string,
