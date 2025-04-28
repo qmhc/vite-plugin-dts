@@ -38,7 +38,7 @@ export default defineConfig({
     // @ts-ignore
     dts({
       copyDtsFiles: true,
-      outDir: [
+      outDirs: [
         'dist',
         'types'
         // 'types/inner'

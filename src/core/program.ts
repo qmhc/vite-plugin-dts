@@ -6,7 +6,7 @@ import {
 
 import { proxyCreateProgram } from '@volar/typescript'
 import ts from 'typescript'
-import { tryGetPackageInfo } from './utils'
+import { tryGetPackageInfo } from '../utils'
 
 export { createParsedCommandLine }
 

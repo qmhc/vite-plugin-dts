@@ -22,7 +22,7 @@ export default defineConfig({
   plugins: [
     // @ts-ignore
     dts({
-      outDir: ['dist', 'types'],
+      outDirs: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],

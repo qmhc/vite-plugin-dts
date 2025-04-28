@@ -1,44 +1,9 @@
 import type ts from 'typescript'
-import type {
-  ExtractorResult,
-  IExtractorConfigPrepareOptions,
-  IExtractorInvokeOptions
-} from '@microsoft/api-extractor'
+import type { ExtractorResult, IExtractorInvokeOptions } from '@microsoft/api-extractor'
 import type { LogLevel } from 'vite'
+import type { MaybePromise, Resolver, RollupConfig } from './core/types'
 
-type MaybePromise<T> = T | Promise<T>
-
-export type RollupConfig = Omit<
-  IExtractorConfigPrepareOptions['configObject'],
-  'projectFolder' | 'mainEntryPointFilePath' | 'compiler' | 'dtsRollup'
->
-
-export interface Resolver {
-  /**
-   * The name of the resolver
-   *
-   * The later resolver with the same name will overwrite the earlier
-   */
-  name: string,
-  /**
-   * Determine whether the resolver supports the file
-   */
-  supports: (id: string) => void | boolean,
-  /**
-   * Transform source to declaration files
-   *
-   * Note that the path of the returns should base on `outDir`, or relative path to `root`
-   */
-  transform: (payload: {
-    id: string,
-    code: string,
-    root: string,
-    outDir: string,
-    host: ts.CompilerHost,
-    program: ts.Program
-    // service: ts.LanguageService
-  }) => MaybePromise<{ path: string, content: string }[]>
-}
+export type { Resolver, RollupConfig }
 
 export interface PluginOptions {
   /**
@@ -55,7 +20,7 @@ export interface PluginOptions {
    *
    * Defaults to 'build.outDir' of the Vite config, or `outDir` of tsconfig.json if using Rollup.
    */
-  outDir?: string | string[],
+  outDirs?: string | string[],
 
   /**
    * Override root path of entry files (useful in monorepos).

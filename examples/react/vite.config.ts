@@ -25,7 +25,7 @@ export default defineConfig({
     react(),
     // @ts-ignore
     dts({
-      outDir: ['dist', 'types'],
+      outDirs: ['dist', 'types'],
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],

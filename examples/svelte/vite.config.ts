@@ -25,7 +25,7 @@ export default defineConfig({
     svelte(),
     // @ts-ignore
     dts({
-      outDir: ['dist', 'types'],
+      outDirs: ['dist', 'types'],
       staticImport: true,
       rollupTypes: true,
       insertTypesEntry: true

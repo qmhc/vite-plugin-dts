@@ -16,6 +16,28 @@ import { getPackageInfoSync, resolveModule } from 'local-pkg'
 import type { CompilerOptions } from 'typescript'
 import type { Alias } from 'vite'
 
+export const defaultIndex = 'index.d.ts'
+
+export function noop(): any
+export function noop(..._args: any[]): any
+export function noop() {}
+
+export const jsRE = /\.(m|c)?jsx?$/
+export const tsRE = /\.(m|c)?tsx?$/
+export const dtsRE = /\.d\.(m|c)?tsx?$/
+export const tjsRE = /\.(m|c)?(t|j)sx?$/
+export const mtjsRE = /\.m(t|j)sx?$/
+export const ctjsRE = /\.c(t|j)sx?$/
+export const fullRelativeRE = /^\.\.?\//
+
+export function getJsExtPrefix(file: string) {
+  return mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : ''
+}
+
+export function tsToDts(path: string) {
+  return `${path.replace(tsRE, '')}.d.ts`
+}
+
 const windowsSlashRE = /\\+/g
 
 export function slash(p: string): string {

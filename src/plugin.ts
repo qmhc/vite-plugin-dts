@@ -1,69 +1,31 @@
-import { basename, dirname, relative } from 'node:path'
-import { existsSync } from 'node:fs'
-import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import { cpus } from 'node:os'
+import { basename } from 'node:path'
 
-import { createParsedCommandLine, createProgram } from './program'
 import ts from 'typescript'
-import { createFilter } from '@rollup/pluginutils'
 
 import debug from 'debug'
 import { cyan, green, yellow } from 'kolorist'
-import { rollupDeclarationFiles } from './rollup'
-import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
-import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from './transform'
+import { createRuntime, emitOutput, transform } from './core'
 import {
-  editSourceMapDir,
+  defaultIndex,
+  dtsRE,
   ensureAbsolute,
   ensureArray,
-  findTypesPath,
-  getTsConfig,
-  getTsLibFolder,
+  getJsExtPrefix,
   isNativeObj,
   isRegExp,
   normalizePath,
-  parseTsAliases,
-  queryPublicPath,
-  removeDirIfEmpty,
   resolve,
-  resolveConfigDir,
-  runParallel,
-  setModuleResolution,
-  toCapitalCase,
-  tryGetPkgPath,
+  tjsRE,
   unwrapPromise
 } from './utils'
 
 import type { Alias, Logger } from 'vite'
-import type { PluginOptions, Resolver } from './types'
-
-const jsRE = /\.(m|c)?jsx?$/
-const tsRE = /\.(m|c)?tsx?$/
-const dtsRE = /\.d\.(m|c)?tsx?$/
-const tjsRE = /\.(m|c)?(t|j)sx?$/
-const mtjsRE = /\.m(t|j)sx?$/
-const ctjsRE = /\.c(t|j)sx?$/
-const fullRelativeRE = /^\.\.?\//
-const defaultIndex = 'index.d.ts'
+import type { PluginOptions } from './types'
+import type { Runtime } from './core/types'
 
 const pluginName = 'vite:dts'
 const logPrefix = cyan(`[${pluginName}]`)
 const bundleDebug = debug('vite-plugin-dts:bundle')
-
-const fixedCompilerOptions: ts.CompilerOptions = {
-  noEmit: false,
-  declaration: true,
-  emitDeclarationOnly: true,
-  checkJs: false,
-  skipLibCheck: true,
-  preserveSymlinks: false,
-  noEmitOnError: undefined,
-  target: ts.ScriptTarget.ESNext
-}
-
-const noop = () => {}
-const extPrefix = (file: string) => (mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : '')
-const tsToDts = (path: string) => `${path.replace(tsRE, '')}.d.ts`
 
 export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const {
@@ -80,59 +42,30 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     copyDtsFiles = false,
     declarationOnly = false,
     strictOutput = true,
-    afterDiagnostic = noop,
-    beforeWriteFile = noop,
-    afterRollup = noop,
-    afterBuild = noop
+    afterDiagnostic,
+    beforeWriteFile,
+    afterRollup,
+    afterBuild,
+
+    include,
+    exclude,
+    compilerOptions,
+    resolvers,
+    entryRoot
   } = options
 
   let root = ensureAbsolute(options.root ?? '', process.cwd())
-  let publicRoot = ''
-  let entryRoot = options.entryRoot ?? ''
-
-  let configPath: string | undefined
-  let compilerOptions: ts.CompilerOptions
-  let rawCompilerOptions: ts.CompilerOptions
-
   let outDirs: string[]
   let entries: Record<string, string>
-  let include: string[]
-  let exclude: string[]
   let aliases: Alias[]
   let libName: string
   let indexName: string
   let logger: Logger
-  let host: ts.CompilerHost | undefined
-  let program: ts.Program | undefined
-  let filter: ReturnType<typeof createFilter>
-  let rootNames: string[] = []
-  let rebuildProgram: () => ts.Program
 
   let bundled = false
   let timeRecord = 0
 
-  const resolvers = parseResolvers([
-    JsonResolver(),
-    VueResolver(),
-    SvelteResolver(),
-    ...(options.resolvers || [])
-  ])
-
-  const rootFiles = new Set<string>()
-  const outputFiles = new Map<string, string>()
-  const transformedFiles = new Set<string>()
-
-  const setOutputFile = (path: string, content: string) => {
-    outputFiles.set(path, content)
-  }
-
-  const rollupConfig = { ...(options.rollupConfig || {}) }
-  rollupConfig.bundledPackages = rollupConfig.bundledPackages || options.bundledPackages || []
-
-  const cleanPath = (path: string, emittedFiles: Map<string, string>) => {
-    const newPath = path.replace('.vue.d.ts', '.d.ts')
-    return !emittedFiles.has(newPath) && cleanVueFileName ? newPath : path
-  }
+  let runtime: Runtime
 
   return {
     name: pluginName,
@@ -207,7 +140,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         indexName = typeof filename === 'string' ? filename : filename('es', entry)
 
         if (!dtsRE.test(indexName)) {
-          indexName = `${indexName.replace(tjsRE, '')}.d.${extPrefix(indexName)}ts`
+          indexName = `${indexName.replace(tjsRE, '')}.d.${getJsExtPrefix(indexName)}ts`
         }
       } else {
         logger.warn(
@@ -220,7 +153,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         indexName = defaultIndex
       }
 
-      if (!options.outDir) {
+      if (!options.outDirs) {
         outDirs = [ensureAbsolute(config.build.outDir, root)]
       }
 
@@ -253,157 +186,32 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     async buildStart() {
-      if (program) return
+      if (runtime) return
 
       bundleDebug('begin buildStart')
       timeRecord = 0
       const startTime = Date.now()
 
-      configPath = tsconfigPath
-        ? ensureAbsolute(tsconfigPath, root)
-        : ts.findConfigFile(root, ts.sys.fileExists)
+      runtime = await createRuntime({
+        root,
+        outDirs: options.outDirs ?? outDirs,
+        entryRoot,
+        tsconfigPath,
+        compilerOptions,
+        pathsToAliases,
+        include,
+        exclude,
+        resolvers,
+        entries,
+        aliases,
+        libName,
+        indexName,
+        logger,
+        afterDiagnostic
+      })
 
-      const content = configPath
-        ? createParsedCommandLine(ts as any, ts.sys, configPath)
-        : undefined
-
-      compilerOptions = {
-        ...(content?.options || {}),
-        ...(options.compilerOptions || {}),
-        ...fixedCompilerOptions,
-        outDir: '.',
-        declarationDir: '.'
-      }
-      rawCompilerOptions = content?.raw.compilerOptions || {}
-
-      if (content?.fileNames.find(name => name.endsWith('.vue'))) {
-        // (#277) A patch for Vue
-        // If user don't specify `moduleResolution` in top config file,
-        // declaration of Vue files will be inferred to `any` type.
-        setModuleResolution(compilerOptions)
-      }
-
-      if (!outDirs) {
-        outDirs = options.outDir
-          ? ensureArray(options.outDir).map(d => ensureAbsolute(d, root))
-          : [
-              ensureAbsolute(
-                content?.raw.compilerOptions?.outDir
-                  ? resolveConfigDir(content.raw.compilerOptions.outDir, root)
-                  : 'dist',
-                root
-              )
-            ]
-      }
-
-      const {
-        // Here we are using the default value to set the `baseUrl` to the current directory if no value exists. This is
-        // the same behavior as the TS Compiler. See TS source:
-        // https://github.com/microsoft/TypeScript/blob/3386e943215613c40f68ba0b108cda1ddb7faee1/src/compiler/utilities.ts#L6493-L6501
-        baseUrl = compilerOptions.paths ? process.cwd() : undefined,
-        paths
-      } = compilerOptions
-
-      if (pathsToAliases && baseUrl && paths) {
-        aliases.push(
-          ...parseTsAliases(
-            ensureAbsolute(
-              resolveConfigDir(baseUrl, root),
-              configPath ? dirname(configPath) : root
-            ),
-            paths
-          )
-        )
-      }
-
-      const computeGlobs = (
-        rootGlobs: string | string[] | undefined,
-        tsGlobs: string | string[] | undefined,
-        defaultGlob: string | string[]
-      ) => {
-        if (rootGlobs?.length) {
-          return ensureArray(rootGlobs).map(glob =>
-            normalizeGlob(ensureAbsolute(resolveConfigDir(glob, root), root))
-          )
-        }
-
-        return ensureArray(tsGlobs?.length ? tsGlobs : defaultGlob).map(glob =>
-          normalizeGlob(
-            ensureAbsolute(resolveConfigDir(glob, root), configPath ? dirname(configPath) : root)
-          )
-        )
-      }
-
-      include = computeGlobs(
-        options.include,
-        [...ensureArray(content?.raw.include ?? []), ...ensureArray(content?.raw.files ?? [])],
-        '**/*'
-      )
-      exclude = computeGlobs(options.exclude, content?.raw.exclude, 'node_modules/**')
-
-      filter = createFilter(include, exclude)
-
-      rootNames = [
-        ...new Set(
-          Object.values(entries)
-            .map(entry => ensureAbsolute(entry, root))
-            .concat(content?.fileNames.filter(filter) || [])
-            .map(normalizePath)
-        )
-      ]
-
-      host = ts.createCompilerHost(compilerOptions)
-      program = (rebuildProgram = () =>
-        createProgram({
-          host,
-          rootNames,
-          options: compilerOptions,
-          projectReferences: content?.projectReferences
-        }))()
-
-      libName = toCapitalCase(libName || '_default')
-      indexName = indexName || defaultIndex
-
-      const maybeEmitted = (sourceFile: ts.SourceFile) => {
-        return (
-          !(compilerOptions.noEmitForJsFiles && jsRE.test(sourceFile.fileName)) &&
-          !sourceFile.isDeclarationFile &&
-          !program!.isSourceFileFromExternalLibrary(sourceFile)
-        )
-      }
-
-      publicRoot = compilerOptions.rootDir
-        ? ensureAbsolute(resolveConfigDir(compilerOptions.rootDir, root), root)
-        : compilerOptions.composite && compilerOptions.configFilePath
-          ? dirname(compilerOptions.configFilePath as string)
-          : queryPublicPath(
-            program
-              .getSourceFiles()
-              .filter(maybeEmitted)
-              .map(sourceFile => sourceFile.fileName)
-          )
-      publicRoot = normalizePath(publicRoot)
-
-      entryRoot = entryRoot || publicRoot
-      entryRoot = ensureAbsolute(entryRoot, root)
-
-      const diagnostics = [
-        ...program.getDeclarationDiagnostics(),
-        ...program.getSemanticDiagnostics(),
-        ...program.getSyntacticDiagnostics()
-      ]
-
-      if (diagnostics?.length) {
-        logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
-      }
-
-      if (typeof afterDiagnostic === 'function') {
-        await unwrapPromise(afterDiagnostic(diagnostics))
-      }
-
-      for (const file of rootNames) {
+      for (const file of runtime.rootNames) {
         this.addWatchFile(file)
-        rootFiles.add(file)
       }
 
       bundleDebug('create ts program')
@@ -411,65 +219,13 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
     },
 
     async transform(code, id) {
-      let resolver: Resolver | undefined
       id = normalizePath(id).split('?')[0]
 
-      if (
-        !host ||
-        !program ||
-        !filter(id) ||
-        (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id)) ||
-        transformedFiles.has(id)
-      ) {
-        return
-      }
+      if (!runtime) return
 
       const startTime = Date.now()
-      const outDir = outDirs[0]
 
-      rootFiles.delete(id)
-      transformedFiles.add(id)
-
-      if (resolver) {
-        const result = await resolver.transform({
-          id,
-          code,
-          root: publicRoot,
-          outDir,
-          host,
-          program
-        })
-
-        for (const { path, content } of result) {
-          setOutputFile(
-            resolve(publicRoot, relative(outDir, ensureAbsolute(path, outDir))),
-            content
-          )
-        }
-      } else {
-        const sourceFile = program.getSourceFile(id)
-
-        if (sourceFile) {
-          program.emit(
-            sourceFile,
-            (name, text) => {
-              setOutputFile(
-                resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))),
-                text
-              )
-            },
-            undefined,
-            true
-          )
-        }
-      }
-
-      const dtsId = id.replace(tjsRE, '') + '.d.ts'
-      const dtsSourceFile = program.getSourceFile(dtsId)
-
-      dtsSourceFile &&
-        filter(dtsSourceFile.fileName) &&
-        setOutputFile(normalizePath(dtsSourceFile.fileName), dtsSourceFile.getFullText())
+      await transform(runtime, id, code)
 
       timeRecord += Date.now() - startTime
     },
@@ -478,37 +234,36 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       id = normalizePath(id)
 
       if (
-        !host ||
-        !program ||
-        !filter(id) ||
-        (!resolvers.find(r => r.supports(id)) && !tjsRE.test(id))
+        !runtime ||
+        !runtime.filter(id) ||
+        (!runtime.resolvers.find(r => r.supports(id)) && !tjsRE.test(id))
       ) {
         return
       }
 
       id = id.split('?')[0]
-      const sourceFile = host.getSourceFile(id, ts.ScriptTarget.ESNext)
+      const sourceFile = runtime.host.getSourceFile(id, ts.ScriptTarget.ESNext)
 
       if (sourceFile) {
-        for (const file of rootNames) {
-          rootFiles.add(file)
+        for (const file of runtime.rootNames) {
+          runtime.rootFiles.add(file)
         }
 
-        rootFiles.add(normalizePath(sourceFile.fileName))
+        runtime.rootFiles.add(normalizePath(sourceFile.fileName))
 
         bundled = false
         timeRecord = 0
         // We lose the fast way to trigger source file re-emit in Volar 1,
         // so now we have to rebuild the program to get the latest declaration
         // files of those changed files.
-        program = rebuildProgram()
+        runtime.program = runtime.rebuildProgram()
       }
     },
 
     async writeBundle() {
-      transformedFiles.clear()
+      runtime.transformedFiles.clear()
 
-      if (!host || !program || bundled) return
+      if (!runtime || bundled) return
 
       bundled = true
       bundleDebug('begin writeBundle')
@@ -516,293 +271,19 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
       const startTime = Date.now()
 
-      const outDir = outDirs[0]
-      const emittedFiles = new Map<string, string>()
-      const declareModules: string[] = []
-
-      const writeOutput = async (path: string, content: string, outDir: string, record = true) => {
-        if (typeof beforeWriteFile === 'function') {
-          const result = await unwrapPromise(beforeWriteFile(path, content))
-
-          if (result === false) return
-
-          if (result) {
-            path = result.filePath || path
-            content = result.content ?? content
-          }
-        }
-
-        path = normalizePath(path)
-        const dir = normalizePath(dirname(path))
-
-        if (strictOutput && !dir.startsWith(normalizePath(outDir))) {
-          logger.warn(`${logPrefix} ${yellow('Outside emitted:')} ${path}`)
-          return
-        }
-
-        if (!existsSync(dir)) {
-          await mkdir(dir, { recursive: true })
-        }
-
-        await writeFile(path, content, 'utf-8')
-        record && emittedFiles.set(path, content)
-      }
-
-      const sourceFiles = program.getSourceFiles()
-
-      for (const sourceFile of sourceFiles) {
-        if (!filter(sourceFile.fileName)) continue
-
-        if (copyDtsFiles && dtsRE.test(sourceFile.fileName)) {
-          setOutputFile(normalizePath(sourceFile.fileName), sourceFile.getFullText())
-        }
-
-        if (rootFiles.has(sourceFile.fileName)) {
-          program.emit(
-            sourceFile,
-            (name, text) => {
-              setOutputFile(
-                resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))),
-                text
-              )
-            },
-            undefined,
-            true
-          )
-
-          rootFiles.delete(sourceFile.fileName)
-        }
-      }
-
-      bundleDebug('emit output patch')
-
-      const currentDir = host.getCurrentDirectory()
-      const declarationFiles = new Map<string, string>()
-      const mapFiles = new Map<string, string>()
-      const prependMappings = new Map<string, string>()
-
-      for (const [filePath, content] of outputFiles.entries()) {
-        if (filePath.endsWith('.map')) {
-          mapFiles.set(filePath, content)
-        } else {
-          declarationFiles.set(filePath, content)
-        }
-      }
-
-      await runParallel(
-        cpus().length,
-        Array.from(declarationFiles.entries()),
-        async ([filePath, content]) => {
-          const newFilePath = resolve(
-            outDir,
-            relative(
-              entryRoot,
-              cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
-            )
-          )
-
-          if (content) {
-            const result = transformCode({
-              filePath,
-              content,
-              aliases,
-              aliasesExclude,
-              staticImport,
-              clearPureImport,
-              cleanVueFileName
-            })
-
-            content = result.content
-            declareModules.push(...result.declareModules)
-
-            if (result.diffLineCount) {
-              prependMappings.set(`${newFilePath}.map`, ';'.repeat(result.diffLineCount))
-            }
-          }
-
-          await writeOutput(newFilePath, content, outDir)
-        }
-      )
-
-      await runParallel(
-        cpus().length,
-        Array.from(mapFiles.entries()),
-        async ([filePath, content]) => {
-          const baseDir = dirname(filePath)
-
-          filePath = resolve(
-            outDir,
-            relative(
-              entryRoot,
-              cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath
-            )
-          )
-
-          try {
-            const sourceMap: { sources: string[], mappings: string } = JSON.parse(content)
-
-            sourceMap.sources = sourceMap.sources.map(source => {
-              return normalizePath(
-                relative(
-                  dirname(filePath),
-                  resolve(currentDir, relative(publicRoot, baseDir), source)
-                )
-              )
-            })
-
-            if (prependMappings.has(filePath)) {
-              sourceMap.mappings = `${prependMappings.get(filePath)}${sourceMap.mappings}`
-            }
-
-            content = JSON.stringify(sourceMap)
-          } catch (e) {
-            logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${filePath}`)
-          }
-
-          await writeOutput(filePath, content, outDir)
-        }
-      )
-
-      bundleDebug('write output')
-
-      if (insertTypesEntry || rollupTypes) {
-        const pkgPath = tryGetPkgPath(root)
-
-        let pkg: any
-
-        try {
-          pkg = pkgPath && existsSync(pkgPath) ? JSON.parse(await readFile(pkgPath, 'utf-8')) : {}
-        } catch (e) {}
-
-        const entryNames = Object.keys(entries)
-        const types = findTypesPath(pkg.publishConfig, pkg)
-        const multiple = entryNames.length > 1
-
-        let typesPath = cleanPath(
-          types ? resolve(root, types) : resolve(outDir, indexName),
-          emittedFiles
-        )
-
-        if (!multiple && !dtsRE.test(typesPath)) {
-          logger.warn(
-            `\n${logPrefix} ${yellow(
-              "The resolved path of type entry is not ending with '.d.ts'."
-            )}\n`
-          )
-
-          typesPath = `${typesPath.replace(tjsRE, '')}.d.${extPrefix(typesPath)}ts`
-        }
-
-        for (const name of entryNames) {
-          const entryDtsPath = multiple
-            ? cleanPath(resolve(outDir, tsToDts(name)), emittedFiles)
-            : typesPath
-
-          if (existsSync(entryDtsPath)) continue
-
-          const sourceEntry = normalizePath(
-            cleanPath(resolve(outDir, relative(entryRoot, tsToDts(entries[name]))), emittedFiles)
-          )
-
-          let fromPath = normalizePath(relative(dirname(entryDtsPath), sourceEntry))
-
-          fromPath = fromPath.replace(dtsRE, '')
-          fromPath = fullRelativeRE.test(fromPath) ? fromPath : `./${fromPath}`
-
-          let content = 'export {}\n'
-
-          if (emittedFiles.has(sourceEntry)) {
-            if (hasNormalExport(emittedFiles.get(sourceEntry)!)) {
-              content = `export * from '${fromPath}'\n${content}`
-            }
-
-            if (hasExportDefault(emittedFiles.get(sourceEntry)!)) {
-              content += `import ${libName} from '${fromPath}'\nexport default ${libName}\n${content}`
-            }
-          }
-
-          await writeOutput(cleanPath(entryDtsPath, emittedFiles), content, outDir)
-        }
-
-        bundleDebug('insert index')
-
-        if (rollupTypes) {
-          logger.info(green(`${logPrefix} Start rollup declaration files...`))
-
-          const rollupFiles = new Set<string>()
-          const compilerOptions = configPath
-            ? getTsConfig(configPath, host.readFile).compilerOptions
-            : rawCompilerOptions
-
-          const rollup = async (path: string) => {
-            const result = rollupDeclarationFiles({
-              root,
-              configPath,
-              compilerOptions,
-              outDir,
-              entryPath: path,
-              fileName: basename(path),
-              libFolder: getTsLibFolder(),
-              rollupConfig,
-              rollupOptions
-            })
-
-            emittedFiles.delete(path)
-            rollupFiles.add(path)
-
-            if (typeof afterRollup === 'function') {
-              await unwrapPromise(afterRollup(result))
-            }
-          }
-
-          if (multiple) {
-            await runParallel(cpus().length, entryNames, async name => {
-              await rollup(cleanPath(resolve(outDir, tsToDts(name)), emittedFiles))
-            })
-          } else {
-            await rollup(typesPath)
-          }
-
-          await runParallel(cpus().length, Array.from(emittedFiles.keys()), f => unlink(f))
-          removeDirIfEmpty(outDir)
-          emittedFiles.clear()
-
-          const declared = declareModules.join('\n')
-
-          await runParallel(cpus().length, [...rollupFiles], async filePath => {
-            await writeOutput(
-              filePath,
-              (await readFile(filePath, 'utf-8')) + (declared ? `\n${declared}` : ''),
-              dirname(filePath)
-            )
-          })
-
-          bundleDebug('rollup output')
-        }
-      }
-
-      if (outDirs.length > 1) {
-        const extraOutDirs = outDirs.slice(1)
-
-        await runParallel(cpus().length, Array.from(emittedFiles), async ([wroteFile, content]) => {
-          const relativePath = relative(outDir, wroteFile)
-
-          await Promise.all(
-            extraOutDirs.map(async targetOutDir => {
-              const path = resolve(targetOutDir, relativePath)
-
-              if (wroteFile.endsWith('.map')) {
-                // edit `sources` section with correct relative path of source map file
-                if (!editSourceMapDir(content, outDir, targetOutDir)) {
-                  logger.warn(`${logPrefix} ${yellow('Processing source map fail:')} ${path}`)
-                }
-              }
-
-              await writeOutput(path, content, targetOutDir, false)
-            })
-          )
-        })
-      }
+      const emittedFiles = await emitOutput(runtime, {
+        strictOutput,
+        copyDtsFiles,
+        cleanVueFileName,
+        aliasesExclude,
+        staticImport,
+        clearPureImport,
+        insertTypesEntry,
+        rollupTypes,
+        rollupOptions,
+        beforeWriteFile,
+        afterRollup
+      })
 
       if (typeof afterBuild === 'function') {
         await unwrapPromise(afterBuild(emittedFiles))
