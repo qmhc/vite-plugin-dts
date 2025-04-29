@@ -37,6 +37,9 @@ importers:
       magic-string:
         specifier: ^0.30.17
         version: 0.30.17
+      unplugin:
+        specifier: ^2.3.2
+        version: 2.3.2
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.8.0
@@ -1538,6 +1541,11 @@ packages:
 
   acorn@8.14.0:
     resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  acorn@8.14.1:
+    resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -4127,6 +4135,10 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
+  unplugin@2.3.2:
+    resolution: {integrity: sha512-3n7YA46rROb3zSj8fFxtxC/PqoyvYQ0llwz9wtUPUutr9ig09C8gGo5CWCwHrUzlqC1LLR43kxp5vEIyH1ac1w==}
+    engines: {node: '>=18.12.0'}
+
   untyped@2.0.0:
     resolution: {integrity: sha512-nwNCjxJTjNuLCgFr42fEak5OcLuB3ecca+9ksPFNvtfYSLpjf+iJqSIaSnIile6ZPbKYxI5k2AfXqeopGudK/g==}
     hasBin: true
@@ -4295,6 +4307,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  webpack-virtual-modules@0.6.2:
+    resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
   which-boxed-primitive@1.0.2:
     resolution: {integrity: sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg==}
@@ -5781,6 +5796,8 @@ snapshots:
   acorn@8.10.0: {}
 
   acorn@8.14.0: {}
+
+  acorn@8.14.1: {}
 
   add-stream@1.0.0: {}
 
@@ -8702,6 +8719,12 @@ snapshots:
 
   universalify@2.0.1: {}
 
+  unplugin@2.3.2:
+    dependencies:
+      acorn: 8.14.1
+      picomatch: 4.0.2
+      webpack-virtual-modules: 0.6.2
+
   untyped@2.0.0:
     dependencies:
       citty: 0.1.6
@@ -8880,6 +8903,8 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
     optional: true
+
+  webpack-virtual-modules@0.6.2: {}
 
   which-boxed-primitive@1.0.2:
     dependencies:

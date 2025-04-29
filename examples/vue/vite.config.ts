@@ -3,7 +3,7 @@ import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import dts from '../../src'
+import dts from '../../src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))

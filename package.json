@@ -67,7 +67,8 @@
     "debug": "^4.4.0",
     "kolorist": "^1.8.0",
     "local-pkg": "^1.1.1",
-    "magic-string": "^0.30.17"
+    "magic-string": "^0.30.17",
+    "unplugin": "^2.3.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",

@@ -8,8 +8,8 @@ import { createFilter } from '@rollup/pluginutils'
 import { green, yellow } from 'kolorist'
 import { createParsedCommandLine, createProgram } from './program'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from '../resolvers'
-import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from '../transform'
-import { rollupDeclarationFiles } from '../rollup'
+import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from './transform'
+import { bundleDtsFiles } from './bundle'
 import {
   defaultIndex,
   dtsRE,
@@ -22,6 +22,8 @@ import {
   getTsConfig,
   getTsLibFolder,
   handleDebug,
+  isNativeObj,
+  isRegExp,
   jsRE,
   normalizePath,
   parseTsAliases,
@@ -35,9 +37,10 @@ import {
   tryGetPkgPath,
   tsToDts,
   unwrapPromise
-} from '../utils'
+} from './utils'
 
-import type { CreateRuntimeOptions, EmitOptions, Resolver, RuntimeContext } from './types'
+import type { Alias } from 'vite'
+import type { AliasOptions, CreateRuntimeOptions, EmitOptions, Resolver, RuntimeContext } from './types'
 
 const fixedCompilerOptions: ts.CompilerOptions = {
   noEmit: false,
@@ -50,11 +53,40 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext
 }
 
+function parseAliases(aliasOptions: AliasOptions = [], aliasesExclude: (string | RegExp)[] = []) {
+  let aliases: Alias[]
+
+  if (isNativeObj(aliasOptions)) {
+    aliases = Object.entries(aliasOptions).map(([key, value]) => {
+      return { find: key, replacement: value }
+    })
+  } else {
+    aliases = ensureArray(aliasOptions as Alias[]).map(alias => ({ ...alias }))
+  }
+
+  if (aliasesExclude.length > 0) {
+    aliases = aliases.filter(
+      ({ find }) =>
+        !aliasesExclude.some(
+          aliasExclude =>
+            aliasExclude &&
+            (isRegExp(find)
+              ? find.toString() === aliasExclude.toString()
+              : isRegExp(aliasExclude)
+                ? find.match(aliasExclude)?.[0]
+                : find === aliasExclude)
+        )
+    )
+  }
+
+  return aliases
+}
+
 export async function createRuntimeContext(options: CreateRuntimeOptions): Promise<RuntimeContext> {
   const {
     root,
     tsconfigPath,
-    aliases = [],
+    aliasesExclude = [],
     pathsToAliases,
     entries = {},
     logger = console,
@@ -67,6 +99,8 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     SvelteResolver(),
     ...(options.resolvers || [])
   ])
+
+  const aliases = parseAliases(options.aliases, aliasesExclude)
 
   const configPath = tsconfigPath
     ? ensureAbsolute(tsconfigPath, root)
@@ -220,6 +254,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     include,
     exclude,
     aliases,
+    aliasesExclude,
     libName,
     indexName,
     logger,
@@ -314,6 +349,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
     publicRoot,
     entryRoot,
     aliases,
+    aliasesExclude,
     entries,
     indexName,
     libName,
@@ -326,7 +362,6 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
     logPrefix = '[dts]',
     copyDtsFiles = false,
     cleanVueFileName = false,
-    aliasesExclude = [],
     staticImport = false,
     clearPureImport = true,
     insertTypesEntry = false,
@@ -545,7 +580,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
         : rawCompilerOptions
 
       const rollup = async (path: string) => {
-        const result = rollupDeclarationFiles({
+        const result = bundleDtsFiles({
           root,
           configPath,
           compilerOptions,

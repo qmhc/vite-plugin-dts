@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { hasExportDefault, normalizeGlob, transformCode } from '../src/transform'
-import { parseTsAliases } from '../src/utils'
+import { hasExportDefault, normalizeGlob, transformCode } from '../src/core/transform'
+import { parseTsAliases } from '../src/core/utils'
 
 import type { Alias } from 'vite'
 

@@ -3,7 +3,7 @@ import { existsSync, readdirSync, rmSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
-import dts from '../../src'
+import dts from '../../src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))

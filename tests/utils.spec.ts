@@ -17,7 +17,7 @@ import {
   resolveConfigDir,
   toCapitalCase,
   unwrapPromise
-} from '../src/utils'
+} from '../src/core/utils'
 
 describe('utils tests', () => {
   it('test: normalizePath', () => {

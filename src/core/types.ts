@@ -46,6 +46,10 @@ export interface Resolver {
   }) => MaybePromise<{ path: string, content: string }[]>
 }
 
+export type AliasOptions = {
+  find: string | RegExp,
+  replacement: string }[] | { [find: string]: string }
+
 export interface CreateRuntimeOptions {
   /**
    * Specify root directory.
@@ -110,8 +114,14 @@ export interface CreateRuntimeOptions {
    * @default []
    */
   resolvers?: Resolver[],
+  aliases?: AliasOptions,
+  /**
+   * Set which paths should be excluded when transforming aliases.
+   *
+   * @default []
+   */
+  aliasesExclude?: (string | RegExp)[],
   entries?: Record<string, string>,
-  aliases?: Alias[],
   libName?: string,
   indexName?: string,
   logger?: Logger,
@@ -150,12 +160,6 @@ export interface EmitOptions {
    * @default false
    */
   cleanVueFileName?: boolean,
-  /**
-   * Set which paths should be excluded when transforming aliases.
-   *
-   * @default []
-   */
-  aliasesExclude?: (string | RegExp)[],
   /**
    * Whether to transform dynamic imports to static (eg `import('vue').DefineComponent` to `import { DefineComponent } from 'vue'`).
    *
@@ -249,6 +253,7 @@ export interface RuntimeContext {
   include: string[],
   exclude: string[],
   aliases: Alias[],
+  aliasesExclude: (string | RegExp)[],
   libName: string,
   indexName: string,
   logger: Logger,

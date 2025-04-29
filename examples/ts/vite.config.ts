@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
-import dts from '../../src'
+import dts from '../../src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
