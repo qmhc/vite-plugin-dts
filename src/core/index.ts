@@ -7,7 +7,7 @@ import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
 import { green, yellow } from 'kolorist'
 import { createParsedCommandLine, createProgram } from './program'
-import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from '../resolvers'
+import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from './transform'
 import { bundleDtsFiles } from './bundle'
 import {

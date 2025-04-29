@@ -1,7 +1,7 @@
 import { relative } from 'node:path'
 
 import { compare } from 'compare-versions'
-import { tryGetPackageInfo } from '../core/utils'
+import { tryGetPackageInfo } from '../utils'
 
 import type { Resolver } from '../types'
 

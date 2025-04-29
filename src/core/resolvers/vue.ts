@@ -1,4 +1,4 @@
-import { base64VLQEncode } from '../core/utils'
+import { base64VLQEncode } from '../utils'
 
 import type { Resolver } from '../types'
 

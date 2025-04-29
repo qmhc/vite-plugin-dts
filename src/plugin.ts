@@ -23,7 +23,7 @@ import type { Alias } from 'vite'
 import type { PluginOptions } from './types'
 import type { Logger, RuntimeContext } from './core/types'
 
-const pluginName = 'vite:dts'
+const pluginName = 'unplugin:dts'
 const logPrefix = cyan(`[${pluginName}]`)
 
 export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__PURE__ */ (options = {}) => {
@@ -62,8 +62,11 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
   let indexName = 'index.d.ts'
   let logger: Logger = console
 
+  let isDev = false
   let bundled = false
   let timeRecord = 0
+
+  let entryPromise: Promise<any> | undefined
 
   let runtime: RuntimeContext
 
@@ -71,11 +74,15 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
     name: 'unplugin-dts',
     enforce: 'pre',
     async buildStart() {
-      if (runtime) return
+      if (isDev || runtime) return
 
       handleDebug('begin buildStart')
       timeRecord = 0
       const startTime = Date.now()
+
+      if (entryPromise) {
+        await entryPromise
+      }
 
       runtime = await createRuntimeContext({
         root,
@@ -106,7 +113,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
       async handler(code, id) {
         id = normalizePath(id).split('?')[0]
 
-        if (!runtime) return
+        if (isDev || !runtime) return
 
         const startTime = Date.now()
 
@@ -119,6 +126,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
       id = normalizePath(id)
 
       if (
+        isDev ||
         !runtime ||
         !runtime.filter(id) ||
         (!runtime.resolvers.find(r => r.supports(id)) && !tjsRE.test(id))
@@ -147,7 +155,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
     async writeBundle() {
       runtime.transformedFiles.clear()
 
-      if (!runtime || bundled) return
+      if (isDev || !runtime || bundled) return
 
       bundled = true
       handleDebug('begin writeBundle')
@@ -179,6 +187,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
       )
     },
     vite: {
+      apply: 'build',
       config(config) {
         const aliasOptions = config?.resolve?.alias ?? []
   
@@ -296,6 +305,61 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         indexName = defaultIndex
   
         handleDebug('parse options')
+      }
+    },
+    webpack(compiler) {
+      root = ensureAbsolute(options.root ?? '', compiler.context)
+      isDev = compiler.options.mode === 'development'
+      logger = compiler.getInfrastructureLogger(pluginName)
+
+      entryPromise = (async () => {
+        if (typeof compiler.options.entry === 'function') {
+          return await compiler.options.entry()
+        }
+        return compiler.options.entry
+      })().then(entry => {
+        entries = Object.keys(entry).reduce(
+          (prev, current) => {
+            const imports = entry[current].import
+
+            if (imports) {
+              prev[current] = imports[0]
+            }
+
+            return prev
+          },
+          {} as Record<string, string>
+        )
+        console.log(entry)
+      })
+
+      const aliasOptions = compiler.options.resolve.alias ?? []
+  
+      if (Array.isArray(aliasOptions)) {
+        aliases = ensureArray(aliasOptions).filter(alias => alias.alias && alias.alias.length > 0).map(alias => ({ find: alias.name, replacement: Array.isArray(alias.alias) ? alias.alias[0] : alias.alias as string }))
+      } else {
+        aliases = Object.entries(aliasOptions).filter(([, value]) => value && value.length > 0).map(([key, value]) => {
+          return { find: key, replacement: Array.isArray(value) ? value[0] : value as string }
+        })
+      }
+
+      if (aliasesExclude.length > 0) {
+        aliases = aliases.filter(
+          ({ find }) =>
+            !aliasesExclude.some(
+              aliasExclude =>
+                aliasExclude &&
+                (isRegExp(find)
+                  ? find.toString() === aliasExclude.toString()
+                  : isRegExp(aliasExclude)
+                    ? find.match(aliasExclude)?.[0]
+                    : find === aliasExclude)
+            )
+        )
+      }
+
+      for (const alias of aliases) {
+        alias.replacement = resolve(alias.replacement)
       }
     }
   }

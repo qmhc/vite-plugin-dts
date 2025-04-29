@@ -1,4 +1,5 @@
-import { resolve } from 'path'
+import { resolve } from 'node:path'
+
 import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
 import dts from '../../src/vite'
@@ -29,7 +30,7 @@ export default defineConfig({
       staticImport: true,
       // insertTypesEntry: true,
       rollupTypes: true,
-      declarationOnly: true,
+      // declarationOnly: true,
       compilerOptions: {
         declarationMap: true
       }

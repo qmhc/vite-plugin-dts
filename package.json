@@ -30,8 +30,23 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.ts",
+      "import": "./dist/rollup.mjs",
+      "require": "./dist/rollup.cjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.mjs",
+      "require": "./dist/vite.cjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.ts",
+      "import": "./dist/webpack.mjs",
+      "require": "./dist/webpack.cjs"
     }
   },
   "files": [
@@ -101,14 +116,27 @@
     "typescript": "5.8.3",
     "unbuild": "^3.5.0",
     "vite": "^6.3.3",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.2",
+    "webpack": "^5.99.7"
   },
   "peerDependencies": {
-    "typescript": "*",
-    "vite": "*"
+    "esbuild": "*",
+    "rollup": ">=3",
+    "typescript": ">=4",
+    "vite": ">=3",
+    "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    },
     "vite": {
+      "optional": true
+    },
+    "webpack": {
       "optional": true
     }
   }
