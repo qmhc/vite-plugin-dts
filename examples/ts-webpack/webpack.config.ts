@@ -17,7 +17,7 @@ export default {
     library: 'Test',
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.json'],
     alias: {
       '@': resolve(__dirname, 'src'),
     },

@@ -92,7 +92,6 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         },
         {} as Record<string, string>,
       )
-      console.log(entry)
     })
 
     const aliasOptions = compiler.options.resolve.alias ?? []
@@ -389,8 +388,10 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
             stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
           },
           (assets) => {
-            for (const filename of Object.keys(assets)) {
-              delete assets[filename]
+            if (declarationOnly) {
+              for (const filename of Object.keys(assets)) {
+                delete assets[filename]
+              }
             }
           },
         )

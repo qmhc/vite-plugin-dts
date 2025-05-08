@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
+import { existsSync, readdirSync, rmSync } from 'node:fs'
 
-import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
 import dts from '../../packages/unplugin-dts/src/vite'
 

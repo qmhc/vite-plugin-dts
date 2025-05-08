@@ -1,0 +1,27 @@
+{
+  // test comment
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "importHelpers": true,
+    "outDir": "dist",
+    "strict": true,
+    "jsx": "preserve",
+    "allowJs": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "declaration": false,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@alias/*": ["src/alias/*"]
+    },
+    "lib": ["esnext", "dom"]
+  },
+  "include": ["src", "*.d.ts", "src/**/*.json"]
+}
