@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 
 import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
-import dts from '../../src/vite'
+import dts from '../../packages/unplugin-dts/src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
@@ -10,15 +10,15 @@ emptyDir(resolve(__dirname, 'types'))
 export default defineConfig({
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   build: {
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'ts-test',
-      formats: ['es']
-    }
+      formats: ['es'],
+    },
   },
   plugins: [
     // @ts-ignore
@@ -32,10 +32,10 @@ export default defineConfig({
       rollupTypes: true,
       // declarationOnly: true,
       compilerOptions: {
-        declarationMap: true
-      }
-    })
-  ]
+        declarationMap: true,
+      },
+    }),
+  ],
 })
 
 function emptyDir(dir: string) {

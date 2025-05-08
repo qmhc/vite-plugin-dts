@@ -6,8 +6,8 @@ export default defineComponent({
   props: {
     msg: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup() {
     const count = ref(0)
@@ -17,6 +17,6 @@ export default defineComponent({
         {count.value}
       </div>
     )
-  }
+  },
 })
 </script>

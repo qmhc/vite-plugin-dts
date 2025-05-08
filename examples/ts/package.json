@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"dts-debug\" vite build",
-    "build:api": "tsx ./api-build.ts"
+    "build": "DEBUG=\"dts-debug\" pnpm run clean && vite build",
+    "build:api": "pnpm run clean && tsx ./api-build.ts",
+    "clean": "rimraf dist && rimraf types"
   },
   "types": "dist/ts-test.d.ts",
   "devDependencies": {

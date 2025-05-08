@@ -5,6 +5,6 @@ export namespace NameSpace {
     A,
     B,
     C,
-    D
+    D,
   }
 }

@@ -32,9 +32,9 @@ export function SvelteResolver(): Resolver {
       return [
         {
           path: relative(root, `${id}.d.ts`),
-          content: `export { ${lowerVersion ? 'SvelteComponentTyped' : 'SvelteComponent'} as default } from 'svelte';\n`
-        }
+          content: `export { ${lowerVersion ? 'SvelteComponentTyped' : 'SvelteComponent'} as default } from 'svelte';\n`,
+        },
       ]
-    }
+    },
   }
 }

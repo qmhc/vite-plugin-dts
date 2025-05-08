@@ -1,15 +1,15 @@
 {
-  "name": "vite-plugin-dts",
+  "name": "unplugin-dts-mono",
   "version": "4.5.3",
   "type": "module",
   "packageManager": "pnpm@9.15.3",
-  "license": "MIT",
+  "private": true,
   "author": "qmhc",
   "scripts": {
     "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "unbuild --stub",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx \"{src,tests}/**\"",
+    "lint": "eslint --cache \"**/*.{js,cjs,mjs,ts,tsx,vue}\"",
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q --allow-empty",
     "prepare": "husky",
     "prepublishOnly": "pinst --disable",
@@ -17,77 +17,17 @@
     "postpublish": "pinst --enable",
     "publish:ci": "tsx scripts/publish.ts",
     "release": "tsx scripts/release.ts",
-    "test": "vitest run",
-    "test:dev": "vitest",
+    "test": "pnpm -r run test",
     "test:react": "pnpm -C examples/react build",
     "test:svelte": "pnpm -C examples/svelte build",
     "test:ts": "pnpm -C examples/ts build",
+    "test:ts-webpack": "pnpm -C examples/ts-webpack build",
     "test:vue": "pnpm -C examples/vue build"
-  },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.mjs",
-      "require": "./dist/rollup.cjs"
-    },
-    "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.mjs",
-      "require": "./dist/vite.cjs"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.mjs",
-      "require": "./dist/webpack.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": "^14.18.0 || >=16.0.0"
-  },
-  "keywords": [
-    "vite",
-    "vite-plugin",
-    "ts",
-    "dts",
-    "typescript",
-    "vue",
-    "tsc",
-    "vue-tsc",
-    "volar"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/qmhc/vite-plugin-dts.git"
-  },
-  "bugs": {
-    "url": "https://github.com/qmhc/vite-plugin-dts/issues"
-  },
-  "dependencies": {
-    "@microsoft/api-extractor": "^7.52.5",
-    "@rollup/pluginutils": "^5.1.4",
-    "@volar/typescript": "^2.4.13",
-    "@vue/language-core": "2.2.0",
-    "compare-versions": "^6.1.1",
-    "debug": "^4.4.0",
-    "kolorist": "^1.8.0",
-    "local-pkg": "^1.1.1",
-    "magic-string": "^0.30.17",
-    "unplugin": "^2.3.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@commitlint/types": "^19.8.0",
+    "@rspack/core": "^1.3.8",
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node": "^22.15.3",
@@ -111,6 +51,7 @@
     "pretty-quick": "^4.1.1",
     "prompts": "^2.4.2",
     "rimraf": "^6.0.1",
+    "rolldown": "1.0.0-beta.8",
     "semver": "^7.7.1",
     "tsx": "^4.19.3",
     "typescript": "5.8.3",
@@ -118,26 +59,5 @@
     "vite": "^6.3.3",
     "vitest": "^3.1.2",
     "webpack": "^5.99.7"
-  },
-  "peerDependencies": {
-    "esbuild": "*",
-    "rollup": ">=3",
-    "typescript": ">=4",
-    "vite": ">=3",
-    "webpack": "^4 || ^5"
-  },
-  "peerDependenciesMeta": {
-    "esbuild": {
-      "optional": true
-    },
-    "rollup": {
-      "optional": true
-    },
-    "vite": {
-      "optional": true
-    },
-    "webpack": {
-      "optional": true
-    }
   }
 }

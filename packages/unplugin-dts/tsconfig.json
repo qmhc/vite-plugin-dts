@@ -13,11 +13,12 @@
     "sourceMap": false,
     "outDir": "dist",
     "types": [
-      "node"
+      "vite/client"
     ]
   },
   "include": [
-    "scripts"
+    "src",
+    "tests"
   ],
   "exclude": [
     "node_modules"

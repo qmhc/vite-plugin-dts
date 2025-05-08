@@ -7,15 +7,15 @@ export default defineComponent({
   props: {
     msg: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup(props, { slots }) {
     return () => (
-      <div class='tsx-test'>
+      <div class={'tsx-test'}>
         {props.msg}
         {slots.default?.() ?? null}
       </div>
     )
-  }
+  },
 })

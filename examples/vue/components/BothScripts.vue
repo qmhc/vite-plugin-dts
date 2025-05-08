@@ -4,16 +4,16 @@ import { defineProps, ref } from 'vue'
 const props = defineProps({
   tag: {
     type: String,
-    default: 'div'
+    default: 'div',
   },
   count: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 })
 
 const emit = defineEmits({
-  click: (event: MouseEvent) => true
+  click: (event: MouseEvent) => true,
 })
 
 const currentCount = ref(props.count)
@@ -36,7 +36,7 @@ export interface BothScriptsProps {
 
 export default {
   name: 'BothScripts',
-  customOptions: {}
+  customOptions: {},
 }
 </script>
 

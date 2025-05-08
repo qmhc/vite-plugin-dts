@@ -20,12 +20,12 @@ export function normalizeGlob(path: string) {
 
 function walkSourceFile(
   sourceFile: ts.SourceFile,
-  callback: (node: ts.Node, parent: ts.Node) => void | boolean
+  callback: (node: ts.Node, parent: ts.Node) => void | boolean,
 ) {
   function walkNode(
     node: ts.Node,
     parent: ts.Node,
-    callback: (node: ts.Node, parent: ts.Node) => void | boolean
+    callback: (node: ts.Node, parent: ts.Node) => void | boolean,
   ) {
     if (callback(node, parent) !== false) {
       node.forEachChild(child => walkNode(child, node, callback))
@@ -50,7 +50,7 @@ function transformAlias(
   importer: string,
   dir: string,
   aliases: Alias[],
-  aliasesExclude: (string | RegExp)[]
+  aliasesExclude: (string | RegExp)[],
 ) {
   if (
     aliases?.length &&
@@ -69,7 +69,7 @@ function transformAlias(
           : importer.match(matchedAlias.find)![0].endsWith('/')
       const truthPath = importer.replace(
         matchedAlias.find,
-        replacement + (endsWithSlash ? '/' : '')
+        replacement + (endsWithSlash ? '/' : ''),
       )
 
       const absolutePath = resolve(dir, truthPath)
@@ -89,7 +89,7 @@ const vlsRE = /^_?__VLS_/
 function isVLSNode(node: ts.Node) {
   if (ts.isVariableStatement(node)) {
     return node.declarationList.declarations.some(
-      d => ts.isIdentifier(d.name) && vlsRE.test(`${d.name.escapedText}`)
+      d => ts.isIdentifier(d.name) && vlsRE.test(`${d.name.escapedText}`),
     )
   }
 
@@ -218,7 +218,7 @@ export function transformCode(options: {
       s.update(
         node.arguments[0].pos,
         node.arguments[0].end,
-        `'${toLibName(node.arguments[0].text)}'`
+        `'${toLibName(node.arguments[0].text)}'`,
       )
 
       return false
@@ -232,7 +232,7 @@ export function transformCode(options: {
       s.update(
         node.moduleSpecifier.pos,
         node.moduleSpecifier.end,
-        ` '${toLibName(node.moduleSpecifier.text)}'`
+        ` '${toLibName(node.moduleSpecifier.text)}'`,
       )
 
       return false
@@ -257,7 +257,7 @@ export function transformCode(options: {
           node.modifiers?.[0] &&
           node.modifiers[0].kind === ts.SyntaxKind.DeclareKeyword &&
           !node.body.statements.some(
-            s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s)
+            s => ts.isExportAssignment(s) || ts.isExportDeclaration(s) || ts.isImportDeclaration(s),
           )
         ) {
           declareModules.push(s.slice(node.pos, node.end + 1))
@@ -280,7 +280,7 @@ export function transformCode(options: {
     content: s.toString(),
     declareModules,
     diffLineCount:
-      importMap.size && importCount < importMap.size ? importMap.size - importCount : null
+      importMap.size && importCount < importMap.size ? importMap.size - importCount : null,
   }
 }
 

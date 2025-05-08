@@ -4,7 +4,7 @@ import type {
   EmitOptions,
   MaybePromise,
   Resolver,
-  RollupConfig
+  RollupConfig,
 } from './core/types'
 
 export type { Resolver, RollupConfig }
@@ -18,7 +18,7 @@ export interface PluginOptions
   /**
    * Whether to emit declaration files only.
    *
-   * When `true`, all the original outputs of vite (rollup) will be force removed.
+   * When `true`, all the original outputs will be force removed, except esbuild.
    *
    * @default false
    */

@@ -5,7 +5,7 @@ import {
   normalize,
   posix,
   relative,
-  sep
+  sep,
 } from 'node:path'
 import { existsSync, lstatSync, readdirSync, rmdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
@@ -60,7 +60,7 @@ export function resolve(...paths: string[]) {
 }
 
 export function isNativeObj<T extends Record<string, any> = Record<string, any>>(
-  value: T
+  value: T,
 ): value is T {
   return Object.prototype.toString.call(value) === '[object Object]'
 }
@@ -83,7 +83,7 @@ export async function unwrapPromise<T>(maybePromise: T | Promise<T>) {
 
 export function mergeObjects<T extends Record<string, unknown>, U extends Record<string, unknown>>(
   sourceObj: T,
-  targetObj: U
+  targetObj: U,
 ) {
   const loop: Array<{
     source: Record<string, any>,
@@ -92,9 +92,9 @@ export function mergeObjects<T extends Record<string, unknown>, U extends Record
   }> = [
     {
       source: sourceObj,
-      target: targetObj
+      target: targetObj,
       // merged: mergedObj
-    }
+    },
   ]
 
   while (loop.length) {
@@ -108,7 +108,7 @@ export function mergeObjects<T extends Record<string, unknown>, U extends Record
 
         loop.push({
           source: source[key],
-          target: target[key]
+          target: target[key],
         })
       } else if (Array.isArray(target[key])) {
         if (!Array.isArray(source[key])) {
@@ -117,7 +117,7 @@ export function mergeObjects<T extends Record<string, unknown>, U extends Record
 
         loop.push({
           source: source[key],
-          target: target[key]
+          target: target[key],
         })
       } else {
         source[key] = target[key]
@@ -139,7 +139,7 @@ export function ensureArray<T>(value: T | T[]) {
 export async function runParallel<T>(
   maxConcurrency: number,
   source: T[],
-  iteratorFn: (item: T, source: T[]) => Promise<any>
+  iteratorFn: (item: T, source: T[]) => Promise<any>,
 ) {
   const ret: Promise<any>[] = []
   const executing: Promise<any>[] = []
@@ -240,7 +240,7 @@ export function removeDirIfEmpty(dir: string) {
 
 export function getTsConfig(
   tsConfigPath: string,
-  readFileSync: (filePath: string, encoding?: string | undefined) => string | undefined
+  readFileSync: (filePath: string, encoding?: string | undefined) => string | undefined,
 ) {
   const baseConfig = ts.readConfigFile(tsConfigPath, readFileSync).config ?? {}
 
@@ -254,7 +254,7 @@ export function getTsConfig(
     extends?: string | string[]
   } = {
     ...baseConfig,
-    compilerOptions: {}
+    compilerOptions: {},
   }
 
   if (tsConfig.extends) {
@@ -369,7 +369,7 @@ export function toCapitalCase<T extends string>(value: T) {
 
   return (value.charAt(0).toLocaleUpperCase() + value.slice(1)).replace(
     /[^\w]/g,
-    ''
+    '',
   ) as CapitalCase<T>
 }
 
@@ -450,7 +450,7 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
 
   for (const [pathWithAsterisk, replacements] of Object.entries(paths)) {
     const find = new RegExp(
-      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(?!\\.{1,2}\\/)([^*]+)')}$`
+      `^${pathWithAsterisk.replace(regexpSymbolRE, '\\$1').replace(asteriskRE, '(?!\\.{1,2}\\/)([^*]+)')}$`,
     )
 
     let index = 1
@@ -459,8 +459,8 @@ export function parseTsAliases(basePath: string, paths: ts.MapLike<string[]>) {
       find,
       replacement: ensureAbsolute(
         replacements[0].replace(asteriskRE, () => `$${index++}`),
-        basePath
-      )
+        basePath,
+      ),
     })
   }
 
@@ -491,7 +491,7 @@ export function importResolves(path: string) {
     '.vue',
     '.vue.d.ts',
     // svelte
-    '.svelte'
+    '.svelte',
   ]
 
   for (const ext of files) {
@@ -508,7 +508,7 @@ export function tryGetPackageInfo(name: string) {
 
     try {
       return getPackageInfoSync(
-        targetRequire.resolve(`${name}/package.json`, { paths: [process.cwd()] })
+        targetRequire.resolve(`${name}/package.json`, { paths: [process.cwd()] }),
       )
     } catch (e) {}
   }

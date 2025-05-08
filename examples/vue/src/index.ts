@@ -25,7 +25,7 @@ export { Decorator } from './decorator'
 
 export const user: import('@/src/types').User = {
   id: '',
-  name: ''
+  name: '',
 }
 
 export type { User } from './types'
@@ -49,7 +49,7 @@ export {
   CssVar,
   OutsideTsProps,
   GenericProps,
-  CustomSFC
+  CustomSFC,
 }
 
 export default DefaultImport

@@ -6,8 +6,8 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   name: 'App',
   components: {
-    HelloWorld
-  }
+    HelloWorld,
+  },
 })
 </script>
 

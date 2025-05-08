@@ -33,7 +33,7 @@ export function VueResolver(): Resolver {
           outputs.push({ path, content })
         },
         undefined,
-        true
+        true,
       )
 
       if (!program.getCompilerOptions().declarationMap) return outputs
@@ -47,7 +47,7 @@ export function VueResolver(): Resolver {
             const sourceMap: SourceMap = JSON.parse(output.content)
 
             sourceMap.sources = sourceMap.sources.map(source =>
-              source.replace(/\.vue\.ts$/, '.vue')
+              source.replace(/\.vue\.ts$/, '.vue'),
             )
 
             if (beforeScript && beforeScript !== code && beforeLines) {
@@ -62,6 +62,6 @@ export function VueResolver(): Resolver {
       }
 
       return outputs
-    }
+    },
   }
 }

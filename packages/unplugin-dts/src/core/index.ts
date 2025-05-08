@@ -36,7 +36,7 @@ import {
   toCapitalCase,
   tryGetPkgPath,
   tsToDts,
-  unwrapPromise
+  unwrapPromise,
 } from './utils'
 
 import type { Alias } from 'vite'
@@ -50,7 +50,7 @@ const fixedCompilerOptions: ts.CompilerOptions = {
   skipLibCheck: true,
   preserveSymlinks: false,
   noEmitOnError: undefined,
-  target: ts.ScriptTarget.ESNext
+  target: ts.ScriptTarget.ESNext,
 }
 
 function parseAliases(aliasOptions: AliasOptions = [], aliasesExclude: (string | RegExp)[] = []) {
@@ -74,8 +74,8 @@ function parseAliases(aliasOptions: AliasOptions = [], aliasesExclude: (string |
               ? find.toString() === aliasExclude.toString()
               : isRegExp(aliasExclude)
                 ? find.match(aliasExclude)?.[0]
-                : find === aliasExclude)
-        )
+                : find === aliasExclude),
+        ),
     )
   }
 
@@ -90,14 +90,14 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     pathsToAliases,
     entries = {},
     logger = console,
-    afterDiagnostic
+    afterDiagnostic,
   } = options
 
   const resolvers = parseResolvers([
     JsonResolver(),
     VueResolver(),
     SvelteResolver(),
-    ...(options.resolvers || [])
+    ...(options.resolvers || []),
   ])
 
   const aliases = parseAliases(options.aliases, aliasesExclude)
@@ -113,7 +113,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     ...(options.compilerOptions || {}),
     ...fixedCompilerOptions,
     outDir: '.',
-    declarationDir: '.'
+    declarationDir: '.',
   }
   const rawCompilerOptions = content?.raw.compilerOptions || {}
 
@@ -131,8 +131,8 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
           content?.raw.compilerOptions?.outDir
             ? resolveConfigDir(content.raw.compilerOptions.outDir, root)
             : 'dist',
-          root
-        )
+          root,
+        ),
       ]
 
   const {
@@ -140,40 +140,40 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     // the same behavior as the TS Compiler. See TS source:
     // https://github.com/microsoft/TypeScript/blob/3386e943215613c40f68ba0b108cda1ddb7faee1/src/compiler/utilities.ts#L6493-L6501
     baseUrl = compilerOptions.paths ? process.cwd() : undefined,
-    paths
+    paths,
   } = compilerOptions
 
   if (pathsToAliases && baseUrl && paths) {
     aliases.push(
       ...parseTsAliases(
         ensureAbsolute(resolveConfigDir(baseUrl, root), configPath ? dirname(configPath) : root),
-        paths
-      )
+        paths,
+      ),
     )
   }
 
   const computeGlobs = (
     rootGlobs: string | string[] | undefined,
     tsGlobs: string | string[] | undefined,
-    defaultGlob: string | string[]
+    defaultGlob: string | string[],
   ) => {
     if (rootGlobs?.length) {
       return ensureArray(rootGlobs).map(glob =>
-        normalizeGlob(ensureAbsolute(resolveConfigDir(glob, root), root))
+        normalizeGlob(ensureAbsolute(resolveConfigDir(glob, root), root)),
       )
     }
 
     return ensureArray(tsGlobs?.length ? tsGlobs : defaultGlob).map(glob =>
       normalizeGlob(
-        ensureAbsolute(resolveConfigDir(glob, root), configPath ? dirname(configPath) : root)
-      )
+        ensureAbsolute(resolveConfigDir(glob, root), configPath ? dirname(configPath) : root),
+      ),
     )
   }
 
   const include = computeGlobs(
     options.include,
     [...ensureArray(content?.raw.include ?? []), ...ensureArray(content?.raw.files ?? [])],
-    '**/*'
+    '**/*',
   )
   const exclude = computeGlobs(options.exclude, content?.raw.exclude, 'node_modules/**')
   const filter = createFilter(include, exclude)
@@ -183,8 +183,8 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
       Object.values(entries)
         .map(entry => ensureAbsolute(entry, root))
         .concat(content?.fileNames.filter(filter) || [])
-        .map(normalizePath)
-    )
+        .map(normalizePath),
+    ),
   ]
 
   const host = ts.createCompilerHost(compilerOptions)
@@ -193,7 +193,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
       host,
       rootNames,
       options: compilerOptions,
-      projectReferences: content?.projectReferences
+      projectReferences: content?.projectReferences,
     })
   const program = rebuildProgram()
 
@@ -216,7 +216,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
         program
           .getSourceFiles()
           .filter(maybeEmitted)
-          .map(sourceFile => sourceFile.fileName)
+          .map(sourceFile => sourceFile.fileName),
       )
   publicRoot = normalizePath(publicRoot)
 
@@ -226,7 +226,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
   const diagnostics = [
     ...program.getDeclarationDiagnostics(),
     ...program.getSemanticDiagnostics(),
-    ...program.getSyntacticDiagnostics()
+    ...program.getSyntacticDiagnostics(),
   ]
 
   if (diagnostics?.length) {
@@ -267,7 +267,7 @@ export async function createRuntimeContext(options: CreateRuntimeOptions): Promi
     resolvers,
     rootFiles,
     outputFiles: new Map(),
-    transformedFiles: new Set()
+    transformedFiles: new Set(),
   } satisfies RuntimeContext
 }
 
@@ -281,7 +281,7 @@ export async function transform(runtime: RuntimeContext, id: string, code: strin
     resolvers,
     rootFiles,
     outputFiles,
-    transformedFiles
+    transformedFiles,
   } = runtime
 
   let resolver: Resolver | undefined
@@ -307,7 +307,7 @@ export async function transform(runtime: RuntimeContext, id: string, code: strin
       root: publicRoot,
       outDir,
       host,
-      program
+      program,
     })
 
     for (const { path, content } of result) {
@@ -323,7 +323,7 @@ export async function transform(runtime: RuntimeContext, id: string, code: strin
           outputFiles.set(resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))), text)
         },
         undefined,
-        true
+        true,
       )
     }
   }
@@ -354,7 +354,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
     indexName,
     libName,
     configPath,
-    rawCompilerOptions
+    rawCompilerOptions,
   } = runtime
 
   const {
@@ -368,7 +368,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
     rollupTypes = false,
     rollupOptions = {},
     beforeWriteFile,
-    afterRollup
+    afterRollup,
   } = options
 
   const rollupConfig = { ...(options.rollupConfig || {}) }
@@ -427,7 +427,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
           outputFiles.set(resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))), text)
         },
         undefined,
-        true
+        true,
       )
 
       rootFiles.delete(sourceFile.fileName)
@@ -455,7 +455,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
     async ([filePath, content]) => {
       const newFilePath = resolve(
         outDir,
-        relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+        relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath),
       )
 
       if (content) {
@@ -466,7 +466,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
           aliasesExclude,
           staticImport,
           clearPureImport,
-          cleanVueFileName
+          cleanVueFileName,
         })
 
         content = result.content
@@ -478,7 +478,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
       }
 
       await writeOutput(newFilePath, content, outDir)
-    }
+    },
   )
 
   await runParallel(cpus().length, Array.from(mapFiles.entries()), async ([filePath, content]) => {
@@ -486,7 +486,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
 
     filePath = resolve(
       outDir,
-      relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath)
+      relative(entryRoot, cleanVueFileName ? filePath.replace('.vue.d.ts', '.d.ts') : filePath),
     )
 
     try {
@@ -494,7 +494,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
 
       sourceMap.sources = sourceMap.sources.map(source => {
         return normalizePath(
-          relative(dirname(filePath), resolve(currentDir, relative(publicRoot, baseDir), source))
+          relative(dirname(filePath), resolve(currentDir, relative(publicRoot, baseDir), source)),
         )
       })
 
@@ -527,12 +527,12 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
 
     let typesPath = cleanPath(
       types ? resolve(root, types) : resolve(outDir, indexName),
-      emittedFiles
+      emittedFiles,
     )
 
     if (!multiple && !dtsRE.test(typesPath)) {
       logger.warn(
-        `\n${logPrefix} ${yellow("The resolved path of type entry is not ending with '.d.ts'.")}\n`
+        `\n${logPrefix} ${yellow("The resolved path of type entry is not ending with '.d.ts'.")}\n`,
       )
 
       typesPath = `${typesPath.replace(tjsRE, '')}.d.${getJsExtPrefix(typesPath)}ts`
@@ -546,7 +546,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
       if (existsSync(entryDtsPath)) continue
 
       const sourceEntry = normalizePath(
-        cleanPath(resolve(outDir, relative(entryRoot, tsToDts(entries[name]))), emittedFiles)
+        cleanPath(resolve(outDir, relative(entryRoot, tsToDts(entries[name]))), emittedFiles),
       )
 
       let fromPath = normalizePath(relative(dirname(entryDtsPath), sourceEntry))
@@ -589,7 +589,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
           fileName: basename(path),
           libFolder: getTsLibFolder(),
           rollupConfig,
-          rollupOptions
+          rollupOptions,
         })
 
         emittedFiles.delete(path)
@@ -618,7 +618,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
         await writeOutput(
           filePath,
           (await readFile(filePath, 'utf-8')) + (declared ? `\n${declared}` : ''),
-          dirname(filePath)
+          dirname(filePath),
         )
       })
 
@@ -644,7 +644,7 @@ export async function emitOutput(runtime: RuntimeContext, options: EmitOptions =
           }
 
           await writeOutput(path, content, targetOutDir, false)
-        })
+        }),
       )
     })
   }

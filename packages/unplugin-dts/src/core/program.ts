@@ -1,7 +1,7 @@
 import {
   createParsedCommandLine,
   createVueLanguagePlugin,
-  resolveVueCompilerOptions
+  resolveVueCompilerOptions,
 } from '@vue/language-core'
 
 import { proxyCreateProgram } from '@volar/typescript'
@@ -27,7 +27,7 @@ export const createProgram = !hasVue
       ts,
       options.options,
       vueOptions,
-      id => id
+      id => id,
     )
     return [vueLanguagePlugin]
   })

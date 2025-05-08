@@ -11,7 +11,7 @@ export interface Component {
 }
 
 export const test: TestBase = {
-  name: 'test'
+  name: 'test',
 }
 
 export const CONSTANT = ['one', 'two'] as const

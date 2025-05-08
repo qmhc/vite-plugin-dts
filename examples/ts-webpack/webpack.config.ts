@@ -1,39 +1,35 @@
 import { resolve } from 'node:path'
 
-import dts from '../../src/webpack'
+import dts from '../../packages/unplugin-dts/src/webpack'
 
 import type { Configuration } from 'webpack'
 
 export default {
   entry: {
     index: './src/index.ts',
-    main: './src/main.ts'
+    main: './src/main.ts',
   },
   output: {
     path: resolve(__dirname, 'dist'),
     filename: (data) => {
       return `${data.runtime || data.chunk?.name || 'index'}.js`
     },
-    library: {
-      name: 'YourLib',
-      type: 'umd'
-    },
-    clean: true
+    library: 'Test',
   },
   resolve: {
     extensions: ['.ts', '.js'],
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   mode: 'production',
   plugins: [
@@ -47,8 +43,8 @@ export default {
       // rollupTypes: true,
       // declarationOnly: true,
       compilerOptions: {
-        declarationMap: true
-      }
-    })
-  ]
+        declarationMap: true,
+      },
+    }),
+  ],
 } satisfies Configuration

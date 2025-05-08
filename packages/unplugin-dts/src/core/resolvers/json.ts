@@ -18,9 +18,9 @@ export function JsonResolver(): Resolver {
       return [
         {
           path: relative(root, `${id}.d.ts`),
-          content: `declare const _default: ${sourceFile.text};\n\nexport default _default;\n`
-        }
+          content: `declare const _default: ${sourceFile.text};\n\nexport default _default;\n`,
+        },
       ]
-    }
+    },
   }
 }

@@ -13,11 +13,16 @@
     "sourceMap": false,
     "outDir": "dist",
     "types": [
-      "node"
-    ]
+      "vite/client"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "unplugin-dts/*": ["../unplugin-dts/src/*"],
+      "unplugin-dts": ["../unplugin-dts/src"]
+    }
   },
   "include": [
-    "scripts"
+    "src"
   ],
   "exclude": [
     "node_modules"

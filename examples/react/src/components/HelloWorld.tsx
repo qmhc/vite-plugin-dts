@@ -8,9 +8,9 @@ function HelloWorld(props: Props) {
   const [count, setCount] = useCount(props.count)
 
   return (
-    <div className="hello-world">
+    <div className={'hello-world'}>
       <button onClick={() => setCount((count) => count + 1)}>
-        count is {count}
+        {'count is '}{count}
       </button>
     </div>
   )

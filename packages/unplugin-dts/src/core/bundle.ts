@@ -27,7 +27,7 @@ export function bundleDtsFiles({
   fileName,
   libFolder,
   rollupConfig = {},
-  rollupOptions = {}
+  rollupOptions = {},
 }: BundleOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
 
@@ -49,42 +49,42 @@ export function bundleDtsFiles({
         tsconfigFilePath: configPath,
         overrideTsconfig: {
           $schema: 'http://json.schemastore.org/tsconfig',
-          compilerOptions
-        }
+          compilerOptions,
+        },
       },
       apiReport: {
         enabled: false,
         reportFileName: '<unscopedPackageName>.api.md',
-        ...rollupConfig.apiReport
+        ...rollupConfig.apiReport,
       },
       docModel: {
         enabled: false,
-        ...rollupConfig.docModel
+        ...rollupConfig.docModel,
       },
       dtsRollup: {
         enabled: true,
-        publicTrimmedFilePath: resolve(outDir, fileName)
+        publicTrimmedFilePath: resolve(outDir, fileName),
       },
       tsdocMetadata: {
         enabled: false,
-        ...rollupConfig.tsdocMetadata
+        ...rollupConfig.tsdocMetadata,
       },
       messages: {
         compilerMessageReporting: {
           default: {
-            logLevel: 'none' as ExtractorLogLevel.None
-          }
+            logLevel: 'none' as ExtractorLogLevel.None,
+          },
         },
         extractorMessageReporting: {
           default: {
-            logLevel: 'none' as ExtractorLogLevel.None
-          }
+            logLevel: 'none' as ExtractorLogLevel.None,
+          },
         },
-        ...rollupConfig.messages
-      }
+        ...rollupConfig.messages,
+      },
     },
     configObjectFullPath,
-    packageJsonFullPath: tryGetPkgPath(configObjectFullPath)
+    packageJsonFullPath: tryGetPkgPath(configObjectFullPath),
   })
 
   return Extractor.invoke(extractorConfig, {
@@ -92,6 +92,6 @@ export function bundleDtsFiles({
     showVerboseMessages: false,
     showDiagnostics: false,
     typescriptCompilerFolder: libFolder,
-    ...rollupOptions
+    ...rollupOptions,
   })
 }

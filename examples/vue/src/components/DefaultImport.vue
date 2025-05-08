@@ -6,20 +6,20 @@ import { defineComponent, ref } from 'vue'
 export default defineComponent({
   name: 'DefaultImport',
   components: {
-    HelloWorld
+    HelloWorld,
   },
   props: {
     msg: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup() {
     const count = ref(0)
     return {
-      count
+      count,
     }
-  }
+  },
 })
 </script>
 

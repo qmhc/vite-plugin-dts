@@ -3,7 +3,7 @@ import { existsSync, readdirSync, rmSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import dts from '../../src/vite'
+import dts from '../../packages/unplugin-dts/src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
@@ -11,15 +11,15 @@ emptyDir(resolve(__dirname, 'types'))
 export default defineConfig({
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   build: {
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'Test',
-      formats: ['es']
-    }
+      formats: ['es'],
+    },
   },
   plugins: [
     react(),
@@ -31,9 +31,9 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // rollupTypes: true,
-      insertTypesEntry: true
-    })
-  ]
+      insertTypesEntry: true,
+    }),
+  ],
 })
 
 function emptyDir(dir: string) {

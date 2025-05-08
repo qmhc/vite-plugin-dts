@@ -6,14 +6,14 @@ const Component = defineComponent({
   props: {
     foo: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup() {
     const baz = ref(0)
 
     return { baz }
-  }
+  },
 })
 
 // eslint-disable-next-line vue/require-direct-export

@@ -4,8 +4,8 @@ import HelloWorld from './HelloWorld.vue'
 defineProps({
   max: {
     type: Number,
-    default: 1000
-  }
+    default: 1000,
+  },
 })
 
 // Must specify the generic type for defineModel to infer correct type

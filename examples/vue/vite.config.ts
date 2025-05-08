@@ -3,7 +3,7 @@ import { existsSync, readdirSync, rmSync } from 'fs'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import dts from '../../src/vite'
+import dts from '../../packages/unplugin-dts/src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
 emptyDir(resolve(__dirname, 'types'))
@@ -17,22 +17,22 @@ export default defineConfig({
     alias: [
       {
         find: /@\//,
-        replacement: resolve(__dirname) + '/'
+        replacement: resolve(__dirname) + '/',
       },
-      { find: '@components', replacement: resolve(__dirname, 'src/components') }
-    ]
+      { find: '@components', replacement: resolve(__dirname, 'src/components') },
+    ],
   },
   build: {
     // watch: {},
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'Test',
-      formats: ['es']
+      formats: ['es'],
       // fileName: 'test'
     },
     rollupOptions: {
-      external: ['vue']
-    }
+      external: ['vue'],
+    },
   },
   plugins: [
     // @ts-ignore
@@ -40,7 +40,7 @@ export default defineConfig({
       copyDtsFiles: true,
       outDirs: [
         'dist',
-        'types'
+        'types',
         // 'types/inner'
       ],
       // include: ['src/index.ts'],
@@ -49,18 +49,18 @@ export default defineConfig({
       // rollupTypes: true,
       // insertTypesEntry: true,
       compilerOptions: {
-        declarationMap: true
+        declarationMap: true,
       },
       rollupConfig: {
         docModel: {
           enabled: true,
-          apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json'
-        }
-      }
+          apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json',
+        },
+      },
     }),
     vue(),
-    vueJsx()
-  ]
+    vueJsx(),
+  ],
 })
 
 function emptyDir(dir: string) {

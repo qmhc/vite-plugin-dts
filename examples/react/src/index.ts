@@ -7,4 +7,4 @@ export { default as App } from './App'
 export { useCount } from '@/hooks/useCount'
 export * from './modules'
 
-export function test(dom: MyReactDOM) {}
+export function test(_dom: MyReactDOM) {}

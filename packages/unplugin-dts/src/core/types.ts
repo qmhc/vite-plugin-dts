@@ -3,7 +3,7 @@ import type { Alias } from 'vite'
 import type {
   ExtractorResult,
   IExtractorConfigPrepareOptions,
-  IExtractorInvokeOptions
+  IExtractorInvokeOptions,
 } from '@microsoft/api-extractor'
 import type { createFilter } from '@rollup/pluginutils'
 

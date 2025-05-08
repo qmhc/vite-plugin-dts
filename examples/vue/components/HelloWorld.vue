@@ -7,15 +7,15 @@ export default defineComponent({
     msg: {
       type: String,
       validator: (value: string) => value.length > 0,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup(props) {
     const count = ref(0)
     const labelMsg = computed(() => `message: ${props.msg}`)
 
     return { count, labelMsg }
-  }
+  },
 })
 </script>
 

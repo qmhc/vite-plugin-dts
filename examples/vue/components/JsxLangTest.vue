@@ -11,6 +11,6 @@ export default {
         {count.value}
       </div>
     )
-  }
+  },
 }
 </script>

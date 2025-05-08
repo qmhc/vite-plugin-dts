@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"dts-debug\" vite build"
+    "build": "DEBUG=\"dts-debug\" pnpm run clean && vite build",
+    "clean": "rimraf dist && rimraf types"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

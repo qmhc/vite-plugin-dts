@@ -5,8 +5,8 @@ export default defineComponent({
   props: {
     msg: {
       type: String,
-      default: ''
-    }
+      default: '',
+    },
   },
   setup(props, { slots }) {
     return () => (
@@ -15,5 +15,5 @@ export default defineComponent({
         {slots.default?.() ?? null}
       </div>
     )
-  }
+  },
 })

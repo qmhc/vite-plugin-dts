@@ -16,7 +16,7 @@ import {
   queryPublicPath,
   resolveConfigDir,
   toCapitalCase,
-  unwrapPromise
+  unwrapPromise,
 } from '../src/core/utils'
 
 describe('utils tests', () => {
@@ -50,8 +50,8 @@ describe('utils tests', () => {
       isPromise(
         new Promise<void>(r => {
           r()
-        })
-      )
+        }),
+      ),
     ).toBe(true)
     expect(isPromise({ then: () => {} })).toBe(true)
     expect(isPromise({ catch: () => {} })).toBe(false)
@@ -70,7 +70,7 @@ describe('utils tests', () => {
     expect(mergeObjects({ a: '1', b: '2' }, { b: ['3'] })).toEqual({ a: '1', b: ['3'] })
     expect(mergeObjects({ a: '1', b: { c: '2' } }, { b: { d: '4' } })).toEqual({
       a: '1',
-      b: { c: '2', d: '4' }
+      b: { c: '2', d: '4' },
     })
     expect(mergeObjects({ a: '1', b: 1 }, { b: { d: '4' } })).toEqual({ a: '1', b: { d: '4' } })
   })
@@ -80,7 +80,7 @@ describe('utils tests', () => {
 
     expect(ensureAbsolute('', root)).toBe(root)
     expect(ensureAbsolute('./src/index.ts', root)).toBe(
-      normalizePath(resolve(root, 'src/index.ts'))
+      normalizePath(resolve(root, 'src/index.ts')),
     )
     expect(ensureAbsolute('/src/index.ts', root)).toBe('/src/index.ts')
     expect(ensureAbsolute('/vite-plugin-dts', root)).toBe('/vite-plugin-dts')
@@ -106,22 +106,22 @@ describe('utils tests', () => {
 
     expect(queryPublicPath([])).toBe('')
     expect(queryPublicPath(n(['/project/src/test/a.d.ts', '/project/src/test/b.d.ts']))).toBe(
-      n('/project/src/test')
+      n('/project/src/test'),
     )
     expect(
       queryPublicPath(
-        n(['/project/src/test/a.d.ts', '/project/src/test/b.d.ts', '/project/src/c.d.ts'])
-      )
+        n(['/project/src/test/a.d.ts', '/project/src/test/b.d.ts', '/project/src/c.d.ts']),
+      ),
     ).toBe(n('/project/src'))
     expect(
       queryPublicPath(
-        n(['/project/src/common/a.d.ts', '/project/src/test/b.d.ts', '/project/src/test/c.d.ts'])
-      )
+        n(['/project/src/common/a.d.ts', '/project/src/test/b.d.ts', '/project/src/test/c.d.ts']),
+      ),
     ).toBe(n('/project/src'))
     expect(
       queryPublicPath(
-        n(['/project/src/test/a.d.ts', '/project/src/test1/b.d.ts', '/project/src/test/c.d.ts'])
-      )
+        n(['/project/src/test/a.d.ts', '/project/src/test1/b.d.ts', '/project/src/test/c.d.ts']),
+      ),
     ).toBe(n('/project/src'))
   })
 
@@ -159,7 +159,7 @@ describe('utils tests', () => {
       'sM', 'uM', 'wM', 'yM', '0M', '2M', '4M', '6M', '8M', '+M', 'gN', 'iN', 'kN', 'mN', 'oN', 'qN',
       'sN', 'uN', 'wN', 'yN', '0N', '2N', '4N', '6N', '8N', '+N', 'gO', 'iO', 'kO', 'mO', 'oO', 'qO',
       'sO', 'uO', 'wO', 'yO', '0O', '2O', '4O', '6O', '8O', '+O', 'gP', 'iP', 'kP', 'mP', 'oP', 'qP',
-      'sP', 'uP', 'wP', 'yP', '0P', '2P', '4P', '6P', '8P', '+P'
+      'sP', 'uP', 'wP', 'yP', '0P', '2P', '4P', '6P', '8P', '+P',
     ]
 
     for (let i = 0, len = snapshots.length; i < len; ++i) {
@@ -173,72 +173,72 @@ describe('utils tests', () => {
 
     expect(
       parseTsAliases('/tmp/fake/project/root', {
-        '@/*': ['./at/*']
-      })
+        '@/*': ['./at/*'],
+      }),
     ).toStrictEqual([
       {
         find: /^@\/(?!\.{1,2}\/)([^*]+)$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/at/$1'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/at/$1')),
+      },
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { '~/*': ['./tilde/*'] })).toStrictEqual([
       {
         find: /^~\/(?!\.{1,2}\/)([^*]+)$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/tilde/$1'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/tilde/$1')),
+      },
     ])
 
     expect(
-      parseTsAliases('/tmp/fake/project/root', { '@/no-dot-prefix/*': ['no-dot-prefix/*'] })
+      parseTsAliases('/tmp/fake/project/root', { '@/no-dot-prefix/*': ['no-dot-prefix/*'] }),
     ).toStrictEqual([
       {
         find: /^@\/no-dot-prefix\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(
-          maybeWindowsPath('/tmp/fake/project/root/no-dot-prefix/$1')
-        )
-      }
+          maybeWindowsPath('/tmp/fake/project/root/no-dot-prefix/$1'),
+        ),
+      },
     ])
 
     expect(
-      parseTsAliases('/tmp/fake/project/root', { '@/components/*': ['./at/components/*'] })
+      parseTsAliases('/tmp/fake/project/root', { '@/components/*': ['./at/components/*'] }),
     ).toStrictEqual([
       {
         find: /^@\/components\/(?!\.{1,2}\/)([^*]+)$/,
         replacement: expect.stringMatching(
-          maybeWindowsPath('/tmp/fake/project/root/at/components/$1')
-        )
-      }
+          maybeWindowsPath('/tmp/fake/project/root/at/components/$1'),
+        ),
+      },
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { 'top/*': ['./top/*'] })).toStrictEqual([
       {
         find: /^top\/(?!\.{1,2}\/)([^*]+)$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/top/$1'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/top/$1')),
+      },
     ])
 
     expect(parseTsAliases('/tmp/fake/project/root', { '@src': ['./src'] })).toStrictEqual([
       {
         find: /^@src$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src')),
+      },
     ])
 
     // https://github.com/qmhc/vite-plugin-dts/issues/330
     expect(parseTsAliases('/tmp/fake/project/root', { '*': ['./src/*'] })).toStrictEqual([
       {
         find: /^(?!\.{1,2}\/)([^*]+)$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src/$1'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/src/$1')),
+      },
     ])
 
     // https://github.com/qmhc/vite-plugin-dts/issues/290#issuecomment-1872495764
     expect(parseTsAliases('/tmp/fake/project/root', { '#*': ['./hashed/*'] })).toStrictEqual([
       {
         find: /^#(?!\.{1,2}\/)([^*]+)$/,
-        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/hashed/$1'))
-      }
+        replacement: expect.stringMatching(maybeWindowsPath('/tmp/fake/project/root/hashed/$1')),
+      },
     ])
   })
 
