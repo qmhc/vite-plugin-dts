@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { defineConfig } from '@rspack/cli'
+import { VueLoaderPlugin } from 'vue-loader'
 import dts from '../../packages/unplugin-dts/dist/rspack.mjs'
 
 const rootDir = resolve(fileURLToPath(import.meta.url), '..')
@@ -19,14 +20,23 @@ export default defineConfig({
     library: 'Test',
   },
   resolve: {
-    extensions: ['.ts', '.js', '.json'],
+    extensions: ['.ts', '.js', '.json', '.vue'],
     alias: {
-      '@': resolve(rootDir, 'src'),
+      '@': rootDir,
+      '@components': resolve(rootDir, 'src/components'),
     },
   },
   module: {
     rules: [
       {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          experimentalInlineMatchResource: true,
+        },
+      },
+      {
+        enforce: 'post',
         test: /\.js$/,
         use: [
           {
@@ -42,6 +52,7 @@ export default defineConfig({
         ],
       },
       {
+        enforce: 'post',
         test: /\.ts$/,
         use: [
           {
@@ -68,11 +79,12 @@ export default defineConfig({
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // insertTypesEntry: true,
-      // rollupTypes: true,
+      rollupTypes: true,
       // declarationOnly: true,
       compilerOptions: {
         declarationMap: true,
       },
     }),
+    new VueLoaderPlugin(),
   ],
 })

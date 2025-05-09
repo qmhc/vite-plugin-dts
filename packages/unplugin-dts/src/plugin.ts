@@ -37,7 +37,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
     pathsToAliases = true,
     aliasesExclude = [],
     rollupOptions = {},
-    copyDtsFiles = false,
+    copyDtsFiles = meta.framework !== 'vite',
     declarationOnly = false,
     strictOutput = true,
     afterDiagnostic,

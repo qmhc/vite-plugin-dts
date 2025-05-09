@@ -1,13 +1,9 @@
 import { resolve } from 'node:path'
-import { existsSync, readdirSync, rmSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
+import vue from 'unplugin-vue/vite'
+import vueJsx from 'unplugin-vue-jsx/vite'
 import dts from '../../packages/unplugin-dts/src/vite'
-
-emptyDir(resolve(__dirname, 'dist'))
-emptyDir(resolve(__dirname, 'types'))
 
 export default defineConfig({
   resolve: {
@@ -47,8 +43,8 @@ export default defineConfig({
       // include: ['src/index.ts'],
       exclude: ['src/ignore'],
       // staticImport: true,
-      // rollupTypes: true,
-      // insertTypesEntry: true,
+      insertTypesEntry: true,
+      rollupTypes: true,
       compilerOptions: {
         declarationMap: true,
       },
@@ -63,13 +59,3 @@ export default defineConfig({
     vueJsx(),
   ],
 })
-
-function emptyDir(dir: string) {
-  if (!existsSync(dir)) {
-    return
-  }
-
-  for (const file of readdirSync(dir)) {
-    rmSync(resolve(dir, file), { recursive: true, force: true })
-  }
-}
