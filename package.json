@@ -9,6 +9,13 @@
     "build": "tsx scripts/build.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
     "dev": "unbuild --stub",
+    "demo:react": "pnpm -C examples/react build",
+    "demo:svelte": "pnpm -C examples/svelte build",
+    "demo:ts": "pnpm -C examples/ts build",
+    "demo:ts-esbuild": "pnpm -C examples/ts-esbuild build",
+    "demo:ts-rspack": "pnpm -C examples/ts-rspack build",
+    "demo:ts-webpack": "pnpm -C examples/ts-webpack build",
+    "demo:vue": "pnpm -C examples/vue build",
     "lint": "eslint --cache \"**/*.{js,cjs,mjs,ts,tsx,vue}\"",
     "precommit": "lint-staged -c ./.husky/.lintstagedrc -q --allow-empty",
     "prepare": "husky",
@@ -17,13 +24,7 @@
     "postpublish": "pinst --enable",
     "publish:ci": "tsx scripts/publish.ts",
     "release": "tsx scripts/release.ts",
-    "test": "pnpm -r run test",
-    "test:react": "pnpm -C examples/react build",
-    "test:svelte": "pnpm -C examples/svelte build",
-    "test:ts": "pnpm -C examples/ts build",
-    "test:ts-rspack": "pnpm -C examples/ts-rspack build",
-    "test:ts-webpack": "pnpm -C examples/ts-webpack build",
-    "test:vue": "pnpm -C examples/vue build"
+    "test": "pnpm -r run test"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",

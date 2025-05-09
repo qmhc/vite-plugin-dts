@@ -1,6 +1,6 @@
 import { relative } from 'node:path'
 
-import type { Resolver } from '../types'
+import type { Resolver } from './types'
 
 const jsonRE = /\.json$/
 

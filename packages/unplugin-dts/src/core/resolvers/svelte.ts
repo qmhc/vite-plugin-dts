@@ -3,7 +3,7 @@ import { relative } from 'node:path'
 import { compare } from 'compare-versions'
 import { tryGetPackageInfo } from '../utils'
 
-import type { Resolver } from '../types'
+import type { Resolver } from './types'
 
 const svelteRE = /\.svelte$/
 

@@ -2,8 +2,8 @@ import { basename } from 'node:path'
 
 import ts from 'typescript'
 import { cyan, green, yellow } from 'kolorist'
-import { createRuntimeContext, emitOutput, transform } from './core'
 import {
+  Runtime,
   defaultIndex,
   dtsRE,
   ensureAbsolute,
@@ -16,17 +16,17 @@ import {
   resolve,
   tjsRE,
   unwrapPromise,
-} from './core/utils'
+} from './core'
 
 import type { RolldownPlugin, RollupPlugin, RspackCompiler, UnpluginFactory, WebpackCompiler } from 'unplugin'
 import type { Alias } from 'vite'
 import type { PluginOptions } from './types'
-import type { Logger, RuntimeContext } from './core/types'
+import type { Logger } from './core'
 
 const pluginName = 'unplugin:dts'
 const logPrefix = cyan(`[${pluginName}]`)
 
-export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__PURE__ */ (options = {}) => {
+export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__PURE__ */ (options = {}, meta) => {
   const {
     tsconfigPath,
     staticImport = false,
@@ -67,7 +67,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
 
   let entryPromise: Promise<any> | undefined
 
-  let runtime: RuntimeContext
+  let runtime: Runtime
 
   function prepareFromCompiler(compiler: WebpackCompiler | RspackCompiler) {
     root = ensureAbsolute(options.root ?? '', compiler.context)
@@ -190,7 +190,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         alias.replacement = resolve(alias.replacement)
       }
 
-      runtime = await createRuntimeContext({
+      runtime = new Runtime({
         root,
         outDirs: options.outDirs ?? outDirs,
         entryRoot,
@@ -205,11 +205,16 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         libName,
         indexName,
         logger,
-        afterDiagnostic,
       })
 
-      for (const file of runtime.rootNames) {
-        this.addWatchFile(file)
+      if (typeof afterDiagnostic === 'function') {
+        await unwrapPromise(afterDiagnostic(runtime.getDiagnostics()))
+      }
+
+      if (meta.framework !== 'esbuild') {
+        for (const file of runtime.getRootFiles()) {
+          this.addWatchFile(file)
+        }
       }
 
       handleDebug('create ts program')
@@ -223,7 +228,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
 
         const startTime = Date.now()
 
-        await transform(runtime, id, code)
+        await runtime.transform(id, code)
 
         timeRecord += Date.now() - startTime
       },
@@ -235,31 +240,31 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         isDev ||
         !runtime ||
         !runtime.filter(id) ||
-        (!runtime.resolvers.find(r => r.supports(id)) && !tjsRE.test(id))
+        (!runtime.matchResolver(id) && !tjsRE.test(id))
       ) {
         return
       }
 
       id = id.split('?')[0]
-      const sourceFile = runtime.host.getSourceFile(id, ts.ScriptTarget.ESNext)
+      const sourceFile = runtime.getHost().getSourceFile(id, ts.ScriptTarget.ESNext)
 
       if (sourceFile) {
-        for (const file of runtime.rootNames) {
-          runtime.rootFiles.add(file)
+        for (const file of runtime.getRootFiles()) {
+          runtime.addRootFile(file)
         }
 
-        runtime.rootFiles.add(normalizePath(sourceFile.fileName))
+        runtime.addRootFile(normalizePath(sourceFile.fileName))
 
         bundled = false
         timeRecord = 0
         // We lose the fast way to trigger source file re-emit in Volar 1,
         // so now we have to rebuild the program to get the latest declaration
         // files of those changed files.
-        runtime.program = runtime.rebuildProgram()
+        runtime.rebuildProgram()
       }
     },
     async writeBundle() {
-      runtime.transformedFiles.clear()
+      runtime.clearTransformedFiles()
 
       if (isDev || !runtime || bundled) return
 
@@ -269,7 +274,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
 
       const startTime = Date.now()
 
-      const emittedFiles = await emitOutput(runtime, {
+      const emittedFiles = await runtime.emitOutput({
         strictOutput,
         copyDtsFiles,
         cleanVueFileName,

@@ -1,6 +1,6 @@
 import { base64VLQEncode } from '../utils'
 
-import type { Resolver } from '../types'
+import type { Resolver } from './types'
 
 interface SourceMap {
   sources: string[],

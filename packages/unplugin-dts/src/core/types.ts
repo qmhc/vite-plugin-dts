@@ -1,13 +1,11 @@
 import type ts from 'typescript'
-import type { Alias } from 'vite'
 import type {
   ExtractorResult,
   IExtractorConfigPrepareOptions,
   IExtractorInvokeOptions,
 } from '@microsoft/api-extractor'
-import type { createFilter } from '@rollup/pluginutils'
-
-export type MaybePromise<T> = T | Promise<T>
+import type { MaybePromise } from './utils'
+import type { Resolver } from './resolvers'
 
 export interface Logger {
   info: (msg: string) => void,
@@ -19,32 +17,6 @@ export type RollupConfig = Omit<
   IExtractorConfigPrepareOptions['configObject'],
   'projectFolder' | 'mainEntryPointFilePath' | 'compiler' | 'dtsRollup'
 >
-
-export interface Resolver {
-  /**
-   * The name of the resolver
-   *
-   * The later resolver with the same name will overwrite the earlier
-   */
-  name: string,
-  /**
-   * Determine whether the resolver supports the file
-   */
-  supports: (id: string) => void | boolean,
-  /**
-   * Transform source to declaration files
-   *
-   * Note that the path of the returns should base on `outDir`, or relative path to `root`
-   */
-  transform: (payload: {
-    id: string,
-    code: string,
-    root: string,
-    outDir: string,
-    host: ts.CompilerHost,
-    program: ts.Program
-  }) => MaybePromise<{ path: string, content: string }[]>
-}
 
 export type AliasOptions = {
   find: string | RegExp,
@@ -124,15 +96,7 @@ export interface CreateRuntimeOptions {
   entries?: Record<string, string>,
   libName?: string,
   indexName?: string,
-  logger?: Logger,
-  /**
-   * Hook called after diagnostic is emitted.
-   *
-   * According to the `diagnostics.length`, you can judge whether there is any type error.
-   *
-   * @default () => {}
-   */
-  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>
+  logger?: Logger
 }
 
 export interface EmitOptions {
@@ -239,32 +203,4 @@ export interface EmitOptions {
    * @default () => {}
    */
   afterRollup?: (result: ExtractorResult) => MaybePromise<void>
-}
-
-export interface RuntimeContext {
-  root: string,
-  publicRoot: string,
-  entryRoot: string,
-  configPath: string | undefined,
-  compilerOptions: ts.CompilerOptions,
-  rawCompilerOptions: ts.CompilerOptions,
-  outDirs: string[],
-  entries: Record<string, string>,
-  include: string[],
-  exclude: string[],
-  aliases: Alias[],
-  aliasesExclude: (string | RegExp)[],
-  libName: string,
-  indexName: string,
-  logger: Logger,
-  host: ts.CompilerHost,
-  program: ts.Program,
-  filter: ReturnType<typeof createFilter>,
-  rootNames: string[],
-  rebuildProgram: () => ts.Program,
-
-  readonly resolvers: Resolver[],
-  readonly rootFiles: Set<string>,
-  readonly outputFiles: Map<string, string>,
-  readonly transformedFiles: Set<string>
 }

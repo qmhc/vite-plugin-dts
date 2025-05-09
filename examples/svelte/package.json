@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"dts-debug\" pnpm run clean && vite build",
+    "build": "pnpm run clean && DEBUG=\"dts-debug\" vite build",
     "clean": "rimraf dist && rimraf types"
   },
   "devDependencies": {

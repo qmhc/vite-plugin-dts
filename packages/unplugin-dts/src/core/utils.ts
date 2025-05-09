@@ -17,6 +17,8 @@ import { getPackageInfoSync, resolveModule } from 'local-pkg'
 import type { CompilerOptions } from 'typescript'
 import type { Alias } from 'vite'
 
+export type MaybePromise<T> = T | Promise<T>
+
 export const handleDebug = debug('dts-debug')
 
 export const defaultIndex = 'index.d.ts'

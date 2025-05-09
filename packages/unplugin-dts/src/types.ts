@@ -1,11 +1,12 @@
-import type { LogLevel } from 'vite'
+import type ts from 'typescript'
+
 import type {
   CreateRuntimeOptions,
   EmitOptions,
   MaybePromise,
   Resolver,
   RollupConfig,
-} from './core/types'
+} from './core'
 
 export type { Resolver, RollupConfig }
 
@@ -24,11 +25,13 @@ export interface PluginOptions
    */
   declarationOnly?: boolean,
   /**
-   * Logging level for this plugin.
+   * Hook called after diagnostic is emitted.
    *
-   * Defaults to the 'logLevel' property of your Vite config.
+   * According to the `diagnostics.length`, you can judge whether there is any type error.
+   *
+   * @default () => {}
    */
-  logLevel?: LogLevel,
+  afterDiagnostic?: (diagnostics: readonly ts.Diagnostic[]) => MaybePromise<void>,
   /**
    * Hook called after all declaration files are written.
    *

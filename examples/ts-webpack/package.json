@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "DEBUG=\"dts-debug\" pnpm run clean && webpack --config webpack.config.ts",
+    "build": "pnpm run clean && DEBUG=\"dts-debug\" webpack --config webpack.config.ts",
     "clean": "rimraf dist && rimraf types"
   },
   "types": "dist/ts-test.d.ts",

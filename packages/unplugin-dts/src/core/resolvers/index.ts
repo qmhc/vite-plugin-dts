@@ -1,4 +1,4 @@
-import type { Resolver } from '../types'
+import type { Resolver } from './types'
 
 export * from './json'
 export * from './svelte'
@@ -13,3 +13,5 @@ export function parseResolvers(resolvers: Resolver[]) {
 
   return Array.from(nameMap.values())
 }
+
+export type { Resolver }
