@@ -370,14 +370,22 @@ export class Runtime {
       const sourceFile = this.program.getSourceFile(id)
   
       if (sourceFile) {
-        this.program.emit(
+        const { emitSkipped, diagnostics } = this.program.emit(
           sourceFile,
           (name, text) => {
             outputFiles.set(resolve(publicRoot, relative(outDir, ensureAbsolute(name, outDir))), text)
           },
           undefined,
           true,
+          undefined,
+          // @ts-expect-error
+          true,
         )
+
+        if (emitSkipped && diagnostics.length > 0) {
+          this.logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, this.host))
+          this.diagnostics.push(...diagnostics)
+        }
       }
     }
   

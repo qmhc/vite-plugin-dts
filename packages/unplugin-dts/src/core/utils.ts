@@ -27,12 +27,12 @@ export function noop(): any
 export function noop(..._args: any[]): any
 export function noop() {}
 
-export const jsRE = /\.(m|c)?jsx?$/
-export const tsRE = /\.(m|c)?tsx?$/
-export const dtsRE = /\.d\.(m|c)?tsx?$/
-export const tjsRE = /\.(m|c)?(t|j)sx?$/
-export const mtjsRE = /\.m(t|j)sx?$/
-export const ctjsRE = /\.c(t|j)sx?$/
+export const jsRE = /\.([cm])?jsx?$/
+export const tsRE = /\.([cm])?tsx?$/
+export const dtsRE = /\.d\.([cm])?tsx?$/
+export const tjsRE = /\.([cm])?([jt])sx?$/
+export const mtjsRE = /\.m([jt])sx?$/
+export const ctjsRE = /\.c([jt])sx?$/
 export const fullRelativeRE = /^\.\.?\//
 
 export function getJsExtPrefix(file: string) {

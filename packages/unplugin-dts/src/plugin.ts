@@ -207,10 +207,6 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         logger,
       })
 
-      if (typeof afterDiagnostic === 'function') {
-        await unwrapPromise(afterDiagnostic(runtime.getDiagnostics()))
-      }
-
       if (meta.framework !== 'esbuild') {
         for (const file of runtime.getRootFiles()) {
           this.addWatchFile(file)
@@ -221,6 +217,12 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
       timeRecord += Date.now() - startTime
     },
     transform: {
+      filter: {
+        id: {
+          include: [tjsRE, /\.vue$/, /\.svelte$/, /\.json$/],
+          exclude: /[\\/]node_modules[\\/]/,
+        },
+      },
       async handler(code, id) {
         id = normalizePath(id).split('?')[0]
 
@@ -273,6 +275,10 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
       logger.info(green(`\n${logPrefix} Start generate declaration files...`))
 
       const startTime = Date.now()
+
+      if (typeof afterDiagnostic === 'function') {
+        await unwrapPromise(afterDiagnostic(runtime.getDiagnostics()))
+      }
 
       const emittedFiles = await runtime.emitOutput({
         strictOutput,

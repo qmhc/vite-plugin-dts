@@ -20,11 +20,6 @@ export default defineConfig({
       exports: 'named',
       format: 'esm',
     },
-    {
-      dir: 'dist',
-      exports: 'named',
-      format: 'cjs',
-    },
   ],
   plugins: [
     dts({
