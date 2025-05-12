@@ -44,8 +44,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(prettier@3.5.3)
       '@vexip-ui/scripts':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       '@vue/eslint-config-standard':
         specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-vue@9.24.0(eslint@8.57.1))(eslint@8.57.1)
@@ -299,12 +299,6 @@ importers:
       typescript:
         specifier: 5.7.3
         version: 5.7.3
-      unplugin-vue:
-        specifier: ^6.2.0
-        version: 6.2.0(@types/node@22.15.3)(jiti@2.4.2)(terser@5.39.0)(tsx@4.19.3)(vue@3.5.13(typescript@5.7.3))(yaml@2.7.0)
-      unplugin-vue-jsx:
-        specifier: ^0.6.1
-        version: 0.6.1(vue@3.5.13(typescript@5.7.3))
       vue-loader:
         specifier: ^17.4.2
         version: 17.4.2(vue@3.5.13(typescript@5.7.3))(webpack@5.99.7)
@@ -1955,12 +1949,12 @@ packages:
     peerDependencies:
       prettier: '>=3.0.0'
 
-  '@vexip-ui/scripts@1.2.0':
-    resolution: {integrity: sha512-rDLSZHbefqi7dzvUpVBtsfVZzTX2hOb5JbG5Yf7ECDv6jMn0AlYvIiGROmsDAfFLJUAdu4NG+3wZ2lFKdHAIPQ==}
+  '@vexip-ui/scripts@1.3.0':
+    resolution: {integrity: sha512-qOvHwlpOIdsuF8HaxkMT1vI2CJylQQyvK444Wl2dLYnuEjayc1BBxR5a3MlA9+XnkElHzlP+TO9JoDGylPNyAg==}
     hasBin: true
 
-  '@vexip-ui/utils@2.16.1':
-    resolution: {integrity: sha512-P0xHHu7j1fXS+DLkVp6ipJNAM2QonymVsBUQai1Ym7/JPyZgHMeEOCMzAfJWwv/qLDfRk5XXJXDjRQDz/qlF7A==}
+  '@vexip-ui/utils@2.16.2':
+    resolution: {integrity: sha512-RjvxDqjJxNS8rZLL4ROd8iF34LIk88YD7soNaaVVRQM7FpiBC/amRm9whLF5D3IF0260GYVbRy+FkJZzYbt6BQ==}
 
   '@vitejs/plugin-react@4.3.4':
     resolution: {integrity: sha512-SCCPBJtYLdE8PX/7ZQAs1QAZ8Jqwih+0VBLum1EGqmCCQal+MIUqLCzj3ZUy8ufbC0cAM4LRlSTm7IQJwWT4ug==}
@@ -7529,6 +7523,10 @@ snapshots:
 
   '@ungap/structured-clone@1.2.1': {}
 
+  '@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.7.3))':
+    dependencies:
+      valibot: 1.0.0(typescript@5.7.3)
+
   '@valibot/to-json-schema@1.0.0(valibot@1.0.0(typescript@5.8.3))':
     dependencies:
       valibot: 1.0.0(typescript@5.8.3)
@@ -7570,9 +7568,9 @@ snapshots:
       prettier: 3.5.3
       prettier-plugin-packagejson: 2.5.1(prettier@3.5.3)
 
-  '@vexip-ui/scripts@1.2.0':
+  '@vexip-ui/scripts@1.3.0':
     dependencies:
-      '@vexip-ui/utils': 2.16.1
+      '@vexip-ui/utils': 2.16.2
       compare-versions: 6.1.1
       execa: 9.5.2
       kolorist: 1.8.0
@@ -7581,7 +7579,7 @@ snapshots:
       semver: 7.7.1
       yargs: 17.7.2
 
-  '@vexip-ui/utils@2.16.1': {}
+  '@vexip-ui/utils@2.16.2': {}
 
   '@vitejs/plugin-react@4.3.4(vite@6.0.7(@types/node@22.15.3)(jiti@2.4.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.0))':
     dependencies:
@@ -11034,7 +11032,7 @@ snapshots:
   rolldown@1.0.0-beta.8(typescript@5.7.3):
     dependencies:
       '@oxc-project/types': 0.65.0
-      '@valibot/to-json-schema': 1.0.0(valibot@1.0.0(typescript@5.8.3))
+      '@valibot/to-json-schema': 1.0.0(valibot@1.0.0(typescript@5.7.3))
       ansis: 3.17.0
       valibot: 1.0.0(typescript@5.7.3)
     optionalDependencies:

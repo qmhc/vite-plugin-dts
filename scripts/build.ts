@@ -1,21 +1,22 @@
 import { resolve } from 'node:path'
-import { readdir, readFile, writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
-import { execa } from 'execa'
+import { readFile, readdir, writeFile } from 'node:fs/promises'
 
-const root = resolve(fileURLToPath(import.meta.url), '../..')
-const bin = (name: string) => resolve(root, 'node_modules/.bin/' + name)
+import { execa } from 'execa'
+import { logger } from '@vexip-ui/scripts'
+import { pkgsDir, rootDir } from './constant'
+
+const bin = (name: string) => resolve(rootDir, 'node_modules/.bin/' + name)
 
 async function main() {
-  const packages = await readdir(resolve(root, 'packages'))
+  const packages = await readdir(pkgsDir)
 
   for (const pkgName of packages) {
-    const pkgRoot = resolve(root, 'packages', pkgName)
+    const pkgRoot = resolve(pkgsDir, pkgName)
 
     await execa(
       bin('unbuild'),
       [],
-      { cwd: pkgRoot, stdio: 'inherit' }
+      { cwd: pkgRoot, stdio: 'inherit' },
     )
   
     await patchCommomJs(resolve(pkgRoot, 'dist/index.cjs'))
@@ -26,14 +27,14 @@ async function main() {
 async function patchCommomJs(indexPath: string) {
   let indexCodes = await readFile(indexPath, 'utf-8')
 
-  const moduleExportsLine = `module.exports = __toCommonJS(src_exports);`
+  const moduleExportsLine = 'module.exports = __toCommonJS(src_exports);'
 
   if (indexCodes.includes(moduleExportsLine)) {
     const name = 'dtsPlugin'
 
     indexCodes = indexCodes.replace(
       moduleExportsLine,
-      `module.exports = ${name};\n${name}['default'] = ${name};`
+      `module.exports = ${name};\n${name}['default'] = ${name};`,
     )
 
     await writeFile(indexPath, indexCodes)
@@ -57,6 +58,6 @@ async function patchESModule(indexPath: string) {
 }
 
 main().catch(error => {
-  console.error(error)
+  logger.error(error)
   process.exit(1)
 })
