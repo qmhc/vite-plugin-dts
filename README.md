@@ -21,7 +21,7 @@
 pnpm i -D unplugin-dts
 ```
 
-Only for vite (do not recommend):
+Previous only for vite (do not recommend):
 
 ```sh
 pnpm i -D vite-plugin-dts
@@ -138,7 +138,7 @@ export default {
 <details>
   <summary>Rspack</summary>
 
-In `rspack.config.js`:
+In `rspack.config.mjs`:
 
 ```ts
 import { resolve } from 'node:path'
@@ -570,12 +570,12 @@ Thanks for all the contributions!
 Clone and run the following script (see demo series scripts in root `package.json`):
 
 ```sh
-pnpm run demo:ts
-pnpm run demo:react
-pnpm run demo:vue
+pnpm run demo:ts-rollup
+pnpm run demo:react-vite
+pnpm run demo:vue-rspack
 ```
 
-Then check `examples/ts/types`.
+Then check `examples/*/types`.
 
 There are also many cases under `examples`.
 

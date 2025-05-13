@@ -1,7 +1,7 @@
 <h1 align="center">unplugin-dts</h1>
 
 <p align="center">
-  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplugin 插件。
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplug在 插件。
 </p>
 
 <p align="center">
@@ -18,17 +18,26 @@
 ## 安装
 
 ```sh
-pnpm i vite-plugin-dts -D
+pnpm i -D unplugin-dts
+```
+
+过往只在 Vite 中使用（不再推荐）：
+
+```sh
+pnpm i -D vite-plugin-dts
 ```
 
 ## 使用
 
-在 `vite.config.ts`：
+<details>
+  <summary>Vite</summary>
+
+在 `vite.config.ts` 中：
 
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
+import dts from 'unplugin-dts/vite'
 
 export default defineConfig({
   build: {
@@ -36,20 +45,189 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'MyLib',
       formats: ['es'],
-      fileName: 'my-lib'
+      fileName: 'my-lib',
     }
   },
-  plugins: [dts()]
+  plugins: [dts()],
 })
 ```
 
+</details>
+<details>
+  <summary>Rollup</summary>
+
+在 `rollup.config.mjs` 中：
+
+```ts
+import { defineConfig } from 'rollup'
+import typescript from '@rollup/plugin-typescript'
+import dts from 'unplugin-dts/rollup'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [typescript(), dts()],
+})
+```
+
+</details>
+<details>
+  <summary>Rolldown</summary>
+
+在 `rolldown.config.mjs` 中：
+
+```ts
+import { defineConfig } from 'rolldown'
+import dts from 'unplugin-dts/rolldown'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Webpack</summary>
+
+在 `webpack.config.js` 中：
+
+```ts
+import { resolve } from 'node:path'
+import dts from 'unplugin-dts/webpack'
+
+export default {
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  plugins: [dts()],
+}
+```
+
+</details>
+<details>
+  <summary>Rspack</summary>
+
+在 `rspack.config.mjs` 中：
+
+```ts
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from '@rspack/cli'
+import dts from 'unplugin-dts/rspack'
+
+const rootDir = resolve(fileURLToPath(import.meta.url), '..')
+
+export default defineConfig({
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(rootDir, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'ecmascript',
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        test: /\.ts$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'typescript',
+                  decorators: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Esbuild</summary>
+
+在你的构建脚本中：
+
+```ts
+import { build } from 'esbuild'
+import dts from 'unplugin-dts/esbuild'
+
+await build({
+  entryPoints: ['src/index.ts'],
+  format: 'esm',
+  outdir: 'dist',
+  bundle: true,
+  plugins: [dts()],
+})
+```
+
+</details>
+
+<br />
 默认情况，生成的类型文件会跟随源文件的结构。
 
-如果你希望将所有的类型合并到一个文件中，只需指定 `rollupTypes: true`：
+如果你希望将所有的类型合并到一个文件中，只需安装 `@microsoft/api-extractor` 并指定 `rollupTypes: true`：
+
+```sh
+pnpm i -D @microsoft/api-extractor
+```
 
 ```ts
 {
-  plugins: [dts({ rollupTypes: true })]
+  plugins: [dts({ bundleTypes: true })]
 }
 ```
 
@@ -60,8 +238,6 @@ export default defineConfig({
   plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
 }
 ```
-
-从 `3.0.0` 开始，你可以在 Rollup 中使用该插件。
 
 ## 常见问题
 

@@ -1,11 +1,9 @@
-import HelloWorld from './components/HelloWorld'
+import { HelloWorld } from './components/HelloWorld'
 
-function App() {
+export function App() {
   return (
     <div className={'App'}>
       <HelloWorld count={3}></HelloWorld>
     </div>
   )
 }
-
-export default App

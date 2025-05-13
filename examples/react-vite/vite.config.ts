@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { existsSync, readdirSync, rmSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import react from '@vitejs/plugin-react'
 import dts from '../../packages/unplugin-dts/src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
@@ -16,18 +16,21 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: [resolve(__dirname, 'src/main.ts')],
+      entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
       name: 'Test',
       formats: ['es'],
     },
   },
   plugins: [
-    svelte(),
+    react(),
     // @ts-ignore
     dts({
       outDirs: ['dist', 'types'],
+      // include: ['src/index.ts'],
+      exclude: ['src/ignore'],
+      // aliasesExclude: [/^@components/],
       staticImport: true,
-      rollupTypes: true,
+      // bundleTypes: true,
       insertTypesEntry: true,
     }),
   ],

@@ -4,7 +4,7 @@ interface Props {
   count?: number
 }
 
-function HelloWorld(props: Props) {
+export function HelloWorld(props: Props) {
   const [count, setCount] = useCount(props.count)
 
   return (
@@ -15,5 +15,3 @@ function HelloWorld(props: Props) {
     </div>
   )
 }
-
-export default HelloWorld

@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import { existsSync, readdirSync, rmSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import dts from '../../packages/unplugin-dts/src/vite'
 
 emptyDir(resolve(__dirname, 'dist'))
@@ -17,12 +16,11 @@ export default defineConfig({
   build: {
     lib: {
       entry: [resolve(__dirname, 'src/index.ts'), resolve(__dirname, 'src/main.ts')],
-      name: 'Test',
+      name: 'ts-test',
       formats: ['es'],
     },
   },
   plugins: [
-    react(),
     // @ts-ignore
     dts({
       outDirs: ['dist', 'types'],
@@ -30,8 +28,12 @@ export default defineConfig({
       exclude: ['src/ignore'],
       // aliasesExclude: [/^@components/],
       staticImport: true,
-      // rollupTypes: true,
-      insertTypesEntry: true,
+      // insertTypesEntry: true,
+      bundleTypes: true,
+      // declarationOnly: true,
+      compilerOptions: {
+        declarationMap: true,
+      },
     }),
   ],
 })
