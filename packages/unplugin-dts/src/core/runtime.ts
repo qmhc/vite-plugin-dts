@@ -362,8 +362,26 @@ export class Runtime {
         host: this.host,
         program: this.program,
       })
+
+      let outputs: {
+        path: string,
+        content: string
+      }[]
+
+      if (Array.isArray(result)) {
+        outputs = result
+      } else {
+        const { emitSkipped, diagnostics = [] } = result
+
+        if (emitSkipped && diagnostics.length > 0) {
+          this.logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, this.host))
+          this.diagnostics.push(...diagnostics)
+        }
+
+        outputs = result.outputs
+      }
   
-      for (const { path, content } of result) {
+      for (const { path, content } of outputs) {
         outputFiles.set(resolve(publicRoot, relative(outDir, ensureAbsolute(path, outDir))), content)
       }
     } else {
@@ -423,14 +441,18 @@ export class Runtime {
       staticImport = false,
       clearPureImport = true,
       insertTypesEntry = false,
-      rollupTypes = false,
-      rollupOptions = {},
+      bundleTypes = false,
+      // bundleOptions = {},
+      // bundleConfig,
       beforeWriteFile,
       afterRollup,
     } = options
   
-    const rollupConfig = { ...(options.rollupConfig || {}) }
-    rollupConfig.bundledPackages = rollupConfig.bundledPackages || options.bundledPackages || []
+    const {
+      extractorConfig,
+      bundledPackages,
+      invokeOptions,
+    } = isNativeObj(bundleTypes) ? bundleTypes : {}
   
     const cleanPath = (path: string, emittedFiles: Map<string, string>) => {
       const newPath = path.replace('.vue.d.ts', '.d.ts')
@@ -570,7 +592,7 @@ export class Runtime {
   
     handleDebug('write output')
   
-    if (insertTypesEntry || rollupTypes) {
+    if (insertTypesEntry || bundleTypes) {
       const pkgPath = tryGetPkgPath(root)
   
       let pkg: any
@@ -629,7 +651,7 @@ export class Runtime {
   
       handleDebug('insert index')
   
-      if (rollupTypes) {
+      if (bundleTypes) {
         logger.info(green(`${logPrefix} Start rollup declaration files...`))
   
         const rollupFiles = new Set<string>()
@@ -646,8 +668,9 @@ export class Runtime {
             entryPath: path,
             fileName: basename(path),
             libFolder: getTsLibFolder(),
-            rollupConfig,
-            rollupOptions,
+            extractorConfig,
+            bundledPackages,
+            invokeOptions,
           })
   
           emittedFiles.delete(path)

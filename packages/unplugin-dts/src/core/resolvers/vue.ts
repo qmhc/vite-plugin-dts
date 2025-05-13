@@ -23,11 +23,11 @@ export function VueResolver(): Resolver {
         program.getSourceFile(id + '.tsx') ||
         program.getSourceFile(id + '.jsx')
 
-      if (!sourceFile) return []
+      if (!sourceFile) return { outputs: [] }
 
       const outputs: { path: string, content: string }[] = []
 
-      program.emit(
+      const { emitSkipped, diagnostics } = program.emit(
         sourceFile,
         (path, content) => {
           outputs.push({ path, content })
@@ -36,7 +36,9 @@ export function VueResolver(): Resolver {
         true,
       )
 
-      if (!program.getCompilerOptions().declarationMap) return outputs
+      if (!program.getCompilerOptions().declarationMap) {
+        return { outputs, emitSkipped, diagnostics }
+      }
 
       const [beforeScript] = code.split(/\s*<script.*>/)
       const beforeLines = beforeScript.split('\n').length
@@ -61,7 +63,7 @@ export function VueResolver(): Resolver {
         }
       }
 
-      return outputs
+      return { outputs, emitSkipped, diagnostics }
     },
   }
 }

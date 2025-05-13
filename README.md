@@ -1,7 +1,7 @@
-<h1 align="center">vite-plugin-dts</h1>
+<h1 align="center">unplugin-dts</h1>
 
 <p align="center">
-  A Vite plugin that generates declaration files (<code>*.d.ts</code>) from <code>.ts(x)</code> or <code>.vue</code> source files when using Vite in <a href="https://vitejs.dev/guide/build.html#library-mode">library mode</a>.
+  An unplugin that generates declaration files (<code>*.d.ts</code>) from <code>.ts(x)</code> or <code>.vue</code> source files when using <a href="https://vitejs.dev/guide/build.html#library-mode">library mode</a>.
 </p>
 
 <p align="center">
@@ -15,20 +15,29 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-## Install
+## Installation
 
 ```sh
-pnpm i vite-plugin-dts -D
+pnpm i -D unplugin-dts
+```
+
+Only for vite (do not recommend):
+
+```sh
+pnpm i -D vite-plugin-dts
 ```
 
 ## Usage
+
+<details>
+  <summary>Vite</summary>
 
 In `vite.config.ts`:
 
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
+import dts from 'unplugin-dts/vite'
 
 export default defineConfig({
   build: {
@@ -36,20 +45,189 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'MyLib',
       formats: ['es'],
-      fileName: 'my-lib'
+      fileName: 'my-lib',
     }
   },
-  plugins: [dts()]
+  plugins: [dts()],
 })
 ```
 
+</details>
+<details>
+  <summary>Rollup</summary>
+
+In `rollup.config.mjs`:
+
+```ts
+import { defineConfig } from 'rollup'
+import typescript from '@rollup/plugin-typescript'
+import dts from 'unplugin-dts/rollup'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [typescript(), dts()],
+})
+```
+
+</details>
+<details>
+  <summary>Rolldown</summary>
+
+In `rolldown.config.mjs`:
+
+```ts
+import { defineConfig } from 'rolldown'
+import dts from 'unplugin-dts/rolldown'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Webpack</summary>
+
+In `webpack.config.js`:
+
+```ts
+import { resolve } from 'node:path'
+import dts from 'unplugin-dts/webpack'
+
+export default {
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  plugins: [dts()],
+}
+```
+
+</details>
+<details>
+  <summary>Rspack</summary>
+
+In `rspack.config.js`:
+
+```ts
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from '@rspack/cli'
+import dts from 'unplugin-dts/rspack'
+
+const rootDir = resolve(fileURLToPath(import.meta.url), '..')
+
+export default defineConfig({
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(rootDir, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'ecmascript',
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        test: /\.ts$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'typescript',
+                  decorators: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Esbuild</summary>
+
+In your build script:
+
+```ts
+import { build } from 'esbuild'
+import dts from 'unplugin-dts/esbuild'
+
+await build({
+  entryPoints: ['src/index.ts'],
+  format: 'esm',
+  outdir: 'dist',
+  bundle: true,
+  plugins: [dts()],
+})
+```
+
+</details>
+
+<br />
 By default, the generated declaration files are following the source structure.
 
-If you want to merge all declarations into one file, just specify `rollupTypes: true`:
+If you want to merge all declarations into one file, just install `@microsoft/api-extractor` and specify `bundleTypes: true`:
+
+```sh
+pnpm i -D @microsoft/api-extractor
+```
 
 ```ts
 {
-  plugins: [dts({ rollupTypes: true })]
+  plugins: [dts({ bundleTypes: true })]
 }
 ```
 
@@ -60,8 +238,6 @@ If you start with official Vite template, you should specify the `tsconfigPath`:
   plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
 }
 ```
-
-Starting with `3.0.0`, you can use this plugin with Rollup.
 
 ## FAQ
 
@@ -100,23 +276,6 @@ Due to some limitations, the plugin relies on the top-level `tsconfig.json` to r
 
 You can refer to this [comment](https://github.com/qmhc/vite-plugin-dts/issues/343#issuecomment-2198111439).
 
-<details>
-  <summary>Legacy</summary>
-
-### Missing some declaration files after build (before `1.7.0`)
-
-By default, the `skipDiagnostics` option is set to `true` which means type diagnostics will be skipped during the build process (some projects may have diagnostic tools such as `vue-tsc`). Files with type errors which interrupt the build process will not be emitted (declaration files won't be generated).
-
-If your project doesn't use type diagnostic tools, you can set `skipDiagnostics: false` and `logDiagnostics: true` to turn on diagnostic and logging features of this plugin. Type errors during build will be logged to the terminal.
-
-### Type error when using both `script` and `setup-script` in Vue component (before `3.0.0`)
-
-This is usually caused by using the `defineComponent` function in both `script` and `setup-script`. When `vue/compiler-sfc` compiles these files, the default export result from `script` gets merged with the parameter object of `defineComponent` from `setup-script`. This is incompatible with parameters and types returned from `defineComponent`. This results in a type error.
-
-Here is a simple [example](https://github.com/qmhc/vite-plugin-dts/blob/main/examples/vue/components/BothScripts.vue). You should remove the `defineComponent` in `script` and export a native object directly.
-
-</details>
-
 ## Options
 
 ```ts
@@ -132,7 +291,13 @@ export type RollupConfig = Omit<
   | 'mainEntryPointFilePath'
   | 'compiler'
   | 'dtsRollup'
+  | 'bundledPackages'
   >
+
+export interface ResolverTransformOutput {
+  path: string,
+  content: string
+}
 
 export interface Resolver {
   /**
@@ -157,7 +322,11 @@ export interface Resolver {
     outDir: string,
     host: ts.CompilerHost,
     program: ts.Program
-  }) => MaybePromise<{ path: string, content: string }[]>
+  }) => MaybePromise<ResolverTransformOutput[] | {
+    outputs: ResolverTransformOutput[],
+    emitSkipped?: boolean,
+    diagnostics?: readonly ts.Diagnostic[]
+  }>
 }
 
 export interface PluginOptions {
@@ -292,31 +461,29 @@ export interface PluginOptions {
    *
    * @default false
    */
-  rollupTypes?: boolean,
-
-  /**
-   * Bundled packages for `@microsoft/api-extractor`.
-   *
-   * @default []
-   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
-   */
-  bundledPackages?: string[],
-
-  /**
-   * Override the config of `@microsoft/api-extractor`.
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/configure_api_report/
-   */
-  rollupConfig?: RollupConfig,
-
-  /**
-   * Override the invoke options of `@microsoft/api-extractor`.
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
-   */
-  rollupOptions?: IExtractorInvokeOptions,
+  bundleTypes?: boolean | {
+    /**
+     * Override the config of `@microsoft/api-extractor`.
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/configure_api_report/
+     */
+    extractorConfig?: BundleConfig,
+    /**
+     * Bundled packages for `@microsoft/api-extractor`.
+     *
+     * @default []
+     * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+     */
+    bundledPackages?: string[],
+    /**
+     * Override the invoke options of `@microsoft/api-extractor`.
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+     */
+    invokeOptions?: IExtractorInvokeOptions
+  },
 
   /**
    * Whether to copy .d.ts source files to `outDir`.
@@ -400,15 +567,17 @@ Thanks for all the contributions!
 
 ## Example
 
-Clone and run the following script:
+Clone and run the following script (see demo series scripts in root `package.json`):
 
 ```sh
-pnpm run test:ts
+pnpm run demo:ts
+pnpm run demo:react
+pnpm run demo:vue
 ```
 
 Then check `examples/ts/types`.
 
-Also Vue and React cases under `examples`.
+There are also many cases under `examples`.
 
 A real project using this plugin: [Vexip UI](https://github.com/vexip-ui/vexip-ui).
 

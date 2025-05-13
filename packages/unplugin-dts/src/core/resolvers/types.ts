@@ -1,6 +1,11 @@
 import type ts from 'typescript'
 import type { MaybePromise } from '../utils'
 
+export interface ResolverTransformOutput {
+  path: string,
+  content: string
+}
+
 export interface Resolver {
   /**
    * The name of the resolver
@@ -24,5 +29,9 @@ export interface Resolver {
     outDir: string,
     host: ts.CompilerHost,
     program: ts.Program
-  }) => MaybePromise<{ path: string, content: string }[]>
+  }) => MaybePromise<ResolverTransformOutput[] | {
+    outputs: ResolverTransformOutput[],
+    emitSkipped?: boolean,
+    diagnostics?: readonly ts.Diagnostic[]
+  }>
 }

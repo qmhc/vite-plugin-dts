@@ -13,9 +13,9 @@ export interface Logger {
   error: (msg: string) => void
 }
 
-export type RollupConfig = Omit<
+export type BundleConfig = Omit<
   IExtractorConfigPrepareOptions['configObject'],
-  'projectFolder' | 'mainEntryPointFilePath' | 'compiler' | 'dtsRollup'
+  'projectFolder' | 'mainEntryPointFilePath' | 'compiler' | 'dtsRollup' | 'bundledPackages'
 >
 
 export type AliasOptions = {
@@ -93,6 +93,8 @@ export interface CreateRuntimeOptions {
    * @default []
    */
   aliasesExclude?: (string | RegExp)[],
+
+  // Should be internal for custom
   entries?: Record<string, string>,
   libName?: string,
   indexName?: string,
@@ -100,7 +102,6 @@ export interface CreateRuntimeOptions {
 }
 
 export interface EmitOptions {
-  logPrefix?: string,
   /**
    * Restrict declaration files output to `outDir`.
    *
@@ -155,28 +156,29 @@ export interface EmitOptions {
    *
    * @default false
    */
-  rollupTypes?: boolean,
-  /**
-   * Bundled packages for `@microsoft/api-extractor`.
-   *
-   * @default []
-   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
-   */
-  bundledPackages?: string[],
-  /**
-   * Override the config of `@microsoft/api-extractor`.
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/configure_api_report/
-   */
-  rollupConfig?: RollupConfig,
-  /**
-   * Override the invoke options of `@microsoft/api-extractor`.
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
-   */
-  rollupOptions?: IExtractorInvokeOptions,
+  bundleTypes?: boolean | {
+    /**
+     * Override the config of `@microsoft/api-extractor`.
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/configure_api_report/
+     */
+    extractorConfig?: BundleConfig,
+    /**
+     * Bundled packages for `@microsoft/api-extractor`.
+     *
+     * @default []
+     * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+     */
+    bundledPackages?: string[],
+    /**
+     * Override the invoke options of `@microsoft/api-extractor`.
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+     */
+    invokeOptions?: IExtractorInvokeOptions
+  },
   /**
    * Hook called prior to writing each declaration file.
    *
@@ -202,5 +204,8 @@ export interface EmitOptions {
    *
    * @default () => {}
    */
-  afterRollup?: (result: ExtractorResult) => MaybePromise<void>
+  afterRollup?: (result: ExtractorResult) => MaybePromise<void>,
+
+  // Should be internal for custom
+  logPrefix?: string
 }

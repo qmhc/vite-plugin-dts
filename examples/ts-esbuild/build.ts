@@ -17,7 +17,7 @@ const commonOptions: BuildOptions = {
       // aliasesExclude: [/^@components/],
       staticImport: true,
       // insertTypesEntry: true,
-      rollupTypes: true,
+      bundleTypes: true,
       // declarationOnly: true,
       compilerOptions: {
         declarationMap: true,

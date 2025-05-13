@@ -44,18 +44,20 @@ export default defineConfig({
       exclude: ['src/ignore'],
       // staticImport: true,
       insertTypesEntry: true,
-      rollupTypes: true,
+      // bundleTypes: true,
+      bundleTypes: {
+        extractorConfig: {
+          docModel: {
+            enabled: true,
+            apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json',
+          },
+        },
+      },
       compilerOptions: {
         declarationMap: true,
       },
-      rollupConfig: {
-        docModel: {
-          enabled: true,
-          apiJsonFilePath: '<projectFolder>/docs/<unscopedPackageName>.api.json',
-        },
-      },
     }),
-    vue(),
+    vue() as any,
     vueJsx(),
   ],
 })

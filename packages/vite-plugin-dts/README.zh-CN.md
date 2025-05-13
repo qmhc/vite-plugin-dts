@@ -1,7 +1,7 @@
-<h1 align="center">unplugin-dts</h1>
+<h1 align="center">vite-plugin-dts</h1>
 
 <p align="center">
-  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplugin 插件。
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Vite 插件。
 </p>
 
 <p align="center">
@@ -132,13 +132,7 @@ export type RollupConfig = Omit<
   | 'mainEntryPointFilePath'
   | 'compiler'
   | 'dtsRollup'
-  | 'bundledPackages'
   >
-
-export interface ResolverTransformOutput {
-  path: string,
-  content: string
-}
 
 export interface Resolver {
   /**
@@ -163,11 +157,7 @@ export interface Resolver {
     outDir: string,
     host: ts.CompilerHost,
     program: ts.Program,
-  }) => MaybePromise<ResolverTransformOutput[] | {
-    outputs: ResolverTransformOutput[],
-    emitSkipped?: boolean,
-    diagnostics?: readonly ts.Diagnostic[]
-  }>
+  }) => MaybePromise<{ path: string, content: string }[]>
 }
 
 export interface PluginOptions {
@@ -302,29 +292,31 @@ export interface PluginOptions {
    *
    * @default false
    */
-  bundleTypes?: boolean | {
-    /**
-     * 覆写 `@microsoft/api-extractor` 的配置
-     *
-     * @default {}
-     * @see https://api-extractor.com/pages/setup/configure_api_report/
-     */
-    extractorConfig?: BundleConfig,
-    /**
-     * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
-     *
-     * @default []
-     * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
-     */
-    bundledPackages?: string[],
-    /**
-     * 覆写 `@microsoft/api-extractor` 的调用选项
-     *
-     * @default {}
-     * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
-     */
-    invokeOptions?: IExtractorInvokeOptions
-  },
+  rollupTypes?: boolean,
+
+  /**
+   * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
+   *
+   * @default []
+   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+   */
+  bundledPackages?: string[],
+
+  /**
+   * 覆写 `@microsoft/api-extractor` 的配置
+   *
+   * @default null
+   * @see https://api-extractor.com/pages/setup/configure_api_report/
+   */
+  rollupConfig?: RollupConfig,
+
+  /**
+   * 覆写 `@microsoft/api-extractor` 的调用选项
+   *
+   * @default null
+   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+   */
+  rollupOptions?: IExtractorInvokeOptions,
 
   /**
    * 是否将源码里的 .d.ts 文件复制到 `outDir`

@@ -2,9 +2,9 @@ import { Extractor, ExtractorConfig } from '@microsoft/api-extractor'
 import { resolve, tryGetPkgPath } from './utils'
 
 import type { ExtractorLogLevel, IExtractorInvokeOptions } from '@microsoft/api-extractor'
-import type { RollupConfig } from './types'
+import type { BundleConfig } from './types'
 
-export interface BundleOptions {
+export interface BundleDtsOptions {
   root: string,
   configPath?: string,
   compilerOptions: Record<string, any>,
@@ -12,8 +12,9 @@ export interface BundleOptions {
   entryPath: string,
   fileName: string,
   libFolder?: string,
-  rollupConfig?: RollupConfig,
-  rollupOptions?: IExtractorInvokeOptions
+  extractorConfig?: BundleConfig,
+  bundledPackages?: string[],
+  invokeOptions?: IExtractorInvokeOptions
 }
 
 const dtsRE = /\.d\.(m|c)?tsx?$/
@@ -26,9 +27,10 @@ export function bundleDtsFiles({
   entryPath,
   fileName,
   libFolder,
-  rollupConfig = {},
-  rollupOptions = {},
-}: BundleOptions) {
+  extractorConfig = {},
+  bundledPackages,
+  invokeOptions = {},
+}: BundleDtsOptions) {
   const configObjectFullPath = resolve(root, 'api-extractor.json')
 
   if (!dtsRE.test(fileName)) {
@@ -40,9 +42,10 @@ export function bundleDtsFiles({
     compilerOptions = { ...compilerOptions, module: 'ESNext' }
   }
 
-  const extractorConfig = ExtractorConfig.prepare({
+  const config = ExtractorConfig.prepare({
     configObject: {
-      ...rollupConfig,
+      ...extractorConfig,
+      bundledPackages,
       projectFolder: root,
       mainEntryPointFilePath: entryPath,
       compiler: {
@@ -55,11 +58,11 @@ export function bundleDtsFiles({
       apiReport: {
         enabled: false,
         reportFileName: '<unscopedPackageName>.api.md',
-        ...rollupConfig.apiReport,
+        ...extractorConfig.apiReport,
       },
       docModel: {
         enabled: false,
-        ...rollupConfig.docModel,
+        ...extractorConfig.docModel,
       },
       dtsRollup: {
         enabled: true,
@@ -67,7 +70,7 @@ export function bundleDtsFiles({
       },
       tsdocMetadata: {
         enabled: false,
-        ...rollupConfig.tsdocMetadata,
+        ...extractorConfig.tsdocMetadata,
       },
       messages: {
         compilerMessageReporting: {
@@ -80,18 +83,18 @@ export function bundleDtsFiles({
             logLevel: 'none' as ExtractorLogLevel.None,
           },
         },
-        ...rollupConfig.messages,
+        ...extractorConfig.messages,
       },
     },
     configObjectFullPath,
     packageJsonFullPath: tryGetPkgPath(configObjectFullPath),
   })
 
-  return Extractor.invoke(extractorConfig, {
+  return Extractor.invoke(config, {
     localBuild: false,
     showVerboseMessages: false,
     showDiagnostics: false,
     typescriptCompilerFolder: libFolder,
-    ...rollupOptions,
+    ...invokeOptions,
   })
 }
