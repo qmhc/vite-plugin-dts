@@ -11,30 +11,34 @@ const args = minimist<{
 
 const isDryRun = args.dry || args.d
 const preId = args.preid || args.p
-const releaseType = args._[0]
+const releaseType = args._[0] as 'major' | 'minor' | 'patch'
 
 async function main() {
   if (!['major', 'minor', 'patch'].includes(releaseType)) {
     throw new Error('Invalid release type, should be one of major, minor and patch.')
   }
 
-  await release({
+  const success = await release({
     pkgDir: unpluginDir,
     isDryRun,
     preId,
-    gitCommitScope: 'unplugin-dts',
+    updateVersionByType: releaseType,
     runTest: () => run('pnpm', ['test']),
     runBuild: () => run('pnpm', ['build']),
     runChangelog: () => run('pnpm', ['changelog'], { cwd: unpluginDir }),
   })
 
-  await release({
-    pkgDir: vitePluginDir,
-    isDryRun,
-    preId,
-    gitCommitScope: 'vite-plugin-dts',
-    runChangelog: () => run('pnpm', ['changelog'], { cwd: vitePluginDir }),
-  })
+  if (success) {
+    await release({
+      pkgDir: vitePluginDir,
+      isDryRun,
+      preId,
+      updateVersionByType: releaseType,
+      secondConfirm: false,
+      gitCommitScope: 'vite-plugin-dts',
+      runChangelog: () => run('pnpm', ['changelog'], { cwd: vitePluginDir }),
+    })
+  }
 }
 
 main().catch(error => {

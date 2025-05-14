@@ -44,8 +44,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0(prettier@3.5.3)
       '@vexip-ui/scripts':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@vue/eslint-config-standard':
         specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.8.3))(eslint-plugin-vue@9.33.0(eslint@8.57.1))(eslint@8.57.1)
@@ -1512,8 +1512,8 @@ packages:
     peerDependencies:
       prettier: '>=3.0.0'
 
-  '@vexip-ui/scripts@1.3.0':
-    resolution: {integrity: sha512-qOvHwlpOIdsuF8HaxkMT1vI2CJylQQyvK444Wl2dLYnuEjayc1BBxR5a3MlA9+XnkElHzlP+TO9JoDGylPNyAg==}
+  '@vexip-ui/scripts@1.4.0':
+    resolution: {integrity: sha512-XMVkZd2DI/WOF3glXMS06cVCsudI8/UlSvE5NjZwFB3pIrBZJNgjWj7SWEGEHNZjG50CZw6FcgzQDC9H+i3xLg==}
     hasBin: true
 
   '@vexip-ui/utils@2.16.2':
@@ -6596,7 +6596,7 @@ snapshots:
       prettier: 3.5.3
       prettier-plugin-packagejson: 2.5.12(prettier@3.5.3)
 
-  '@vexip-ui/scripts@1.3.0':
+  '@vexip-ui/scripts@1.4.0':
     dependencies:
       '@vexip-ui/utils': 2.16.2
       compare-versions: 6.1.1
