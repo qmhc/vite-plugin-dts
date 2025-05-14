@@ -219,7 +219,7 @@ await build({
 <br />
 By default, the generated declaration files are following the source structure.
 
-If you want to merge all declarations into one file, just install `@microsoft/api-extractor` and specify `bundleTypes: true`:
+Fortunately, with the help of [API Extractor](https://api-extractor.com/), the plugin can bundle all types into a single file. You just need to install `@microsoft/api-extractor` and set `bundleTypes: true`:
 
 ```sh
 pnpm i -D @microsoft/api-extractor
@@ -258,7 +258,7 @@ This is an existing [TypeScript issue](https://github.com/microsoft/TypeScript/i
 }
 ```
 
-### `Internal Error` occurs when using `rollupTypes: true`
+### `Internal Error` occurs when using `bundleTypes: true`
 
 Refer to this [issue](https://github.com/microsoft/rushstack/issues/3875), it's due to a limitation of `@microsoft/api-extractor` or TypeScript resolver.
 
