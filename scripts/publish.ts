@@ -1,6 +1,10 @@
+import { readdir } from 'node:fs/promises'
+
+import { resolve } from 'node:path'
+
 import minimist from 'minimist'
 import { logger, publish } from '@vexip-ui/scripts'
-import { rootDir } from './constant'
+import { pkgsDir } from './constant'
 
 const args = minimist<{
   d?: boolean,
@@ -12,11 +16,21 @@ const args = minimist<{
 const isDryRun = args.dry || args.d
 const releaseTag = args.tag || args.t
 
-publish({
-  pkgDir: rootDir,
-  isDryRun,
-  releaseTag
-}).catch(error => {
+async function main() {
+  const packages = await readdir(pkgsDir)
+
+  for (const pkgName of packages) {
+    const pkgRoot = resolve(pkgsDir, pkgName)
+
+    await publish({
+      pkgDir: pkgRoot,
+      isDryRun,
+      releaseTag,
+    })
+  }
+}
+
+main().catch(error => {
   logger.error(error)
   process.exit(1)
 })

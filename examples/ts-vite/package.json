@@ -1,0 +1,17 @@
+{
+  "name": "ts-example",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run clean && DEBUG=\"dts-debug\" vite build",
+    "build:api": "pnpm run clean && tsx ./api-build.ts",
+    "clean": "rimraf dist && rimraf types"
+  },
+  "types": "dist/ts-test.d.ts",
+  "devDependencies": {
+    "tslib": "^2.8.1",
+    "typescript": "5.7.3",
+    "vite": "^6.0.7"
+  }
+}
