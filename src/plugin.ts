@@ -736,7 +736,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           const rollup = async (path: string) => {
             const result = rollupDeclarationFiles({
-              root,
+              root: publicRoot,
               configPath,
               compilerOptions,
               outDir,
