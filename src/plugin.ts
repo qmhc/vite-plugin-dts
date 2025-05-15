@@ -121,6 +121,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
   const rootFiles = new Set<string>()
   const outputFiles = new Map<string, string>()
   const transformedFiles = new Set<string>()
+  const diagnostics: ts.Diagnostic[] = []
 
   const setOutputFile = (path: string, content: string) => {
     outputFiles.set(path, content)
@@ -387,19 +388,11 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       entryRoot = entryRoot || publicRoot
       entryRoot = ensureAbsolute(entryRoot, root)
 
-      const diagnostics = [
+      diagnostics.push(
         ...program.getDeclarationDiagnostics(),
         ...program.getSemanticDiagnostics(),
         ...program.getSyntacticDiagnostics()
-      ]
-
-      if (diagnostics?.length) {
-        logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
-      }
-
-      if (typeof afterDiagnostic === 'function') {
-        await unwrapPromise(afterDiagnostic(diagnostics))
-      }
+      )
 
       for (const file of rootNames) {
         this.addWatchFile(file)
@@ -440,7 +433,18 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
           program
         })
 
-        for (const { path, content } of result) {
+        let output: { path: string, content: string }[]
+        if (Array.isArray(result)) {
+          output = result
+        } else {
+          output = result.outputs
+
+          if (result.emitSkipped && result.diagnostics?.length) {
+            diagnostics.push(...result.diagnostics)
+          }
+        }
+
+        for (const { path, content } of output) {
           setOutputFile(
             resolve(publicRoot, relative(outDir, ensureAbsolute(path, outDir))),
             content
@@ -450,7 +454,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const sourceFile = program.getSourceFile(id)
 
         if (sourceFile) {
-          const { diagnostics } = program.emit(
+          const result = program.emit(
             sourceFile,
             (name, text) => {
               setOutputFile(
@@ -461,8 +465,9 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
             undefined,
             true
           )
-          if (diagnostics.length) {
-            logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
+
+          if (result.emitSkipped && result.diagnostics.length) {
+            diagnostics.push(...result.diagnostics)
           }
         }
       }
@@ -518,6 +523,14 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
       logger.info(green(`\n${logPrefix} Start generate declaration files...`))
 
       const startTime = Date.now()
+
+      if (diagnostics?.length) {
+        logger.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host))
+      }
+
+      if (typeof afterDiagnostic === 'function') {
+        await unwrapPromise(afterDiagnostic(diagnostics))
+      }
 
       const outDir = outDirs[0]
       const emittedFiles = new Map<string, string>()
