@@ -820,6 +820,8 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         })
       }
 
+      diagnostics.length = 0
+
       if (typeof afterBuild === 'function') {
         await unwrapPromise(afterBuild(emittedFiles))
       }
