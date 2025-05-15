@@ -1,3 +1,11 @@
+## [4.5.4](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.3...v4.5.4) (2025-05-15)
+
+### Bug Fixes
+
+- correct specify root for rollup types ([062e6d3](https://github.com/qmhc/vite-plugin-dts/commit/062e6d3fe8fe0413c8dc7ad075b956a2cd8e1391)), closes [#425](https://github.com/qmhc/vite-plugin-dts/issues/425)
+- should collect diagnostics when transform ([#423](https://github.com/qmhc/vite-plugin-dts/issues/423)) ([3d0cc1b](https://github.com/qmhc/vite-plugin-dts/commit/3d0cc1b7f91d0afd388c022fe31280600c79a0b0))
+- use entry name instead of entry path to generate indexName ([#424](https://github.com/qmhc/vite-plugin-dts/issues/424)) ([e8049d9](https://github.com/qmhc/vite-plugin-dts/commit/e8049d931f77a5d33097fd52039904b20e4fbc0b))
+
 ## [4.5.3](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.1...v4.5.3) (2025-03-03)
 
 ### Bug Fixes
