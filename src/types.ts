@@ -37,7 +37,14 @@ export interface Resolver {
     host: ts.CompilerHost,
     program: ts.Program
     // service: ts.LanguageService
-  }) => MaybePromise<{ path: string, content: string }[]>
+  }) => MaybePromise<
+    | {
+      outputs: { path: string, content: string }[],
+      emitSkipped?: boolean,
+      diagnostics?: readonly ts.Diagnostic[]
+    }
+    | { path: string, content: string }[]
+  >
 }
 
 export interface PluginOptions {
