@@ -201,7 +201,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
         const entry =
           typeof config.build.lib.entry === 'string'
             ? config.build.lib.entry
-            : Object.values(config.build.lib.entry)[0]
+            : Object.keys(config.build.lib.entry)[0]
 
         libName = config.build.lib.name || '_default'
         indexName = typeof filename === 'string' ? filename : filename('es', entry)
@@ -739,7 +739,7 @@ export function dtsPlugin(options: PluginOptions = {}): import('vite').Plugin {
 
           const rollup = async (path: string) => {
             const result = rollupDeclarationFiles({
-              root,
+              root: publicRoot,
               configPath,
               compilerOptions,
               outDir,
