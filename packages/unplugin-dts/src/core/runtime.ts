@@ -442,8 +442,6 @@ export class Runtime {
       clearPureImport = true,
       insertTypesEntry = false,
       bundleTypes = false,
-      // bundleOptions = {},
-      // bundleConfig,
       beforeWriteFile,
       afterRollup,
     } = options
