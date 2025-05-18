@@ -1,7 +1,7 @@
-<h1 align="center">vite-plugin-dts</h1>
+<h1 align="center">unplugin-dts</h1>
 
 <p align="center">
-  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Vite 插件。
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplug在 插件。
 </p>
 
 <p align="center">
@@ -18,17 +18,26 @@
 ## 安装
 
 ```sh
-pnpm i vite-plugin-dts -D
+pnpm i -D unplugin-dts
+```
+
+过往只在 Vite 中使用（不再推荐）：
+
+```sh
+pnpm i -D vite-plugin-dts
 ```
 
 ## 使用
 
-在 `vite.config.ts`：
+<details>
+  <summary>Vite</summary>
+
+在 `vite.config.ts` 中：
 
 ```ts
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
+import dts from 'unplugin-dts/vite'
 
 export default defineConfig({
   build: {
@@ -36,20 +45,189 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'MyLib',
       formats: ['es'],
-      fileName: 'my-lib'
+      fileName: 'my-lib',
     }
   },
-  plugins: [dts()]
+  plugins: [dts()],
 })
 ```
 
+</details>
+<details>
+  <summary>Rollup</summary>
+
+在 `rollup.config.mjs` 中：
+
+```ts
+import { defineConfig } from 'rollup'
+import typescript from '@rollup/plugin-typescript'
+import dts from 'unplugin-dts/rollup'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [typescript(), dts()],
+})
+```
+
+</details>
+<details>
+  <summary>Rolldown</summary>
+
+在 `rolldown.config.mjs` 中：
+
+```ts
+import { defineConfig } from 'rolldown'
+import dts from 'unplugin-dts/rolldown'
+
+export default defineConfig({
+  input: {
+    index: './src/index.ts',
+  },
+  output: [
+    {
+      dir: 'dist',
+      exports: 'named',
+      format: 'esm',
+    },
+  ],
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Webpack</summary>
+
+在 `webpack.config.js` 中：
+
+```ts
+import { resolve } from 'node:path'
+import dts from 'unplugin-dts/webpack'
+
+export default {
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  plugins: [dts()],
+}
+```
+
+</details>
+<details>
+  <summary>Rspack</summary>
+
+在 `rspack.config.mjs` 中：
+
+```ts
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig } from '@rspack/cli'
+import dts from 'unplugin-dts/rspack'
+
+const rootDir = resolve(fileURLToPath(import.meta.url), '..')
+
+export default defineConfig({
+  entry: {
+    index: './src/index.ts',
+  },
+  output: {
+    path: resolve(rootDir, 'dist'),
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'ecmascript',
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        test: /\.ts$/,
+        use: [
+          {
+            loader: 'builtin:swc-loader',
+            options: {
+              jsc: {
+                parser: {
+                  syntax: 'typescript',
+                  decorators: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [dts()],
+})
+
+```
+
+</details>
+<details>
+  <summary>Esbuild</summary>
+
+在你的构建脚本中：
+
+```ts
+import { build } from 'esbuild'
+import dts from 'unplugin-dts/esbuild'
+
+await build({
+  entryPoints: ['src/index.ts'],
+  format: 'esm',
+  outdir: 'dist',
+  bundle: true,
+  plugins: [dts()],
+})
+```
+
+</details>
+
+<br />
 默认情况，生成的类型文件会跟随源文件的结构。
 
-如果你希望将所有的类型合并到一个文件中，只需指定 `rollupTypes: true`：
+好在插件借助 [API Extractor](https://api-extractor.com/) 提供了汇总所有类型到一个文件的能力，只需安装 `@microsoft/api-extractor` 并指定 `bundleTypes: true`：
+
+```sh
+pnpm i -D @microsoft/api-extractor
+```
 
 ```ts
 {
-  plugins: [dts({ rollupTypes: true })]
+  plugins: [dts({ bundleTypes: true })]
 }
 ```
 
@@ -60,8 +238,6 @@ export default defineConfig({
   plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
 }
 ```
-
-从 `3.0.0` 开始，你可以在 Rollup 中使用该插件。
 
 ## 常见问题
 
@@ -82,7 +258,7 @@ export default defineConfig({
 }
 ```
 
-### 在 `rollupTypes: true` 时出现 `Internal Error`
+### 在 `bundleTypes: true` 时出现 `Internal Error`
 
 参考这个 [issue](https://github.com/microsoft/rushstack/issues/3875)，这是由于 `@microsoft/api-extractor` 或者是 TypeScript 解析器的一些限制导致的。
 
@@ -122,7 +298,6 @@ export default defineConfig({
 ```ts
 import type ts from 'typescript'
 import type { IExtractorConfigPrepareOptions, IExtractorInvokeOptions } from '@microsoft/api-extractor'
-import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
 
@@ -132,7 +307,13 @@ export type RollupConfig = Omit<
   | 'mainEntryPointFilePath'
   | 'compiler'
   | 'dtsRollup'
+  | 'bundledPackages'
   >
+
+export interface ResolverTransformOutput {
+  path: string,
+  content: string
+}
 
 export interface Resolver {
   /**
@@ -157,7 +338,11 @@ export interface Resolver {
     outDir: string,
     host: ts.CompilerHost,
     program: ts.Program,
-  }) => MaybePromise<{ path: string, content: string }[]>
+  }) => MaybePromise<ResolverTransformOutput[] | {
+    outputs: ResolverTransformOutput[],
+    emitSkipped?: boolean,
+    diagnostics?: readonly ts.Diagnostic[]
+  }>
 }
 
 export interface PluginOptions {
@@ -292,31 +477,29 @@ export interface PluginOptions {
    *
    * @default false
    */
-  rollupTypes?: boolean,
-
-  /**
-   * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
-   *
-   * @default []
-   * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
-   */
-  bundledPackages?: string[],
-
-  /**
-   * 覆写 `@microsoft/api-extractor` 的配置
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/configure_api_report/
-   */
-  rollupConfig?: RollupConfig,
-
-  /**
-   * 覆写 `@microsoft/api-extractor` 的调用选项
-   *
-   * @default null
-   * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
-   */
-  rollupOptions?: IExtractorInvokeOptions,
+  bundleTypes?: boolean | {
+    /**
+     * 覆写 `@microsoft/api-extractor` 的配置
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/configure_api_report/
+     */
+    extractorConfig?: BundleConfig,
+    /**
+     * 设置 `@microsoft/api-extractor` 的 `bundledPackages` 选项
+     *
+     * @default []
+     * @see https://api-extractor.com/pages/configs/api-extractor_json/#bundledpackages
+     */
+    bundledPackages?: string[],
+    /**
+     * 覆写 `@microsoft/api-extractor` 的调用选项
+     *
+     * @default {}
+     * @see https://api-extractor.com/pages/setup/invoking/#invoking-from-a-build-script
+     */
+    invokeOptions?: IExtractorInvokeOptions
+  },
 
   /**
    * 是否将源码里的 .d.ts 文件复制到 `outDir`
@@ -334,13 +517,6 @@ export interface PluginOptions {
    * @default false
    */
   declarationOnly?: boolean,
-
-  /**
-   * 指定插件的输出等级
-   *
-   * 默认基于 Vite 配置的 'logLevel' 选项
-   */
-  logLevel?: LogLevel,
 
   /**
    * 获取诊断信息后的钩子

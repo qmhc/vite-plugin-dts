@@ -1,0 +1,22 @@
+{
+  "name": "react-example",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run clean && DEBUG=\"dts-debug\" vite build",
+    "clean": "rimraf dist && rimraf types"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.72",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tslib": "^2.8.1",
+    "typescript": "5.7.3",
+    "vite": "^6.0.7"
+  }
+}
