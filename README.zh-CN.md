@@ -298,7 +298,6 @@ pnpm i -D @microsoft/api-extractor
 ```ts
 import type ts from 'typescript'
 import type { IExtractorConfigPrepareOptions, IExtractorInvokeOptions } from '@microsoft/api-extractor'
-import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
 
@@ -518,13 +517,6 @@ export interface PluginOptions {
    * @default false
    */
   declarationOnly?: boolean,
-
-  /**
-   * 指定插件的输出等级
-   *
-   * 默认基于 Vite 配置的 'logLevel' 选项
-   */
-  logLevel?: LogLevel,
 
   /**
    * 获取诊断信息后的钩子

@@ -281,7 +281,6 @@ You can refer to this [comment](https://github.com/qmhc/vite-plugin-dts/issues/3
 ```ts
 import type ts from 'typescript'
 import type { IExtractorConfigPrepareOptions, IExtractorInvokeOptions } from '@microsoft/api-extractor'
-import type { LogLevel } from 'vite'
 
 type MaybePromise<T> = T | Promise<T>
 
@@ -501,13 +500,6 @@ export interface PluginOptions {
    * @default false
    */
   declarationOnly?: boolean,
-
-  /**
-   * Logging level for this plugin.
-   *
-   * Defaults to the 'logLevel' property of your Vite config.
-   */
-  logLevel?: LogLevel,
 
   /**
    * Hook called after diagnostic is emitted.
