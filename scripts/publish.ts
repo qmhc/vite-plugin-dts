@@ -1,10 +1,6 @@
-import { readdir } from 'node:fs/promises'
-
-import { resolve } from 'node:path'
-
 import minimist from 'minimist'
-import { logger, publish } from '@vexip-ui/scripts'
-import { pkgsDir } from './constant'
+import { getPkgInfo, logger, publish } from '@vexip-ui/scripts'
+import { unpluginDir, vitePluginDir } from './constant'
 
 const args = minimist<{
   d?: boolean,
@@ -13,21 +9,25 @@ const args = minimist<{
   tag?: string
 }>(process.argv.slice(2))
 
+const ref = args._[0] as string
 const isDryRun = args.dry || args.d
-const releaseTag = args.tag || args.t
+
+let releaseTag = args.tag || args.t
 
 async function main() {
-  const packages = await readdir(pkgsDir)
+  const pkgRoot = ref.startsWith('vite-plugin-dts') ? vitePluginDir : unpluginDir
 
-  for (const pkgName of packages) {
-    const pkgRoot = resolve(pkgsDir, pkgName)
+  if (!releaseTag) {
+    const { pkg } = getPkgInfo(pkgRoot)
 
-    await publish({
-      pkgDir: pkgRoot,
-      isDryRun,
-      releaseTag,
-    })
+    releaseTag = pkg.version?.split('-')[1]?.split('.')[0]
   }
+
+  await publish({
+    pkgDir: pkgRoot,
+    isDryRun,
+    releaseTag,
+  })
 }
 
 main().catch(error => {
