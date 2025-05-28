@@ -18,7 +18,7 @@
 ## Installation
 
 ```sh
-pnpm i -D unplugin-dts
+pnpm i -D unplugin-dts@beta
 ```
 
 Previous only for vite (do not recommend):

@@ -18,7 +18,7 @@
 ## 安装
 
 ```sh
-pnpm i -D unplugin-dts
+pnpm i -D unplugin-dts@beta
 ```
 
 过往只在 Vite 中使用（不再推荐）：
