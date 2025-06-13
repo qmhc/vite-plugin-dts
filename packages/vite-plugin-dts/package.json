@@ -13,9 +13,14 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "default": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -47,13 +52,13 @@
   "dependencies": {
     "unplugin-dts": "workspace:*"
   },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.52.5"
+  },
   "peerDependencies": {
     "@microsoft/api-extractor": ">=7",
     "rollup": ">=3",
     "vite": ">=3"
-  },
-  "devDependencies": {
-    "@microsoft/api-extractor": "^7.52.5"
   },
   "peerDependenciesMeta": {
     "@microsoft/api-extractor": {
