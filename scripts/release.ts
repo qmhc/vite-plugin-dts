@@ -11,10 +11,10 @@ const args = minimist<{
 
 const isDryRun = args.dry || args.d
 const preId = args.preid || args.p
-const releaseType = args._[0] as 'major' | 'minor' | 'patch'
+const releaseType = (args._[0] || 'release') as 'major' | 'minor' | 'patch' | 'release'
 
 async function main() {
-  if (!['major', 'minor', 'patch'].includes(releaseType)) {
+  if (!['major', 'minor', 'patch', 'release'].includes(releaseType)) {
     throw new Error('Invalid release type, should be one of major, minor and patch.')
   }
 

@@ -40,7 +40,7 @@
     "@vexip-ui/commitlint-config": "^0.5.0",
     "@vexip-ui/eslint-config": "^0.12.1",
     "@vexip-ui/prettier-config": "^1.0.0",
-    "@vexip-ui/scripts": "^1.4.0",
+    "@vexip-ui/scripts": "^1.4.1",
     "@vue/eslint-config-standard": "^8.0.1",
     "@vue/eslint-config-typescript": "^13.0.0",
     "conventional-changelog-cli": "^5.0.0",
