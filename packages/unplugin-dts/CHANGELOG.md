@@ -1,3 +1,12 @@
+# [1.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.0...v1.0.0-beta.1) (2025-06-16)
+
+
+### Bug Fixes
+
+* correct package.json exports field to fix FalseESM issue ([#431](https://github.com/qmhc/vite-plugin-dts/issues/431)) ([ee407a5](https://github.com/qmhc/vite-plugin-dts/commit/ee407a5a1c5c8a7480bb1e70f624b8ff88dd91d1))
+
+
+
 # [1.0.0-beta.0](https://github.com/qmhc/vite-plugin-dts/compare/v4.5.4...v1.0.0-beta.0) (2025-05-18)
 
 
