@@ -1,3 +1,7 @@
+# [5.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.2...v5.0.0-beta.2) (2025-06-18)
+
+
+
 # [5.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.1...v5.0.0-beta.1) (2025-06-16)
 
 
