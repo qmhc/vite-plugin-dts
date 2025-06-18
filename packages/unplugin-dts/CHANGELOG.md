@@ -1,3 +1,12 @@
+# [1.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-06-18)
+
+
+### Bug Fixes
+
+* correctly use resolve method ([337e43e](https://github.com/qmhc/vite-plugin-dts/commit/337e43e286cc255b255fdec6a0f0822fe3ef6034))
+
+
+
 # [1.0.0-beta.1](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.0...v1.0.0-beta.1) (2025-06-16)
 
 
