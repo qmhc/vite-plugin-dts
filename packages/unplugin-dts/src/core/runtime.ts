@@ -1,4 +1,4 @@
-import { basename, dirname, relative, resolve } from 'node:path'
+import { basename, dirname, relative } from 'node:path'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { cpus } from 'node:os'
@@ -29,6 +29,7 @@ import {
   parseTsAliases,
   queryPublicPath,
   removeDirIfEmpty,
+  resolve,
   resolveConfigDir,
   runParallel,
   setModuleResolution,
