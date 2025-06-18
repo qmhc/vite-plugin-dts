@@ -607,6 +607,7 @@ export class Runtime {
         types ? resolve(root, types) : resolve(outDir, indexName),
         emittedFiles,
       )
+      typesPath = normalizePath(typesPath)
   
       if (!multiple && !dtsRE.test(typesPath)) {
         logger.warn(
