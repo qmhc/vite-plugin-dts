@@ -37,7 +37,7 @@ body:
     id: system-info
     attributes:
       label: System Info
-      description: Output of `npx envinfo --system --npmPackages '{vite,@vitejs/*,vite-plugin-dts}' --binaries --browsers`
+      description: Output of `npx envinfo --system --npmPackages '{vite,@vitejs/*,vite-plugin-dts,unplugin-dts}' --binaries --browsers`
       render: shell
       placeholder: System, Binaries, Browsers
     validations:
