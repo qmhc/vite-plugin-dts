@@ -35,6 +35,8 @@ export const mtjsRE = /\.m([jt])sx?$/
 export const ctjsRE = /\.c([jt])sx?$/
 export const fullRelativeRE = /^\.\.?\//
 
+export const globSignRE = /[-^$*+?.()|[\]{}]/g
+
 export function getJsExtPrefix(file: string) {
   return mtjsRE.test(file) ? 'm' : ctjsRE.test(file) ? 'c' : ''
 }
@@ -50,7 +52,7 @@ export function slash(p: string): string {
 }
 
 export function resolveConfigDir(path: string, configDir: string) {
-  return path.replace('${configDir}', configDir)
+  return path.startsWith('${configDir}') ? path.replace('${configDir}', configDir) : path
 }
 
 export function normalizePath(id: string): string {

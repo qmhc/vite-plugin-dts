@@ -21,6 +21,7 @@ import {
   getJsExtPrefix,
   getTsConfig,
   getTsLibFolder,
+  globSignRE,
   handleDebug,
   isNativeObj,
   isRegExp,
@@ -97,8 +98,8 @@ export class Runtime {
   protected diagnostics: ts.Diagnostic[]
   protected outDirs: string[]
   protected entries: Record<string, string>
-  protected include: string[]
-  protected exclude: string[]
+  // protected include: string[]
+  // protected exclude: string[]
   protected aliases: Alias[]
   protected aliasesExclude: (string | RegExp)[]
   protected libName: string
@@ -189,14 +190,14 @@ export class Runtime {
     ) => {
       if (rootGlobs?.length) {
         return ensureArray(rootGlobs).map(glob =>
-          normalizeGlob(ensureAbsolute(resolveConfigDir(glob, root), root)),
+          normalizeGlob(resolveConfigDir(glob, '.')),
         )
       }
   
+      const relativeRoot = configPath ? normalizePath(relative(root, dirname(configPath)).replace(globSignRE, '\\$&')) : '.'
+
       return ensureArray(tsGlobs?.length ? tsGlobs : defaultGlob).map(glob =>
-        normalizeGlob(
-          ensureAbsolute(resolveConfigDir(glob, root), configPath ? dirname(configPath) : root),
-        ),
+        normalizeGlob(resolveConfigDir(glob, relativeRoot)),
       )
     }
   
@@ -206,8 +207,8 @@ export class Runtime {
       '**/*',
     )
     const exclude = computeGlobs(options.exclude, content?.raw.exclude, 'node_modules/**')
-    const filter = createFilter(include, exclude)
-  
+    const filter = createFilter(include, exclude, { resolve: root })
+
     const rootNames = [
       ...new Set(
         Object.values(entries)
@@ -280,8 +281,8 @@ export class Runtime {
     this.diagnostics = diagnostics
     this.outDirs = outDirs
     this.entries = entries
-    this.include = include
-    this.exclude = exclude
+    // this.include = include
+    // this.exclude = exclude
     this.aliases = aliases
     this.aliasesExclude = aliasesExclude
     this.libName = libName
@@ -340,7 +341,7 @@ export class Runtime {
   
     let resolver: Resolver | undefined
     id = normalizePath(id).split('?')[0]
-  
+
     if (
       !this.filter(id) ||
       (!(resolver = resolvers.find(r => r.supports(id))) && !tjsRE.test(id)) ||

@@ -1,3 +1,5 @@
+import './ignore'
+
 import data from './data.json'
 
 import type { TestBase } from '@/test'
