@@ -120,8 +120,7 @@
   },
   "dependencies": {
     "@rollup/pluginutils": "^5.1.4",
-    "@volar/typescript": "^2.4.13",
-    "@vue/language-core": "2.2.0",
+    "@volar/typescript": "^2.4.17",
     "compare-versions": "^6.1.1",
     "debug": "^4.4.0",
     "kolorist": "^1.8.0",
@@ -130,11 +129,13 @@
     "unplugin": "^2.3.2"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.52.5"
+    "@microsoft/api-extractor": "^7.52.5",
+    "@vue/language-core": "~3.0.1"
   },
   "peerDependencies": {
     "@microsoft/api-extractor": ">=7",
     "@rspack/core": "^1",
+    "@vue/language-core": "~3.0.1",
     "esbuild": "*",
     "rolldown": "*",
     "rollup": ">=3",
@@ -147,6 +148,9 @@
       "optional": true
     },
     "@rspack/core": {
+      "optional": true
+    },
+    "@vue/language-core": {
       "optional": true
     },
     "esbuild": {

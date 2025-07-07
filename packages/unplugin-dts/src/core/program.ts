@@ -1,33 +1,22 @@
-import {
-  createParsedCommandLine,
-  createVueLanguagePlugin,
-  resolveVueCompilerOptions,
-} from '@vue/language-core'
-
-import { proxyCreateProgram } from '@volar/typescript'
-import ts from 'typescript'
 import { tryGetPackageInfo } from './utils'
 
-export { createParsedCommandLine }
+import type ts from 'typescript'
 
-const hasVue = !!tryGetPackageInfo('vue')
+let hasVue: boolean | undefined
 
-// If there has no Vue dependency, we think it's a normal TypeScript project.
-// So we use the original createProgram of TypeScript.
-export const createProgram = !hasVue
-  ? ts.createProgram
-  : proxyCreateProgram(ts, ts.createProgram, (ts, options) => {
-    const { configFilePath } = options.options
-    const vueOptions =
-        typeof configFilePath === 'string'
-          ? createParsedCommandLine(ts, ts.sys, configFilePath.replace(/\\/g, '/')).vueOptions
-          : resolveVueCompilerOptions({})
+function getHasVue() {
+  return typeof hasVue !== 'undefined' ? hasVue : (hasVue = !!tryGetPackageInfo('vue'))
+}
 
-    const vueLanguagePlugin = createVueLanguagePlugin<string>(
-      ts,
-      options.options,
-      vueOptions,
-      id => id,
-    )
-    return [vueLanguagePlugin]
-  })
+export interface ProgramProcesses {
+  createParsedCommandLine: (_ts: typeof ts, host: ts.ParseConfigHost, configPath: string) => ts.ParsedCommandLine,
+  createProgram: typeof ts.createProgram
+}
+
+export async function loadProgramProcesses(): Promise<ProgramProcesses> {
+  if (getHasVue()) {
+    return await import('./programs/vue')
+  }
+
+  return await import('./programs/common')
+}

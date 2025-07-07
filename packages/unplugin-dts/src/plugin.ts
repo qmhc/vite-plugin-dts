@@ -189,7 +189,7 @@ export const pluginFactory: UnpluginFactory<PluginOptions | undefined> = /* #__P
         alias.replacement = resolve(alias.replacement)
       }
 
-      runtime = new Runtime({
+      runtime = await Runtime.toInstance({
         root,
         outDirs: options.outDirs ?? outDirs,
         entryRoot,

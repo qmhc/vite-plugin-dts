@@ -6,7 +6,7 @@ import { cpus } from 'node:os'
 import ts from 'typescript'
 import { createFilter } from '@rollup/pluginutils'
 import { green, yellow } from 'kolorist'
-import { createParsedCommandLine, createProgram } from './program'
+import { loadProgramProcesses } from './program'
 import { JsonResolver, SvelteResolver, VueResolver, parseResolvers } from './resolvers'
 import { hasExportDefault, hasNormalExport, normalizeGlob, transformCode } from './transform'
 import { bundleDtsFiles } from './bundle'
@@ -42,6 +42,7 @@ import {
 } from './utils'
 
 import type { Alias } from 'vite'
+import type { ProgramProcesses } from './program'
 import type { Resolver } from './resolvers'
 import type { AliasOptions, CreateRuntimeOptions, EmitOptions, Logger } from './types'
 
@@ -86,6 +87,10 @@ function parseAliases(aliasOptions: AliasOptions = [], aliasesExclude: (string |
 }
 
 export class Runtime {
+  static async toInstance(options: CreateRuntimeOptions) {
+    return new Runtime(options, await loadProgramProcesses())
+  }
+
   protected root: string
   protected publicRoot: string
   protected entryRoot: string
@@ -114,7 +119,7 @@ export class Runtime {
   readonly filter: (id: string) => boolean
   readonly rebuildProgram: () => void
 
-  constructor(options: CreateRuntimeOptions) {
+  protected constructor(options: CreateRuntimeOptions, { createParsedCommandLine, createProgram }: ProgramProcesses) {
     const {
       root,
       tsconfigPath,
