@@ -13,6 +13,8 @@
   </a>
 </p>
 
+> 它始于 vite-plugin-dts，在用 unplugin 重写后，它变得更加通用了。
+
 **中文** | [English](./README.md)
 
 ## 安装
@@ -237,6 +239,12 @@ pnpm i -D @microsoft/api-extractor
 {
   plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
 }
+```
+
+还有一点，如果你正在一个 **Vue 项目** 中使用它，你需要安装 `@vue/language-core` 作为一个必要依赖：
+
+```sh
+pnpm i -D @vue/language-core
 ```
 
 ## 常见问题

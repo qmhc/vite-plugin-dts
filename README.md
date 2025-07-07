@@ -13,6 +13,8 @@
   </a>
 </p>
 
+> It evolved from vite-plugin-dts, and after being rewritten with unplugin, it has become more versatile.
+
 **English** | [中文](./README.zh-CN.md)
 
 ## Installation
@@ -237,6 +239,12 @@ If you start with official Vite template, you should specify the `tsconfigPath`:
 {
   plugins: [dts({ tsconfigPath: './tsconfig.app.json' })]
 }
+```
+
+One more, if you are using it in a **Vue project**, you need to install `@vue/language-core` as a peer dependency for the plugin:
+
+```sh
+pnpm i -D @vue/language-core
 ```
 
 ## FAQ
