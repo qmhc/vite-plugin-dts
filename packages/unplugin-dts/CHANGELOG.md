@@ -1,3 +1,17 @@
+# [1.0.0-beta.3](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-07-07)
+
+
+### Bug Fixes
+
+* correctly filter path with parenthesis ([5e7e469](https://github.com/qmhc/vite-plugin-dts/commit/5e7e469d43b81e4832b5ea03b0faa8ec08b6ede1)), closes [#430](https://github.com/qmhc/vite-plugin-dts/issues/430)
+
+
+### Features
+
+* extract vue language dependency ([6dea0c4](https://github.com/qmhc/vite-plugin-dts/commit/6dea0c49279ba8eb0b46c7480e62f50958f5bf39)), closes [#433](https://github.com/qmhc/vite-plugin-dts/issues/433)
+
+
+
 # [1.0.0-beta.2](https://github.com/qmhc/vite-plugin-dts/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-06-18)
 
 
