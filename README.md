@@ -5,11 +5,14 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/vite-plugin-dts">
-    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
+  <a href="https://www.npmjs.com/package/unplugin-dts">
+    <img src="https://img.shields.io/npm/v/unplugin-dts?color=orange&label=unplugin-dts" alt="version" />
   </a>
-  <a href="https://github.com/qmhc/vite-plugin-dts/blob/main/LICENSE">
-    <img src="https://img.shields.io/npm/l/vite-plugin-dts" alt="license" />
+  <a href="https://www.npmjs.com/package/vite-plugin-dts">
+    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=blue&label=vite-plugin-dts" alt="version" />
+  </a>
+  <a href="https://github.com/qmhc/unplugin-dts/blob/main/packages/unplugin-dts/LICENSE">
+    <img src="https://img.shields.io/npm/l/unplugin-dts" alt="license" />
   </a>
 </p>
 

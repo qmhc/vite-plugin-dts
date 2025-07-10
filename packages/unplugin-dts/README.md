@@ -231,6 +231,12 @@ If you start with official Vite template, you should specify the `tsconfigPath`:
 }
 ```
 
+One more, if you are using it in a **Vue project**, you need to install `@vue/language-core` as a peer dependency for the plugin:
+
+```sh
+pnpm i -D @vue/language-core
+```
+
 ## Example
 
 A real project using this plugin: [Vexip UI](https://github.com/vexip-ui/vexip-ui).

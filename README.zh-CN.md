@@ -1,15 +1,18 @@
 <h1 align="center">unplugin-dts</h1>
 
 <p align="center">
-  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplug在 插件。
+  一款用于在 <a href="https://cn.vitejs.dev/guide/build.html#library-mode">库模式</a> 中从 <code>.ts(x)</code> 或 <code>.vue</code> 源文件生成类型文件（<code>*.d.ts</code>）的 Unplugin 插件。
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/vite-plugin-dts">
-    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=orange&label=" alt="version" />
+  <a href="https://www.npmjs.com/package/unplugin-dts">
+    <img src="https://img.shields.io/npm/v/unplugin-dts?color=orange&label=unplugin-dts" alt="version" />
   </a>
-  <a href="https://github.com/qmhc/vite-plugin-dts/blob/main/LICENSE">
-    <img src="https://img.shields.io/npm/l/vite-plugin-dts" alt="license" />
+  <a href="https://www.npmjs.com/package/vite-plugin-dts">
+    <img src="https://img.shields.io/npm/v/vite-plugin-dts?color=blue&label=vite-plugin-dts" alt="version" />
+  </a>
+  <a href="https://github.com/qmhc/unplugin-dts/blob/main/packages/unplugin-dts/LICENSE">
+    <img src="https://img.shields.io/npm/l/unplugin-dts" alt="license" />
   </a>
 </p>
 
